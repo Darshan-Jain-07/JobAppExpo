@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, SectionList, TouchableOpacity } from 'react-native';
 import { Avatar } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome'; // You can choose any icon set
+import { getCompanyData } from '../../services/ProfileService';
+import { clearUserData, getUserData } from '../../services/UserDataService';
+import { useNavigation } from '@react-navigation/native';
 
 const ProfilePage = ({ navigation }) => {
+  const [userData, setUserDate] = useState();
+  const navigate = useNavigation();
+
+  useEffect(() => {
+    // Define an async function inside the useEffect
+    const fetchData = async () => {
+      try {
+        const data = await getUserData();
+        setUserDate(data)
+        console.log(data); // Log the data
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    // Call the async function
+    fetchData();
+  }, []);
   // Define the sections with their respective options and icons
   const sections = [
     {
       title: 'Company Details',
       data: [
-        { key: 'view', text: 'View Company', icon: 'building' },
+        { key: 'view', text: 'View Company', icon: 'building', onPress:()=>{navigate.navigate("View Company Detail")} },
         { key: 'edit', text: 'Edit Company Details', icon: 'edit' },
       ],
     },
@@ -31,14 +52,14 @@ const ProfilePage = ({ navigation }) => {
     {
       title: 'Job Application',
       data: [
-        { key: 'myRecruiter', text: 'My Recruiter', icon: 'users' },
-        { key: 'myJobApplication', text: 'My Job Application', icon: 'briefcase' },
+        { key: 'myRecruiter', text: 'My Recruiters', icon: 'users' },
+        { key: 'myJobApplication', text: 'My Job Posts', icon: 'briefcase' },
       ],
     },
     {
       title: 'Other',
       data: [
-        { key: 'logout', text: 'Logout', icon: 'sign-out' },
+        { key: 'logout', text: 'Logout', icon: 'sign-out', onPress:()=>{clearUserData(); navigate.navigate("Splash")} },
       ],
     },
   ];
@@ -51,12 +72,12 @@ const ProfilePage = ({ navigation }) => {
   );
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.optionButton} 
-      onPress={() => navigation.navigate(item.key)} // Navigate to the respective screen
+    <TouchableOpacity
+      style={styles.optionButton}
+      onPress={item.onPress} // Navigate to the respective screen
     >
       <View style={styles.optionContent}>
-        <Icon name={item.icon} size={20} color="#007BFF" />
+        <Icon name={item.icon} size={20} color="#000" />
         <Text style={styles.optionText}>{item.text}</Text>
       </View>
     </TouchableOpacity>
@@ -66,13 +87,13 @@ const ProfilePage = ({ navigation }) => {
     <View style={styles.container}>
       {/* Company Logo and Details */}
       <View style={styles.headerContainer}>
-        <Avatar.Image 
-          source={{ uri: 'https://example.com/company-logo.png' }} // Replace with dynamic company logo URL
+        <Avatar.Image
+          source={{ uri: userData?.company_logo }} // Replace with dynamic company logo URL
           size={80}
         />
         <View style={styles.companyInfo}>
-          <Text style={styles.companyName}>Company Name</Text>
-          <Text style={styles.companyEmail}>company@example.com</Text>
+          <Text style={styles.companyName}>{userData?.company_name}</Text>
+          <Text style={styles.companyEmail}>{userData?.company_email}</Text>
         </View>
       </View>
 
@@ -92,6 +113,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    marginBottom:100
   },
   headerContainer: {
     flexDirection: 'row',
@@ -147,7 +169,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    color: '#007BFF',
+    color: '#000',
     marginLeft: 10,
   },
   separator: {

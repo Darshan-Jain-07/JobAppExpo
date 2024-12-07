@@ -1,10 +1,23 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, Text, Image, Alert, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, Image, Alert, StyleSheet, Platform  } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
+import * as FileSystem from 'expo-file-system';
 
 const CustomImageUploader = ({ setFieldValue, fieldKey, values, uploadPreset = "jobApp", cloudName = "dwnqftgj0", placeholder }) => {
   const [loading, setLoading] = useState(null);
+  const convertToBase64 = async (uri) => {
+    try {
+      const base64String = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      console.log('Base64 Image:', `data:image/jpeg;base64,${base64String}`);
+      return `data:image/jpeg;base64,${base64String}`
+    } catch (error) {
+      console.error('Error converting image to base64:', error);
+    }
+  };
+
   const pickImage = async () => {
     // Request permissions to access the media library
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -35,15 +48,21 @@ const CustomImageUploader = ({ setFieldValue, fieldKey, values, uploadPreset = "
     const formData = new FormData();
     const fileType = imageUri.split(';')[0].split('/')[1];
     const fileName = `image.${fileType}`;
-
-    const blob = await fetch(imageUri)
+    let blob;
+    {Platform.OS === 'android' && (blob = await convertToBase64(imageUri) )}
+    {Platform.OS === 'web' && (
+    blob = await fetch(imageUri)
       .then((response) => response.blob())
       .catch((error) => {
         console.error('Error converting Base64 to Blob:', error);
         Alert.alert('Error', 'Failed to process the image.');
         setLoading(false);
         return null;
-      });
+      }))};
+      console.log(blob)
+      console.log(fileName)
+      console.log(imageUri)
+      console.log(uploadPreset)
 
     if (blob) {
       formData.append('file', blob);
@@ -89,7 +108,6 @@ const CustomImageUploader = ({ setFieldValue, fieldKey, values, uploadPreset = "
 
 const styles = StyleSheet.create({
   logoPicker: {
-      marginHorizontal: 16,
       borderWidth: 1,
       padding: 16,
       borderRadius: 8,
