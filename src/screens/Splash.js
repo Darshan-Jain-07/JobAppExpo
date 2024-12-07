@@ -2,6 +2,7 @@ import { View, Image, StyleSheet, Dimensions, Text, Alert } from 'react-native';
 import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-paper';
+import { clearUserData, getUserData } from '../services/UserDataService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,9 +34,18 @@ const styles = StyleSheet.create({
 
 const Splash = () => {
     const navigation = useNavigation();
-
-    function handleGetStart() {
-        navigation.navigate('Get Started')
+    async function handleGetStart() {
+        let userData = await getUserData();
+        console.log(userData)
+        if(userData?.role === "company"){
+            navigation.navigate('Bottom Navigation App');
+        } else if(userData?.role === "applicant"){
+            navigation.navigate('Bottom Navigation App');
+        } else if(userData?.role === "recruiter"){
+            navigation.navigate('Bottom Navigation App');
+        } else {
+            navigation.navigate('Get Started');
+        }
     }
 
     return (

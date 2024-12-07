@@ -91,11 +91,11 @@ const Signup = () => {
     const navigation = useNavigation();
 
     function handleJobSeeker() {
-        navigation.navigate('Sign Up')
+        navigation.navigate('Sign Up Job Seeker')
     }
 
     function handleRecruiter() {
-        navigation.navigate('Sign Up')
+        navigation.navigate('Sign Up Recruiter')
     }
 
     function handleCompany() {

@@ -1,17 +1,110 @@
 import axios from 'axios';
+import { API_BASE_URL } from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'http://192.168.208.35:3000/';
+// const API_BASE_URL = 'http://192.168.208.35:3000';
 
 export const createCompany = async (data) => {
     const url = API_BASE_URL;
     try {
-        const response = await axios.post(url + "data/company", data, {
+        const response = await axios.post(url + "/data/company", data, {
             headers: {
                 'Content-Type': 'application/json',
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
         console.log('Response:', response.data);
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
+export const createApplicant = async (data) => {
+    const url = API_BASE_URL;
+    try {
+        const response = await axios.post(url + "/data/applicant", data, {
+            headers: {
+                'Content-Type': 'application/json',
+                // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
+            }
+        });
+        console.log('Response:', response.data);
+        if (response.data?.insertedId) {
+            logInIfSignUp("applicant", "applicant_id", response?.data?.insertedId)
+        }
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
+export const createRecruiter = async (data) => {
+    const url = API_BASE_URL;
+    if(data?.company_email_id !== ""){
+        let isCorrectUser = await authenticateRecruiter(data?.company_email_id, data?.company_password)
+        if(!isCorrectUser.length){
+            return "Company email id and/or Company Password is wrong"
+        }
+    }
+    delete data?.company_password;
+    try {
+        const response = await axios.post(url + "/data/recruiter", data, {
+            headers: {
+                'Content-Type': 'application/json',
+                // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
+            }
+        });
+        console.log('Response:', response.data);
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
+export const logIn = async (table, email, password) => {
+    const url = API_BASE_URL;
+    try {
+        const response = await axios.get(url + `/data/${table}?company_email=${email}&company_password=${password}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        console.log('Response:', response.data);
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
+// Creating this function because when user signup it should be login automatically
+export const logInIfSignUp = async (table, col_name, id) => {
+    const url = API_BASE_URL;
+    try {
+        const response = await axios.get(url + `/data/${table}?${col_name}=${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        console.log('Response:', response.data);
+        await AsyncStorage.setItem('user', JSON.stringify({...response.data?.[0], role:table}));
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
+export const authenticateRecruiter = async (email, password) => {
+    const url = API_BASE_URL;
+
+    try {
+        const response = await axios.get(url + `/data/company?company_email=${email}&company_recruiter_password=${password}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        console.log('Response:', response.data);
+        return response.data
     } catch (error) {
         console.error('Error:', error);
     }

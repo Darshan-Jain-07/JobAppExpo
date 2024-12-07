@@ -9,7 +9,6 @@ import { createCompany } from '../../services/AuthService';
 import axios from 'axios';
 import CustomImageUploader from '../../components/CimageUploader';
 
-
 // Validation Schema
 const validationSchema = Yup.object().shape({
     company_name: Yup.string()
@@ -23,11 +22,14 @@ const validationSchema = Yup.object().shape({
         .min(6, 'Password must be at least 6 characters'),
     company_phone: Yup.string()
         .required('Phone Number is required')
-        .matches(/^(\+\d{1,3}[- ]?)?\d{10}$/, 'Phone number is not valid'),
+        .matches(/^[6-9][0-9]{9}$/, "Phone number is not valid"),
     company_description: Yup.string()
         .required('Company Description is required')
         .max(200, 'Description cannot exceed 200 characters'),
     company_logo: Yup.mixed().required('Company Logo is required'),
+    company_recruiter_password: Yup.string()
+        .required('Recruiter Password is required')
+        .min(6, 'Recruiter Password must be at least 6 characters'), // Recruiter password validation
 });
 
 const SignUpCompany = () => {
@@ -40,18 +42,18 @@ const SignUpCompany = () => {
             const response = await createCompany(values);
             Alert.alert('Success', 'Company Registration Successful!');
             navigation.navigate('Bottom Navigation App');
-            console.log(response)
+            console.log(response);
         } catch (error) {
             Alert.alert('Error', 'There was an issue submitting the form. Please try again.');
         }
     };
 
     const uploadImageToCloudinary = async (imageUri) => {
-        console.log(imageUri)
+        console.log(imageUri);
         if (!imageUri) return;
 
         setLoading(true);
-        console.log("hello")
+        console.log("hello");
 
         const formData = new FormData();
         const fileType = imageUri.split(';')[0].split('/')[1]; // Extract file type from data URI
@@ -115,12 +117,10 @@ const SignUpCompany = () => {
         if (!result.canceled) {
             // Update Formik's company_logo field with the selected image URI
             setFieldValue('company_logo', result.assets[0].uri);
-            let img_url = await uploadImageToCloudinary(result.assets[0].uri)
+            let img_url = await uploadImageToCloudinary(result.assets[0].uri);
             setFieldValue('company_logo', img_url);
         }
     };
-
-
 
     return (
         <KeyboardAvoidingView
@@ -138,7 +138,7 @@ const SignUpCompany = () => {
                     >
                         Back
                     </Button>
-                    <Text style={styles.heading}>Sign Up</Text>
+                    <Text style={styles.heading}>Sign Up - Company</Text>
 
                     <Formik
                         initialValues={{
@@ -148,6 +148,7 @@ const SignUpCompany = () => {
                             company_phone: '',
                             company_description: '',
                             company_logo: null, // Initial value for company logo is null
+                            company_recruiter_password: '', // Initial value for recruiter password
                         }}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
@@ -193,6 +194,21 @@ const SignUpCompany = () => {
                                     />
                                     <ErrorMessage name="company_password" component={Text} style={styles.errorMessage} />
                                 </View>
+                                {/* Recruiter Password */}
+                                <View style={{ marginBottom: 6 }}>
+                                    <TextInput
+                                        label="Recruiter Password"
+                                        style={styles.input}
+                                        value={values.company_recruiter_password}
+                                        onChangeText={handleChange('company_recruiter_password')}
+                                        onBlur={handleBlur('company_recruiter_password')}
+                                        mode="outlined"
+                                        secureTextEntry={secureTextEntry}
+                                        right={<TextInput.Icon icon={secureTextEntry ? "eye-off" : "eye"} onPress={() => setSecureTextEntry(!secureTextEntry)} />}
+                                    />
+                                    <Text style={{color:"#696969", marginHorizontal:16}}>Note: Keep it different from Company Password else recruiter will have company access</Text>
+                                    <ErrorMessage name="company_recruiter_password" component={Text} style={styles.errorMessage} />
+                                </View>
                                 {/* Company Phone */}
                                 <View style={{ marginBottom: 6 }}>
                                     <TextInput
@@ -221,7 +237,7 @@ const SignUpCompany = () => {
                                     <ErrorMessage name="company_description" component={Text} style={styles.errorMessage} />
                                 </View>
                                 {/* Company Logo */}
-                                <View style={{ marginBottom: 6 }}>
+                                <View style={{ marginBottom: 6, marginHorizontal:16 }}>
                                     <Text style={styles.logoLabel}>Company Logo</Text>
                                     <CustomImageUploader
                                         setFieldValue={setFieldValue}
@@ -279,7 +295,6 @@ const styles = StyleSheet.create({
     logoLabel: {
         fontSize: 16,
         color: '#000',
-        marginLeft: 16,
         marginBottom: 8,
     },
     logoPicker: {

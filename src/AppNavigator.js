@@ -17,6 +17,9 @@ import CustomHeader from './screens/company/Header';
 import BlogListScreen from './screens/company/BlogList';
 import SignUpCompany from './screens/company/SignUpCompany';
 import UploadImageScreen from './screens/company/Img';
+import SignUpRecruiter from './screens/recruiter/SignUpRecruiter';
+import SignUpJobSeeker from './screens/jobSeeker/SignUpJobseeker';
+import ViewCompanyDetail from './screens/company/ViewCompanyDetail';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -28,11 +31,14 @@ const AppNavigator = () => {
                 <Stack.Screen options={{headerShown: false}} name="Log In" component={Login} />
                 <Stack.Screen options={{headerShown: false}} name="Sign Up" component={Signup} />
                 <Stack.Screen options={{headerShown: false}} name="Sign Up Company" component={SignUpCompany} />
+                <Stack.Screen options={{headerShown: false}} name="Sign Up Recruiter" component={SignUpRecruiter} />
+                <Stack.Screen options={{headerShown: false}} name="Sign Up Job Seeker" component={SignUpJobSeeker} />
                 <Stack.Screen options={{headerShown: false}} name="Bottom Navigation App" component={BottomNavigationApp} />
                 <Stack.Screen options={{headerShown: false}} name="Recruiter Detail" component={RecruiterDetail} />
                 <Stack.Screen options={{headerShown: false}} name="Home" component={HomePage} />
-                <Stack.Screen options={{headerShown: false}} name="Profile" component={Profile} />
                 <Stack.Screen options={{headerShown: false}} name="Create Blog" component={CreateBlogScreen} />
+                <Stack.Screen options={{headerShown: false}} name="Profile" component={Profile} />
+                <Stack.Screen options={{headerShown: false}} name="View Company Detail" component={ViewCompanyDetail} />
                 <Stack.Screen options={{headerShown: true, header: ()=><CustomHeader title={"Payment History"} />}} name="Payment History" component={PaymentHistoryScreen} />
                 <Stack.Screen options={{headerShown: false}} name="Blog Detail" component={BlogPage} />
                 <Stack.Screen options={{headerShown: false}} name="Blog List" component={BlogListScreen} />

@@ -1,4 +1,4 @@
-import { View, Text, Dimensions, StyleSheet, Image } from 'react-native';
+import { View, Text, Dimensions, StyleSheet, Image, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Button, Menu, Divider, TextInput } from 'react-native-paper';
@@ -7,6 +7,8 @@ import { Dropdown } from 'react-native-paper-dropdown';
 import { Provider as PaperProvider } from 'react-native-paper';
 import * as Yup from 'yup';
 import { ErrorMessage, Formik } from 'formik';
+import { logIn } from '../services/AuthService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,20 +29,26 @@ const initialValues = {
 }
 
 const OPTIONS = [
-    { label: 'Job Seeker', value: 'jobSeeker' },
+    { label: 'Job Seeker', value: 'applicant' },
     { label: 'Recruiter', value: 'recruiter' },
     { label: 'Company', value: 'company' },
 ];
 
 const Login = () => {
     const navigation = useNavigation();
-
     function handleBack() {
         navigation.navigate('Get Started')
     }
-    const [role, setRole] = useState();
-    const [text, setText] = React.useState("");
-    const [password, setPassword] = React.useState("");
+    async function handleSubmit(values) {
+        let response = await logIn(values.role, values.email, values.password)
+        if (!response.length) {
+            Alert.alert('Failed', 'Incorrect Credentials!');
+        } else {
+            await AsyncStorage.setItem('user', JSON.stringify({...response?.[0], role:values.role}));
+            // await AsyncStorage.setItem('role', values.role);
+            navigation.navigate('Bottom Navigation App')
+        }
+    }
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
     return (
@@ -58,11 +66,8 @@ const Login = () => {
                 <Text style={{ fontSize: 25, color: "#000", textAlign: "center", marginTop: 5, fontFamily: "Montserrat-Bold" }}>Login</Text>
                 <Formik
                     initialValues={initialValues}
-                    // validationSchema={validationSchema}
-                    onSubmit={(values) => {
-                        console.log(values)
-                        navigation.navigate("Bottom Navigation App")
-                    }}
+                    validationSchema={validationSchema}
+                    onSubmit={handleSubmit}
                 >
                     {({ handleChange, handleBlue, handleSubmit, values, errors, touched, setFieldValue }) => (
                         <View>

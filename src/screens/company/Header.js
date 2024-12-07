@@ -9,7 +9,7 @@ const CustomHeader = ({ title }) => {
   const navigation = useNavigation();
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10, marginTop:30 }}>
       {navigation.canGoBack() && (
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 10 }}>
           <Icon name="arrow-back" size={24} color="black" />
