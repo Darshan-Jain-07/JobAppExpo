@@ -28,10 +28,10 @@ const ProfilePage = ({ navigation }) => {
   // Define the sections with their respective options and icons
   const sections = [
     {
-      title: 'Company Details',
+      title: 'Recruiter Details',
       data: [
-        { key: 'view', text: 'View Company', icon: 'building', onPress:()=>{navigate.navigate("View Company Detail")} },
-        { key: 'edit', text: 'Edit Company Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Company") },
+        { key: 'view', text: 'View Details', icon: 'building', onPress:()=>{navigation.navigate("View Recruiter Detail")} },
+        { key: 'edit', text: 'Edit Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Recruiter") },
       ],
     },
     {
@@ -88,12 +88,12 @@ const ProfilePage = ({ navigation }) => {
       {/* Company Logo and Details */}
       <View style={styles.headerContainer}>
         <Avatar.Image
-          source={{ uri: userData?.company_logo }} // Replace with dynamic company logo URL
+          source={{ uri: userData?.recruiter_image }} // Replace with dynamic company logo URL
           size={80}
         />
         <View style={styles.companyInfo}>
-          <Text style={styles.companyName}>{userData?.company_name}</Text>
-          <Text style={styles.companyEmail}>{userData?.company_email}</Text>
+          <Text style={styles.companyName}>{userData?.recruiter_name}</Text>
+          <Text style={styles.companyEmail}>{userData?.recruiter_email}</Text>
         </View>
       </View>
 

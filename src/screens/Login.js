@@ -45,8 +45,14 @@ const Login = () => {
             Alert.alert('Failed', 'Incorrect Credentials!');
         } else {
             await AsyncStorage.setItem('user', JSON.stringify({...response?.[0], role:values.role}));
+            if (values.role === "company") {
+                navigation.navigate('Bottom Navigation App')
+            } else if (values.role === "applicant") {
+                navigation.navigate('Bottom Navigation Job Seeker')
+            } else if (values.role === "recruiter") {
+                navigation.navigate('Bottom Navigation Recruiter')
+            }
             // await AsyncStorage.setItem('role', values.role);
-            navigation.navigate('Bottom Navigation App')
         }
     }
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);

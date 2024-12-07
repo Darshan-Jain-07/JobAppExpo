@@ -40,9 +40,9 @@ const Splash = () => {
         if(userData?.role === "company"){
             navigation.navigate('Bottom Navigation App');
         } else if(userData?.role === "applicant"){
-            navigation.navigate('Bottom Navigation App');
+            navigation.navigate('Bottom Navigation Job Seeker');
         } else if(userData?.role === "recruiter"){
-            navigation.navigate('Bottom Navigation App');
+            navigation.navigate('Bottom Navigation Recruiter');
         } else {
             navigation.navigate('Get Started');
         }
