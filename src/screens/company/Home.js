@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
+import CStatisticsCard from '../../components/CIconStatisticsCard';
 
 const { width } = Dimensions.get('window'); // Get screen width for responsive design
 
@@ -85,6 +86,11 @@ const HomePage = () => {
         <Text style={styles.subscriptionTitle}>Current Subscription: Premium</Text>
         <Icon name="star" size={30} color="#FFD700" />
       </View>
+
+      <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+      <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+      <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+      <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
 
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>

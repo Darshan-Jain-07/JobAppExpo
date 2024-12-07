@@ -5,15 +5,15 @@ import { getUserData } from '../../services/UserDataService';
 import { useNavigation } from '@react-navigation/native';
 import dayjs from 'dayjs';
 
-const ViewCompanyDetail = () => {
-    const [ company, setCompany ] = useState({});
+const ViewRecruiterDetail = () => {
+    const [ recruiter, setRecruiter ] = useState({});
     const navigation = useNavigation();
     useEffect(() => {
         // Define an async function inside the useEffect
         const fetchData = async () => {
             try {
                 const data = await getUserData();
-                setCompany(data);
+                setRecruiter(data);
                 console.log(data);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -38,34 +38,31 @@ const ViewCompanyDetail = () => {
                 <Card.Content style={styles.cardContent}>
                     {/* Company Logo */}
                     <View style={styles.logoContainer}>
-                        <Image source={{ uri: company.company_logo }} style={styles.logo} />
+                        <Image source={{ uri: recruiter.recruiter_image }} style={styles.logo} />
                     </View>
 
                     {/* Company Details */}
-                    <Text style={styles.companyName}>{company.company_name}</Text>
-                    <Text style={styles.companyDescription}>{company.company_description}</Text>
+                    <Text style={styles.companyName}>{recruiter.recruiter_name}</Text>
+                    <Text style={styles.companyDescription}>{recruiter.recruiter_description}</Text>
 
                     <View style={styles.detailsContainer}>
                         <Text style={styles.detailText}>
-                            <Text style={styles.label}>Email: </Text>{company.company_email}
+                            <Text style={styles.label}>Email: </Text>{recruiter.recruiter_email}
                         </Text>
                         <Text style={styles.detailText}>
-                            <Text style={styles.label}>Phone: </Text>{company.company_phone}
+                            <Text style={styles.label}>Phone: </Text>{recruiter.recruiter_phone}
                         </Text>
                         <Text style={styles.detailText}>
-                            <Text style={styles.label}>Company ID: </Text>{company.company_id}
+                            <Text style={styles.label}>Company Email ID: </Text>{recruiter?.company_email_id === "" ? "N/A" : recruiter?.company_email_id}
                         </Text>
                         <Text style={styles.detailText}>
-                            <Text style={styles.label}>Company Password: </Text>{company.company_password}
+                            <Text style={styles.label}>Password: </Text>{recruiter.recruiter_password}
                         </Text>
                         <Text style={styles.detailText}>
-                            <Text style={styles.label}>Recruiter Password: </Text>{company.company_recruiter_password}
+                            <Text style={styles.label}>Created At: </Text>{dayjs(recruiter.created_at).format('DD/MM/YYYY')}
                         </Text>
                         <Text style={styles.detailText}>
-                            <Text style={styles.label}>Created At: </Text>{dayjs(company.created_at).format('DD/MM/YYYY')}
-                        </Text>
-                        <Text style={styles.detailText}>
-                            <Text style={styles.label}>Updated At: </Text>{dayjs(company.updated_at).format('DD/MM/YYYY')}
+                            <Text style={styles.label}>Updated At: </Text>{dayjs(recruiter.updated_at).format('DD/MM/YYYY')}
                         </Text>
                     </View>
                 </Card.Content>
@@ -77,7 +74,7 @@ const ViewCompanyDetail = () => {
                         icon="pencil"
                         size={20}
                         style={styles.icon}
-                        onPress={() => navigation.navigate("Sign Up Company")}
+                        onPress={() => navigation.navigate("Sign Up Recruiter")}
                     />
                 </Card.Actions>
             </Card>
@@ -152,4 +149,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ViewCompanyDetail;
+export default ViewRecruiterDetail;

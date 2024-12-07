@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { TextInput, Button } from 'react-native-paper';
+import { TextInput, Button, ActivityIndicator } from 'react-native-paper';
 import { Formik, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { createRecruiter } from '../../services/AuthService';  // Adjust path for your service
+import { createRecruiter, updateRecruiter } from '../../services/AuthService';  // Adjust path for your service
 import axios from 'axios';
 import CustomImageUploader from '../../components/CimageUploader';
+import { getUserData } from '../../services/UserDataService';
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
@@ -35,24 +36,71 @@ const validationSchema = Yup.object().shape({
 const SignUpRecruiter = () => {
     const navigation = useNavigation();
     const [secureTextEntry, setSecureTextEntry] = useState(true);
+    const [secureTextEntryC, setSecureTextEntryC] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [userData, setUserData] = useState(null)
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-    const handleSubmit = async (values, {setFieldValue}) => {
+    useEffect(() => {
+        // Define an async function inside the useEffect
+        const fetchData = async () => {
+            try {
+                const data = await getUserData();
+                setUserData(data)
+                console.log(data); // Log the data
+                setIsDataLoaded(true);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setIsDataLoaded(true);
+            }
+        };
+
+        // Call the async function
+        fetchData();
+    }, []);
+
+    if (!isDataLoaded) {
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+                <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+            </View>
+        )
+    }
+
+    const handleSubmit = async (values, { setFieldValue }) => {
         console.log(values)
-        if(values.company_email_id !== "" && values.company_password === ""){
+        if(userData){
+            try {
+                delete values["company_password"]
+                const response = await updateRecruiter(values);
+                if (response?.message === "Data updated successfully") {
+                    Alert.alert('Success', 'Data updated successfully!');
+                    navigation.navigate('Bottom Navigation Recruiter');
+                    return
+                }
+                Alert.alert('Failed', 'Try Again Later!');
+                console.log(response);
+            } catch (error) {
+                Alert.alert('Error', 'There was an issue while submitting the form. Please try again.');
+            }
+            return
+        }
+
+        if (values.company_email_id !== "" && values.company_password === "") {
             return
         }
         console.log(values)
         try {
+            delete values["id"]
             const response = await createRecruiter(values);
-            if(response === "Company email id and/or Company Password is wrong"){
-                setFieldValue("company_email_id","")
-                setFieldValue("company_password","")
+            if (response === "Company email id and/or Company Password is wrong") {
+                setFieldValue("company_email_id", "")
+                setFieldValue("company_password", "")
                 Alert.alert('Failed', 'Company email id and/or Company Password is wrong!');
                 return
             }
             Alert.alert('Success', 'Recruiter Registration Successful!');
-            navigation.navigate('Bottom Navigation App');
+            navigation.navigate('Bottom Navigation Recruiter');
             console.log(response);
         } catch (error) {
             Alert.alert('Error', 'There was an issue submitting the form. Please try again.');
@@ -75,24 +123,38 @@ const SignUpRecruiter = () => {
                     >
                         Back
                     </Button>
-                    <Text style={styles.heading}>Sign Up - Recruiter</Text>
+                    <Text style={styles.heading}>{userData ? "Edit" : "Sign Up"} - Recruiter</Text>
 
                     <Formik
                         initialValues={{
-                            recruiter_name: '',
-                            recruiter_email: '',
-                            recruiter_password: '',
-                            recruiter_phone: '',
-                            recruiter_description: '',
-                            company_email_id: '',
-                            company_password: '',
-                            recruiter_image: '', // Make sure this is initialized as an empty string
+                            id: userData?.recruiter_id || '',
+                            recruiter_name: userData?.recruiter_name || '',
+                            recruiter_email: userData?.recruiter_email || '',
+                            recruiter_password: userData?.recruiter_password || '',
+                            recruiter_phone: userData?.recruiter_phone || '',
+                            recruiter_description: userData?.recruiter_description || '',
+                            company_email_id: userData?.company_email_id || '',
+                            company_password: userData?.company_password || '',
+                            recruiter_image: userData?.recruiter_image || '', // Make sure this is initialized as an empty string
                         }}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values, setFieldValue, touched }) => (
                             <View style={styles.formContainer}>
+                                {/* Recruiter Id */}
+                                {userData && <View style={{ marginBottom: 6 }}>
+                                    <TextInput
+                                        label="Recruiter Id"
+                                        style={styles.input}
+                                        disabled={true}
+                                        value={values.id}
+                                        onChangeText={handleChange('id')}
+                                        onBlur={handleBlur('id')}
+                                        mode="outlined"
+                                    />
+                                    <ErrorMessage name="id" component={Text} style={styles.errorMessage} />
+                                </View>}
                                 {/* Recruiter Name */}
                                 <View style={{ marginBottom: 6 }}>
                                     <TextInput
@@ -110,6 +172,7 @@ const SignUpRecruiter = () => {
                                     <TextInput
                                         label="Recruiter Email"
                                         style={styles.input}
+                                        disabled={userData}
                                         value={values.recruiter_email}
                                         onChangeText={handleChange('recruiter_email')}
                                         onBlur={handleBlur('recruiter_email')}
@@ -150,6 +213,7 @@ const SignUpRecruiter = () => {
                                     <TextInput
                                         label="Company Email ID (Optional)"
                                         style={styles.input}
+                                        disabled={userData}
                                         value={values.company_email_id}
                                         onChangeText={handleChange('company_email_id')}
                                         onBlur={handleBlur('company_email_id')}
@@ -159,7 +223,7 @@ const SignUpRecruiter = () => {
                                     <ErrorMessage name="company_email_id" component={Text} style={styles.errorMessage} />
                                 </View>
                                 {/* Company Password (Conditional) */}
-                                {values.company_email_id && (
+                                {values.company_email_id && !userData && (
                                     <View style={{ marginBottom: 6 }}>
                                         <TextInput
                                             label="Company Password"
@@ -168,8 +232,8 @@ const SignUpRecruiter = () => {
                                             onChangeText={handleChange('company_password')}
                                             onBlur={handleBlur('company_password')}
                                             mode="outlined"
-                                            secureTextEntry={secureTextEntry}
-                                            right={<TextInput.Icon icon={secureTextEntry ? "eye-off" : "eye"} onPress={() => setSecureTextEntry(!secureTextEntry)} />}
+                                            secureTextEntry={secureTextEntryC}
+                                            right={<TextInput.Icon icon={secureTextEntryC ? "eye-off" : "eye"} onPress={() => setSecureTextEntryC(!secureTextEntryC)} />}
                                         />
                                         {touched.company_password && !values.company_password?.length && <Text style={styles.errorMessage}>Company Password is required</Text>}
                                         {/* <ErrorMessage name="company_password" component={Text} style={styles.errorMessage} /> */}
@@ -199,11 +263,11 @@ const SignUpRecruiter = () => {
                                 {/* Submit Button */}
                                 <Button
                                     mode="contained"
-                                    onPress={()=>handleSubmit(values, setFieldValue)}
+                                    onPress={() => handleSubmit(values, setFieldValue)}
                                     disabled={loading}
                                     style={styles.submitButton}
                                 >
-                                    {loading ? 'Submitting...' : 'Sign Up'}
+                                    {loading ? 'Submitting...' : userData ? 'Save' : 'Sign Up'}
                                 </Button>
                             </View>
                         )}
@@ -224,7 +288,7 @@ const styles = StyleSheet.create({
     backButton: {
         display: 'flex',
         alignItems: 'flex-start',
-        paddingLeft: 10,
+        // paddingLeft: 10,
         marginTop: 20,
     },
     backButtonLabel: {
@@ -251,7 +315,7 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         paddingVertical: 8,
         borderRadius: 8,
-        backgroundColor:"black"
+        backgroundColor: "black"
     },
 });
 

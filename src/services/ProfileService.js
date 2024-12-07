@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from '@env';
+// const API_BASE_URL = 'http://192.168.185.35:3000';
 
 export const getCompanyData = async () => {
     // console.log("called")

@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { TextInput, Button } from 'react-native-paper';
+import { TextInput, Button, ActivityIndicator } from 'react-native-paper';
 import { Formik, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import * as ImagePicker from 'expo-image-picker'; // Import expo-image-picker
 import { useNavigation } from '@react-navigation/native';
-import { createCompany } from '../../services/AuthService';
+import { createCompany, updateCompany } from '../../services/AuthService';
 import axios from 'axios';
 import CustomImageUploader from '../../components/CimageUploader';
+import { getUserData } from '../../services/UserDataService';
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
@@ -36,10 +37,58 @@ const SignUpCompany = () => {
     const navigation = useNavigation();
     const [secureTextEntry, setSecureTextEntry] = useState(true);
     const [loading, setLoading] = useState(null);
+    const [companyData, setCompanyData] = useState(null);
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+    useEffect(() => {
+        // Define an async function inside the useEffect
+        const fetchData = async () => {
+            try {
+                const data = await getUserData();
+                setCompanyData(data);
+                console.log(data);
+                setIsDataLoaded(true); // Set data as loaded
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setIsDataLoaded(true); // Ensure form is displayed even if data fetch fails
+            }
+        };
+
+        // Call the async function
+        fetchData();
+    }, []);
+
+    if (!isDataLoaded) {
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+                <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+            </View>
+        )
+    }
 
     const handleSubmit = async (values) => {
+        if (companyData) {
+            try {
+                const response = await updateCompany(values);
+                if (response?.message === "Duplicate entry error") {
+                    Alert.alert('Error', 'Same email id already exist!');
+                    return
+                } 
+                Alert.alert('Success', 'Company Data Updated Successfully!');
+                navigation.navigate('Bottom Navigation App');
+                console.log(response);
+            } catch (error) {
+                Alert.alert('Error', 'There was an issue submitting the form. Please try again.');
+            }
+            return
+        }
         try {
+            delete values["id"]
             const response = await createCompany(values);
+            if (response?.message === "Duplicate entry error") {
+                Alert.alert('Error', 'Same email id already exist!');
+                return
+            } 
             Alert.alert('Success', 'Company Registration Successful!');
             navigation.navigate('Bottom Navigation App');
             console.log(response);
@@ -138,23 +187,37 @@ const SignUpCompany = () => {
                     >
                         Back
                     </Button>
-                    <Text style={styles.heading}>Sign Up - Company</Text>
+                    <Text style={styles.heading}>{companyData ? "Edit" : "Sign Up"} - Company</Text>
 
                     <Formik
                         initialValues={{
-                            company_name: '',
-                            company_email: '',
-                            company_password: '',
-                            company_phone: '',
-                            company_description: '',
-                            company_logo: null, // Initial value for company logo is null
-                            company_recruiter_password: '', // Initial value for recruiter password
+                            id: companyData?.company_id || '',
+                            company_name: companyData?.company_name || '',
+                            company_email: companyData?.company_email || '',
+                            company_password: companyData?.company_password || '',
+                            company_phone: companyData?.company_phone || '',
+                            company_description: companyData?.company_description || '',
+                            company_logo: companyData?.company_logo || null, // Initial value for company logo is null
+                            company_recruiter_password: companyData?.company_recruiter_password || '', // Initial value for recruiter password
                         }}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values, setFieldValue }) => (
                             <View style={styles.formContainer}>
+                                {/* Company Id */}
+                                { companyData && <View style={{ marginBottom: 6 }}>
+                                    <TextInput
+                                        label="Company Id"
+                                        style={styles.input}
+                                        disabled={true}
+                                        value={values.id}
+                                        onChangeText={handleChange('id')}
+                                        onBlur={handleBlur('id')}
+                                        mode="outlined"
+                                    />
+                                    <ErrorMessage name="id" component={Text} style={styles.errorMessage} />
+                                </View>}
                                 {/* Company Name */}
                                 <View style={{ marginBottom: 6 }}>
                                     <TextInput
@@ -173,6 +236,7 @@ const SignUpCompany = () => {
                                         label="Company Email"
                                         style={styles.input}
                                         value={values.company_email}
+                                        disabled={companyData ? true : false}
                                         onChangeText={handleChange('company_email')}
                                         onBlur={handleBlur('company_email')}
                                         mode="outlined"
@@ -206,7 +270,7 @@ const SignUpCompany = () => {
                                         secureTextEntry={secureTextEntry}
                                         right={<TextInput.Icon icon={secureTextEntry ? "eye-off" : "eye"} onPress={() => setSecureTextEntry(!secureTextEntry)} />}
                                     />
-                                    <Text style={{color:"#696969", marginHorizontal:16}}>Note: Keep it different from Company Password else recruiter will have company access</Text>
+                                    <Text style={{ color: "#696969", marginHorizontal: 16 }}>Note: Keep it different from Company Password else recruiter will have company access</Text>
                                     <ErrorMessage name="company_recruiter_password" component={Text} style={styles.errorMessage} />
                                 </View>
                                 {/* Company Phone */}
@@ -237,7 +301,7 @@ const SignUpCompany = () => {
                                     <ErrorMessage name="company_description" component={Text} style={styles.errorMessage} />
                                 </View>
                                 {/* Company Logo */}
-                                <View style={{ marginBottom: 6, marginHorizontal:16 }}>
+                                <View style={{ marginBottom: 6, marginHorizontal: 16 }}>
                                     <Text style={styles.logoLabel}>Company Logo</Text>
                                     <CustomImageUploader
                                         setFieldValue={setFieldValue}
@@ -250,7 +314,7 @@ const SignUpCompany = () => {
                                 </View>
                                 {/* Submit Button */}
                                 <Button disabled={loading} mode="contained" style={styles.submitButton} onPress={handleSubmit}>
-                                    Sign Up
+                                    {companyData ? "Save" : "Sign Up"}
                                 </Button>
                             </View>
                         )}

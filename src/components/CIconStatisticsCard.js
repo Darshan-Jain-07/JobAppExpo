@@ -1,19 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Example icon
 import CText from './CText';
 
 const { width } = Dimensions.get('window'); // Get screen width
 
-const CStatisticsCard = ({ label, value, iconName }) => {
+const CStatisticsCard = ({ label, value, iconName, onPress=()=>{} }) => {
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={onPress}>
       <Icon name={iconName} size={45} color="#000" style={styles.icon} />
       <View style={styles.textContainer}>
         <CText sx={styles.text}>{label}</CText>
         <CText sx={styles.number} fontWeight={700} fontSize={18}>{value}</CText>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
