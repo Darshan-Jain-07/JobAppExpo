@@ -9,6 +9,7 @@ import { createRecruiter, updateRecruiter } from '../../services/AuthService';  
 import axios from 'axios';
 import CustomImageUploader from '../../components/CimageUploader';
 import { getUserData } from '../../services/UserDataService';
+import CText from '../../components/CText';
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
@@ -123,7 +124,7 @@ const SignUpRecruiter = () => {
                     >
                         Back
                     </Button>
-                    <Text style={styles.heading}>{userData ? "Edit" : "Sign Up"} - Recruiter</Text>
+                    <CText fontWeight={600} sx={styles.heading}>{userData ? "Edit" : "Sign Up"} - Recruiter</CText>
 
                     <Formik
                         initialValues={{
@@ -153,7 +154,6 @@ const SignUpRecruiter = () => {
                                         onBlur={handleBlur('id')}
                                         mode="outlined"
                                     />
-                                    <ErrorMessage name="id" component={Text} style={styles.errorMessage} />
                                 </View>}
                                 {/* Recruiter Name */}
                                 <View style={{ marginBottom: 6 }}>
@@ -165,7 +165,7 @@ const SignUpRecruiter = () => {
                                         onBlur={handleBlur('recruiter_name')}
                                         mode="outlined"
                                     />
-                                    <ErrorMessage name="recruiter_name" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="recruiter_name" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Recruiter Email */}
                                 <View style={{ marginBottom: 6 }}>
@@ -179,7 +179,7 @@ const SignUpRecruiter = () => {
                                         mode="outlined"
                                         keyboardType="email-address"
                                     />
-                                    <ErrorMessage name="recruiter_email" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="recruiter_email" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Recruiter Password */}
                                 <View style={{ marginBottom: 6 }}>
@@ -193,7 +193,7 @@ const SignUpRecruiter = () => {
                                         secureTextEntry={secureTextEntry}
                                         right={<TextInput.Icon icon={secureTextEntry ? "eye-off" : "eye"} onPress={() => setSecureTextEntry(!secureTextEntry)} />}
                                     />
-                                    <ErrorMessage name="recruiter_password" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="recruiter_password" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Recruiter Phone */}
                                 <View style={{ marginBottom: 6 }}>
@@ -206,7 +206,7 @@ const SignUpRecruiter = () => {
                                         mode="outlined"
                                         keyboardType="phone-pad"
                                     />
-                                    <ErrorMessage name="recruiter_phone" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="recruiter_phone" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Company Email (Optional) */}
                                 <View style={{ marginBottom: 6 }}>
@@ -220,7 +220,7 @@ const SignUpRecruiter = () => {
                                         mode="outlined"
                                         keyboardType="email-address"
                                     />
-                                    <ErrorMessage name="company_email_id" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="company_email_id" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Company Password (Conditional) */}
                                 {values.company_email_id && !userData && (
@@ -235,7 +235,7 @@ const SignUpRecruiter = () => {
                                             secureTextEntry={secureTextEntryC}
                                             right={<TextInput.Icon icon={secureTextEntryC ? "eye-off" : "eye"} onPress={() => setSecureTextEntryC(!secureTextEntryC)} />}
                                         />
-                                        {touched.company_password && !values.company_password?.length && <Text style={styles.errorMessage}>Company Password is required</Text>}
+                                        {touched.company_password && !values.company_password?.length && <CText sx={styles.errorMessage}>Company Password is required</CText>}
                                         {/* <ErrorMessage name="company_password" component={Text} style={styles.errorMessage} /> */}
                                     </View>
                                 )}
@@ -250,7 +250,7 @@ const SignUpRecruiter = () => {
                                         mode="outlined"
                                         multiline
                                     />
-                                    <ErrorMessage name="recruiter_description" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="recruiter_description" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Profile Image Uploader */}
                                 <CustomImageUploader
@@ -259,7 +259,7 @@ const SignUpRecruiter = () => {
                                     values={values}
                                     placeholder={"Select Profile Image"}
                                 />
-                                <ErrorMessage name="recruiter_image" component={Text} style={styles.errorMessage} />
+                                <ErrorMessage name="recruiter_image" component={CText} sx={styles.errorMessage} />
                                 {/* Submit Button */}
                                 <Button
                                     mode="contained"
@@ -296,7 +296,6 @@ const styles = StyleSheet.create({
     },
     heading: {
         fontSize: 24,
-        fontWeight: 'bold',
         marginBottom: 16,
         textAlign: 'center',
     },

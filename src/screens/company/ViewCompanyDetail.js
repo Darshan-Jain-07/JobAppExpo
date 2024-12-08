@@ -4,6 +4,7 @@ import { Card, Button, IconButton } from 'react-native-paper';
 import { getUserData } from '../../services/UserDataService';
 import { useNavigation } from '@react-navigation/native';
 import dayjs from 'dayjs';
+import CText from '../../components/CText';
 
 const ViewCompanyDetail = () => {
     const [ company, setCompany ] = useState({});
@@ -42,31 +43,31 @@ const ViewCompanyDetail = () => {
                     </View>
 
                     {/* Company Details */}
-                    <Text style={styles.companyName}>{company.company_name}</Text>
-                    <Text style={styles.companyDescription}>{company.company_description}</Text>
+                    <CText fontWeight={600} sx={styles.companyName}>{company.company_name}</CText>
+                    <CText sx={styles.companyDescription}>{company.company_description}</CText>
 
                     <View style={styles.detailsContainer}>
-                        <Text style={styles.detailText}>
-                            <Text style={styles.label}>Email: </Text>{company.company_email}
-                        </Text>
-                        <Text style={styles.detailText}>
-                            <Text style={styles.label}>Phone: </Text>{company.company_phone}
-                        </Text>
-                        <Text style={styles.detailText}>
-                            <Text style={styles.label}>Company ID: </Text>{company.company_id}
-                        </Text>
-                        <Text style={styles.detailText}>
-                            <Text style={styles.label}>Company Password: </Text>{company.company_password}
-                        </Text>
-                        <Text style={styles.detailText}>
-                            <Text style={styles.label}>Recruiter Password: </Text>{company.company_recruiter_password}
-                        </Text>
-                        <Text style={styles.detailText}>
-                            <Text style={styles.label}>Created At: </Text>{dayjs(company.created_at).format('DD/MM/YYYY')}
-                        </Text>
-                        <Text style={styles.detailText}>
-                            <Text style={styles.label}>Updated At: </Text>{dayjs(company.updated_at).format('DD/MM/YYYY')}
-                        </Text>
+                        <CText sx={styles.detailText}>
+                            <CText fontWeight={600} sx={styles.label}>Email: </CText>{company.company_email}
+                        </CText>
+                        <CText sx={styles.detailText}>
+                            <CText fontWeight={600} sx={styles.label}>Phone: </CText>{company.company_phone}
+                        </CText>
+                        <CText sx={styles.detailText}>
+                            <CText fontWeight={600} sx={styles.label}>Company ID: </CText>{company.company_id}
+                        </CText>
+                        <CText sx={styles.detailText}>
+                            <CText fontWeight={600} sx={styles.label}>Company Password: </CText>{company.company_password}
+                        </CText>
+                        <CText sx={styles.detailText}>
+                            <CText fontWeight={600} sx={styles.label}>Recruiter Password: </CText>{company.company_recruiter_password}
+                        </CText>
+                        <CText sx={styles.detailText}>
+                            <CText fontWeight={600} sx={styles.label}>Created At: </CText>{dayjs(company.created_at).format('DD/MM/YYYY')}
+                        </CText>
+                        <CText sx={styles.detailText}>
+                            <CText fontWeight={600} sx={styles.label}>Updated At: </CText>{dayjs(company.updated_at).format('DD/MM/YYYY')}
+                        </CText>
                     </View>
                 </Card.Content>
 
@@ -115,7 +116,6 @@ const styles = StyleSheet.create({
     },
     companyName: {
         fontSize: 20,
-        fontWeight: 'bold',
         color: '#333',
         textAlign: 'center',
     },
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
     label: {
-        fontWeight: 'bold',
+        // fontWeight: 'bold',
     },
     actions: {
         justifyContent: 'space-between',

@@ -1160,6 +1160,11 @@
   dependencies:
     "@types/hammerjs" "^2.0.36"
 
+"@expo-google-fonts/montserrat@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.npmjs.org/@expo-google-fonts/montserrat/-/montserrat-0.2.3.tgz"
+  integrity sha512-9imhwIs6j5uyTkTxoNplC5T8ERES1W98ZgF7kf7OaypnbcoLoIW0wKH6oudecZyiEqoSktC7epkRpj+UEUvzWg==
+
 "@expo/bunyan@^4.0.0":
   version "4.0.1"
   resolved "https://registry.npmjs.org/@expo/bunyan/-/bunyan-4.0.1.tgz"
@@ -3619,7 +3624,7 @@ expo-file-system@^18.0.4, expo-file-system@~18.0.4:
   dependencies:
     web-streams-polyfill "^3.3.2"
 
-expo-font@~13.0.1:
+expo-font@^13.0.1, expo-font@~13.0.1:
   version "13.0.1"
   resolved "https://registry.npmjs.org/expo-font/-/expo-font-13.0.1.tgz"
   integrity sha512-8JE47B+6cLeKWr5ql8gU6YsPHjhrz1vMrTqYMm72No/8iW8Sb/uL4Oc0dpmbjq3hLLXBY0xPBQOgU7FQ6Y04Vg==

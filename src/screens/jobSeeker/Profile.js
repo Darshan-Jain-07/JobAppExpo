@@ -10,7 +10,7 @@ import CText from '../../components/CText';
 const ProfilePage = ({ navigation }) => {
   const [userData, setUserDate] = useState();
   const navigate = useNavigation();
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false)
 
   useEffect(() => {
     // Define an async function inside the useEffect
@@ -29,7 +29,7 @@ const ProfilePage = ({ navigation }) => {
     // Call the async function
     fetchData();
   }, []);
-
+  
   if (!isDataLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
@@ -40,10 +40,10 @@ const ProfilePage = ({ navigation }) => {
   // Define the sections with their respective options and icons
   const sections = [
     {
-      title: 'Company Details',
+      title: 'Recruiter Details',
       data: [
-        { key: 'view', text: 'View Company', icon: 'building', onPress: () => { navigate.navigate("View Company Detail") } },
-        { key: 'edit', text: 'Edit Company Details', icon: 'edit', onPress: () => navigation.navigate("Sign Up Company") },
+        { key: 'view', text: 'View Details', icon: 'building', onPress:()=>{navigation.navigate("View Applicant Detail")} },
+        { key: 'edit', text: 'Edit Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Applicant") },
       ],
     },
     {
@@ -71,7 +71,7 @@ const ProfilePage = ({ navigation }) => {
     {
       title: 'Other',
       data: [
-        { key: 'logout', text: 'Logout', icon: 'sign-out', onPress: () => { clearUserData(); navigate.navigate("Splash") } },
+        { key: 'logout', text: 'Logout', icon: 'sign-out', onPress:()=>{clearUserData(); navigate.navigate("Splash")} },
       ],
     },
   ];
@@ -79,7 +79,7 @@ const ProfilePage = ({ navigation }) => {
   // Render each section header and item
   const renderSectionHeader = ({ section }) => (
     <View style={styles.sectionHeader}>
-      <CText fontWeight={600} style={styles.sectionHeaderText}>{section.title}</CText>
+      <CText fontWeight={600} sx={styles.sectionHeaderText}>{section.title}</CText>
     </View>
   );
 
@@ -99,13 +99,13 @@ const ProfilePage = ({ navigation }) => {
     <View style={styles.container}>
       {/* Company Logo and Details */}
       <View style={styles.headerContainer}>
-        <Avatar.Image
-          source={{ uri: userData?.company_logo }} // Replace with dynamic company logo URL
+        {/* <Avatar.Image
+          source={{ uri: userData?.applicant_image }} // Replace with dynamic company logo URL
           size={80}
-        />
+        /> */}
         <View style={styles.companyInfo}>
-          <CText fontWeight={600} sx={styles.companyName}>{userData?.company_name}</CText>
-          <CText sx={styles.companyEmail}>{userData?.company_email}</CText>
+          <CText fontWeight={600} sx={styles.companyName}>{userData?.applicant_name}</CText>
+          <CText sx={styles.companyEmail}>{userData?.applicant_email}</CText>
         </View>
       </View>
 
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    marginBottom: 100
+    marginBottom:100
   },
   headerContainer: {
     flexDirection: 'row',
@@ -165,8 +165,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingVertical: 16,
     paddingHorizontal: 20,
-    marginHorizontal: 10,
     marginBottom: 8,
+    marginHorizontal: 10,
     borderRadius: 8,
     elevation: 2,
     shadowColor: '#000',

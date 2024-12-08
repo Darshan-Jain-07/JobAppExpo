@@ -1,41 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import { Card, Button, IconButton, ActivityIndicator } from 'react-native-paper';
+import { Card, Button, IconButton } from 'react-native-paper';
 import { getUserData } from '../../services/UserDataService';
 import { useNavigation } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import CText from '../../components/CText';
 
-const ViewRecruiterDetail = () => {
-    const [ recruiter, setRecruiter ] = useState({});
+const ViewApplicantDetail = () => {
+    const [ applicant, setApplicant ] = useState({});
     const navigation = useNavigation();
-    const [isDataLoaded, setIsDataLoaded] = useState(false);
-
     useEffect(() => {
         // Define an async function inside the useEffect
         const fetchData = async () => {
             try {
                 const data = await getUserData();
-                setRecruiter(data);
+                setApplicant(data);
                 console.log(data);
-                setIsDataLoaded(true);
             } catch (error) {
                 console.error('Error fetching data:', error);
-                setIsDataLoaded(true);
             }
         };
 
         // Call the async function
         fetchData();
     }, []);
-    
-  if (!isDataLoaded) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
-        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
-      </View>
-    )
-  }
     return (
         <View style={styles.cardContainer}>
             <Button
@@ -50,32 +38,29 @@ const ViewRecruiterDetail = () => {
             <Card elevation={5} style={styles.card}>
                 <Card.Content style={styles.cardContent}>
                     {/* Company Logo */}
-                    <View style={styles.logoContainer}>
-                        <Image source={{ uri: recruiter.recruiter_image }} style={styles.logo} />
-                    </View>
+                    {/* <View style={styles.logoContainer}>
+                        <Image source={{ uri: applicant.recruiter_image }} style={styles.logo} />
+                    </View> */}
 
                     {/* Company Details */}
-                    <CText sx={styles.companyName}>{recruiter.recruiter_name}</CText>
-                    <CText sx={styles.companyDescription}>{recruiter.recruiter_description}</CText>
+                    <CText fontWeight={600} sx={styles.companyName}>{applicant.applicant_name}</CText>
+                    {/* <Text style={styles.companyDescription}>{recruiter.recruiter_description}</Text> */}
 
                     <View style={styles.detailsContainer}>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Email: </CText>{recruiter.recruiter_email}
+                            <CText fontWeight={600} sx={styles.label}>Email: </CText>{applicant.applicant_email}
                         </CText>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Phone: </CText>{recruiter.recruiter_phone}
+                            <CText fontWeight={600} sx={styles.label}>Phone: </CText>{applicant.applicant_phone}
                         </CText>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Company Email ID: </CText>{recruiter?.company_email_id === "" ? "N/A" : recruiter?.company_email_id}
+                            <CText fontWeight={600} sx={styles.label}>Password: </CText>{applicant.applicant_password}
                         </CText>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Password: </CText>{recruiter.recruiter_password}
+                            <CText fontWeight={600} sx={styles.label}>Created At: </CText>{dayjs(applicant.created_at).format('DD/MM/YYYY')}
                         </CText>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Created At: </CText>{dayjs(recruiter.created_at).format('DD/MM/YYYY')}
-                        </CText>
-                        <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Updated At: </CText>{dayjs(recruiter.updated_at).format('DD/MM/YYYY')}
+                            <CText fontWeight={600} sx={styles.label}>Updated At: </CText>{dayjs(applicant.updated_at).format('DD/MM/YYYY')}
                         </CText>
                     </View>
                 </Card.Content>
@@ -87,7 +72,7 @@ const ViewRecruiterDetail = () => {
                         icon="pencil"
                         size={20}
                         style={styles.icon}
-                        onPress={() => navigation.navigate("Sign Up Recruiter")}
+                        onPress={() => navigation.navigate("Sign Up Applicant")}
                     />
                 </Card.Actions>
             </Card>
@@ -125,7 +110,6 @@ const styles = StyleSheet.create({
     },
     companyName: {
         fontSize: 20,
-        fontWeight: 'bold',
         color: '#333',
         textAlign: 'center',
     },
@@ -161,4 +145,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ViewRecruiterDetail;
+export default ViewApplicantDetail;

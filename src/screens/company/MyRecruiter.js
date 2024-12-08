@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { View, FlatList, Text, TouchableOpacity, TextInput, Image, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Importing an icon library
+import CText from '../../components/CText';
 
 const RecruiterList = () => {
     const navigation = useNavigation()
@@ -38,9 +39,9 @@ const RecruiterList = () => {
       <View style={styles.recruiterInfo}>
         <Icon name="person" size={30} color="#4CAF50" style={styles.recruiterIcon} />
         <View style={styles.textContainer}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.position}>{item.position}</Text>
-          <Text style={styles.company}>{item.company}</Text>
+          <CText fontWeight={600} sx={styles.name}>{item.name}</CText>
+          <CText sx={styles.position}>{item.position}</CText>
+          <CText sx={styles.company}>{item.company}</CText>
         </View>
       </View>
       <TouchableOpacity onPress={()=>navigation.navigate('Recruiters', { screen: 'RecruiterDetail' })} style={styles.viewDetailsIcon}>
@@ -78,6 +79,7 @@ const RecruiterList = () => {
           style={styles.list}
         />
       )}
+      <View style={{marginBottom:70}}></View>
     </View>
   );
 };
@@ -124,7 +126,6 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#333',
   },
   position: {
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   company: {
-    fontSize: 14,
+    fontSize: 10,
     color: '#888',
   },
   viewDetailsIcon: {

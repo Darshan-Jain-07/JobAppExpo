@@ -9,6 +9,7 @@ import { createCompany, updateCompany } from '../../services/AuthService';
 import axios from 'axios';
 import CustomImageUploader from '../../components/CimageUploader';
 import { getUserData } from '../../services/UserDataService';
+import CText from '../../components/CText';
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
@@ -36,6 +37,7 @@ const validationSchema = Yup.object().shape({
 const SignUpCompany = () => {
     const navigation = useNavigation();
     const [secureTextEntry, setSecureTextEntry] = useState(true);
+    const [secureTextEntryR, setSecureTextEntryR] = useState(true);
     const [loading, setLoading] = useState(null);
     const [companyData, setCompanyData] = useState(null);
     const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -97,79 +99,79 @@ const SignUpCompany = () => {
         }
     };
 
-    const uploadImageToCloudinary = async (imageUri) => {
-        console.log(imageUri);
-        if (!imageUri) return;
+    // const uploadImageToCloudinary = async (imageUri) => {
+    //     console.log(imageUri);
+    //     if (!imageUri) return;
 
-        setLoading(true);
-        console.log("hello");
+    //     setLoading(true);
+    //     console.log("hello");
 
-        const formData = new FormData();
-        const fileType = imageUri.split(';')[0].split('/')[1]; // Extract file type from data URI
-        const fileName = `image.${fileType}`;
+    //     const formData = new FormData();
+    //     const fileType = imageUri.split(';')[0].split('/')[1]; // Extract file type from data URI
+    //     const fileName = `image.${fileType}`;
 
-        // Convert Base64 to Blob
-        const blob = await fetch(imageUri)
-            .then((response) => response.blob())
-            .catch((error) => {
-                console.error('Error converting Base64 to Blob:', error);
-                Alert.alert("Error", "Failed to process the image.");
-                return null;
-            });
-        console.log(blob);
+    //     // Convert Base64 to Blob
+    //     const blob = await fetch(imageUri)
+    //         .then((response) => response.blob())
+    //         .catch((error) => {
+    //             console.error('Error converting Base64 to Blob:', error);
+    //             Alert.alert("Error", "Failed to process the image.");
+    //             return null;
+    //         });
+    //     console.log(blob);
 
-        if (blob) {
-            formData.append('file', blob);
-            formData.append('upload_preset', 'jobApp'); // Replace with your upload preset
-            formData.append('cloud_name', 'dwnqftgj0'); // Replace with your cloud name
+    //     if (blob) {
+    //         formData.append('file', blob);
+    //         formData.append('upload_preset', 'jobApp'); // Replace with your upload preset
+    //         formData.append('cloud_name', 'dwnqftgj0'); // Replace with your cloud name
 
-            try {
-                const response = await axios.post(
-                    'https://api.cloudinary.com/v1_1/dwnqftgj0/image/upload',
-                    formData,
-                    { headers: { 'Content-Type': 'multipart/form-data' } }
-                );
-                console.log('Response from Cloudinary:', response);
+    //         try {
+    //             const response = await axios.post(
+    //                 'https://api.cloudinary.com/v1_1/dwnqftgj0/image/upload',
+    //                 formData,
+    //                 { headers: { 'Content-Type': 'multipart/form-data' } }
+    //             );
+    //             console.log('Response from Cloudinary:', response);
 
-                const cloudinaryUrl = response.data.secure_url;
-                console.log('Image uploaded successfully:', cloudinaryUrl);
-                Alert.alert('Success', 'Image uploaded successfully!');
-                return cloudinaryUrl;
-            } catch (error) {
-                console.error('Upload failed:', error);
-                Alert.alert('Upload failed', 'An error occurred while uploading the image.');
-            } finally {
-                setLoading(false);
-            }
-        } else {
-            setLoading(false);
-            Alert.alert('Error', 'Failed to convert the image.');
-        }
-    };
+    //             const cloudinaryUrl = response.data.secure_url;
+    //             console.log('Image uploaded successfully:', cloudinaryUrl);
+    //             Alert.alert('Success', 'Image uploaded successfully!');
+    //             return cloudinaryUrl;
+    //         } catch (error) {
+    //             console.error('Upload failed:', error);
+    //             Alert.alert('Upload failed', 'An error occurred while uploading the image.');
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     } else {
+    //         setLoading(false);
+    //         Alert.alert('Error', 'Failed to convert the image.');
+    //     }
+    // };
 
-    // Function to request image picker permissions and pick an image
-    const pickImage = async (setFieldValue, values) => {
-        // Request permissions to access the media library
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permissionResult.granted) {
-            Alert.alert('Permission required', 'Permission to access media library is required!');
-            return;
-        }
+    // // Function to request image picker permissions and pick an image
+    // const pickImage = async (setFieldValue, values) => {
+    //     // Request permissions to access the media library
+    //     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    //     if (!permissionResult.granted) {
+    //         Alert.alert('Permission required', 'Permission to access media library is required!');
+    //         return;
+    //     }
 
-        // Open the image picker to allow the user to pick an image
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaType,
-            allowsEditing: true,
-            quality: 0.5,
-        });
+    //     // Open the image picker to allow the user to pick an image
+    //     const result = await ImagePicker.launchImageLibraryAsync({
+    //         mediaTypes: ImagePicker.MediaType,
+    //         allowsEditing: true,
+    //         quality: 0.5,
+    //     });
 
-        if (!result.canceled) {
-            // Update Formik's company_logo field with the selected image URI
-            setFieldValue('company_logo', result.assets[0].uri);
-            let img_url = await uploadImageToCloudinary(result.assets[0].uri);
-            setFieldValue('company_logo', img_url);
-        }
-    };
+    //     if (!result.canceled) {
+    //         // Update Formik's company_logo field with the selected image URI
+    //         setFieldValue('company_logo', result.assets[0].uri);
+    //         let img_url = await uploadImageToCloudinary(result.assets[0].uri);
+    //         setFieldValue('company_logo', img_url);
+    //     }
+    // };
 
     return (
         <KeyboardAvoidingView
@@ -187,7 +189,7 @@ const SignUpCompany = () => {
                     >
                         Back
                     </Button>
-                    <Text style={styles.heading}>{companyData ? "Edit" : "Sign Up"} - Company</Text>
+                    <CText fontWeight={600} sx={styles.heading}>{companyData ? "Edit" : "Sign Up"} - Company</CText>
 
                     <Formik
                         initialValues={{
@@ -216,7 +218,6 @@ const SignUpCompany = () => {
                                         onBlur={handleBlur('id')}
                                         mode="outlined"
                                     />
-                                    <ErrorMessage name="id" component={Text} style={styles.errorMessage} />
                                 </View>}
                                 {/* Company Name */}
                                 <View style={{ marginBottom: 6 }}>
@@ -228,7 +229,7 @@ const SignUpCompany = () => {
                                         onBlur={handleBlur('company_name')}
                                         mode="outlined"
                                     />
-                                    <ErrorMessage name="company_name" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="company_name" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Company Email */}
                                 <View style={{ marginBottom: 6 }}>
@@ -242,7 +243,7 @@ const SignUpCompany = () => {
                                         mode="outlined"
                                         keyboardType="email-address"
                                     />
-                                    <ErrorMessage name="company_email" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="company_email" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Company Password */}
                                 <View style={{ marginBottom: 6 }}>
@@ -256,7 +257,7 @@ const SignUpCompany = () => {
                                         secureTextEntry={secureTextEntry}
                                         right={<TextInput.Icon icon={secureTextEntry ? "eye-off" : "eye"} onPress={() => setSecureTextEntry(!secureTextEntry)} />}
                                     />
-                                    <ErrorMessage name="company_password" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="company_password" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Recruiter Password */}
                                 <View style={{ marginBottom: 6 }}>
@@ -267,11 +268,11 @@ const SignUpCompany = () => {
                                         onChangeText={handleChange('company_recruiter_password')}
                                         onBlur={handleBlur('company_recruiter_password')}
                                         mode="outlined"
-                                        secureTextEntry={secureTextEntry}
-                                        right={<TextInput.Icon icon={secureTextEntry ? "eye-off" : "eye"} onPress={() => setSecureTextEntry(!secureTextEntry)} />}
+                                        secureTextEntry={secureTextEntryR}
+                                        right={<TextInput.Icon icon={secureTextEntryR ? "eye-off" : "eye"} onPress={() => setSecureTextEntryR(!secureTextEntryR)} />}
                                     />
-                                    <Text style={{ color: "#696969", marginHorizontal: 16 }}>Note: Keep it different from Company Password else recruiter will have company access</Text>
-                                    <ErrorMessage name="company_recruiter_password" component={Text} style={styles.errorMessage} />
+                                    <CText sx={{ color: "#696969", marginHorizontal: 16 }}>Note: Keep it different from Company Password else recruiter will have company access</CText>
+                                    <ErrorMessage name="company_recruiter_password" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Company Phone */}
                                 <View style={{ marginBottom: 6 }}>
@@ -284,7 +285,7 @@ const SignUpCompany = () => {
                                         mode="outlined"
                                         keyboardType="phone-pad"
                                     />
-                                    <ErrorMessage name="company_phone" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="company_phone" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Company Description */}
                                 <View style={{ marginBottom: 6 }}>
@@ -298,19 +299,19 @@ const SignUpCompany = () => {
                                         multiline
                                         maxLength={200}
                                     />
-                                    <ErrorMessage name="company_description" component={Text} style={styles.errorMessage} />
+                                    <ErrorMessage name="company_description" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Company Logo */}
                                 <View style={{ marginBottom: 6, marginHorizontal: 16 }}>
-                                    <Text style={styles.logoLabel}>Company Logo</Text>
+                                    <CText style={styles.logoLabel}>Company Logo</CText>
                                     <CustomImageUploader
                                         setFieldValue={setFieldValue}
                                         fieldKey="company_logo"
                                         values={values}
                                         placeholder={"Select Logo"}
                                     />
-                                    <ErrorMessage name="company_logo" component={Text} style={styles.errorMessage} />
-                                    {loading && <Text style={{ color: "#ff0000", marginHorizontal: 16 }}>Uploading...</Text>}
+                                    <ErrorMessage name="company_logo" component={CText} color="#ff0000" fontSize={12} />
+                                    {loading && <CText style={{ color: "#ff0000", marginHorizontal: 16 }}>Uploading...</CText>}
                                 </View>
                                 {/* Submit Button */}
                                 <Button disabled={loading} mode="contained" style={styles.submitButton} onPress={handleSubmit}>
@@ -328,7 +329,7 @@ const SignUpCompany = () => {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1, // Allows content to grow and scroll if needed
-        padding: 16,
+        // padding: 16,
     },
     backButton: {
         display: 'flex',
@@ -344,7 +345,6 @@ const styles = StyleSheet.create({
         color: '#000',
         textAlign: 'center',
         marginTop: 5,
-        fontFamily: 'Montserrat-Bold',
     },
     formContainer: {
         marginTop: 20,
@@ -355,6 +355,7 @@ const styles = StyleSheet.create({
     errorMessage: {
         color: 'red',
         marginLeft: 16,
+        fontSize: 12
     },
     logoLabel: {
         fontSize: 16,
@@ -377,7 +378,8 @@ const styles = StyleSheet.create({
     submitButton: {
         borderRadius: 5,
         marginHorizontal: 16,
-        marginTop: 20,
+        marginTop: 10,
+        marginBottom: 20,
         backgroundColor: 'black',
     },
 });

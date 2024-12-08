@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, SectionList, TouchableOpacity } from 'react-native';
-import { Avatar } from 'react-native-paper';
+import { ActivityIndicator, Avatar } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome'; // You can choose any icon set
 import { getCompanyData } from '../../services/ProfileService';
 import { clearUserData, getUserData } from '../../services/UserDataService';
 import { useNavigation } from '@react-navigation/native';
+import CText from '../../components/CText';
 
 const ProfilePage = ({ navigation }) => {
   const [userData, setUserDate] = useState();
   const navigate = useNavigation();
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   useEffect(() => {
     // Define an async function inside the useEffect
@@ -16,15 +18,27 @@ const ProfilePage = ({ navigation }) => {
       try {
         const data = await getUserData();
         setUserDate(data)
-        console.log(data); // Log the data
+        console.log(data);
+        setIsDataLoaded(true);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setIsDataLoaded(true);
       }
     };
 
     // Call the async function
     fetchData();
   }, []);
+
+  
+  if (!isDataLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    )
+  }
+
   // Define the sections with their respective options and icons
   const sections = [
     {
@@ -67,7 +81,7 @@ const ProfilePage = ({ navigation }) => {
   // Render each section header and item
   const renderSectionHeader = ({ section }) => (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionHeaderText}>{section.title}</Text>
+      <CText fontWeight={600} style={styles.sectionHeaderText}>{section.title}</CText>
     </View>
   );
 
@@ -78,7 +92,7 @@ const ProfilePage = ({ navigation }) => {
     >
       <View style={styles.optionContent}>
         <Icon name={item.icon} size={20} color="#000" />
-        <Text style={styles.optionText}>{item.text}</Text>
+        <CText sx={styles.optionText}>{item.text}</CText>
       </View>
     </TouchableOpacity>
   );
@@ -92,8 +106,8 @@ const ProfilePage = ({ navigation }) => {
           size={80}
         />
         <View style={styles.companyInfo}>
-          <Text style={styles.companyName}>{userData?.recruiter_name}</Text>
-          <Text style={styles.companyEmail}>{userData?.recruiter_email}</Text>
+          <CText fontWeight={600} sx={styles.companyName}>{userData?.recruiter_name}</CText>
+          <CText sx={styles.companyEmail}>{userData?.recruiter_email}</CText>
         </View>
       </View>
 
@@ -133,7 +147,6 @@ const styles = StyleSheet.create({
   },
   companyName: {
     fontSize: 22,
-    fontWeight: 'bold',
     color: '#333',
   },
   companyEmail: {
@@ -157,6 +170,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 8,
     borderRadius: 8,
+    marginHorizontal: 10,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

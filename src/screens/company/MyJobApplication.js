@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 // import { Icon } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import CText from '../../components/CText';
 
 // Sample data for job posts
 const jobPosts = [
@@ -29,7 +30,6 @@ const jobPosts = [
     status: 'Open',
     recruiterImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrZEqTQqHH6VL5BJfsCes8n9aLdekV7_nqBA&s', // Example image URL
   },
-  // Add more sample data as needed
 ];
 
 const JobPostsScreen = () => {
@@ -46,10 +46,10 @@ const JobPostsScreen = () => {
     <View style={styles.jobCard}>
       <Image source={{ uri: item.recruiterImage }} style={styles.recruiterImage} />
       <View style={styles.jobInfo}>
-        <Text style={styles.jobTitle}>{item.jobTitle}</Text>
-        <Text style={styles.recruiterName}>{item.recruiterName}</Text>
-        <Text style={styles.company}>{item.company}</Text>
-        <Text style={styles.status}>{item.status}</Text>
+        <CText fontWeight={600} sx={styles.jobTitle}>{item.jobTitle}</CText>
+        <CText sx={styles.recruiterName}>{item.recruiterName}</CText>
+        <CText sx={styles.company}>{item.company}</CText>
+        <CText fontWeight={600} sx={styles.status}>{item.status}</CText>
       </View>
       <TouchableOpacity style={styles.viewButton}>
       <Icon name="chevron-right" size={30} color="#888" />
@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f8f8',
     padding: 16,
+    marginBottom:70
   },
   searchContainer: {
     // flexDirection: 'row',
@@ -150,7 +151,6 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
   },
   recruiterName: {
     fontSize: 16,
@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
   },
   status: {
     fontSize: 14,
-    fontWeight: 'bold',
     color: '#007BFF',
   },
   viewButton: {

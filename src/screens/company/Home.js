@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollV
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import CStatisticsCard from '../../components/CIconStatisticsCard';
+import CText from '../../components/CText';
 
 const { width } = Dimensions.get('window'); // Get screen width for responsive design
 
@@ -37,12 +38,12 @@ const HomePage = () => {
   const renderJobApplicationItem = ({ item }) => (
     <View style={styles.jobCard}>
       <Icon name="briefcase" size={24} color="#5B5B5B" />
-      <Text style={styles.jobTitle}>{item.jobTitle}</Text>
-      <Text>Status: <Text style={styles.jobStatus}>{item.status}</Text></Text>
-      <Text><Icon name="map-marker" size={16} color="#5B5B5B" /> {item.location}</Text>
-      <Text>Applicants: {item.applicants}</Text>
+      <CText fontWeight={600} sx={styles.jobTitle}>{item.jobTitle}</CText>
+      <CText>Status: <CText sx={styles.jobStatus}>{item.status}</CText></CText>
+      <CText><Icon name="map-marker" size={16} color="#5B5B5B" /> {item.location}</CText>
+      <CText>Applicants: {item.applicants}</CText>
       <TouchableOpacity onPress={() => console.log('View Details')}>
-        <Text style={styles.viewDetailsButton}>View Details</Text>
+        <CText sx={styles.viewDetailsButton}>View Details</CText>
       </TouchableOpacity>
     </View>
   );
@@ -51,18 +52,18 @@ const HomePage = () => {
   const renderBlogItem = ({ item }) => (
     <View style={styles.blogCard}>
       <View style={styles.blogImage}></View>
-      <Text style={styles.blogTitle}>{item.title}</Text>
-      <Text style={styles.blogDescription}>{item.description}</Text>
+      <CText fontWeight={600} sx={styles.blogTitle}>{item.title}</CText>
+      <CText sx={styles.blogDescription}>{item.description}</CText>
       <View style={styles.readTimeContainer}>
-        <Icon name="clock-o" size={18} color="#007bff" />
-        <Text style={styles.readTime}>Time to read: {item.readTime}</Text>
+        <Icon name="clock-o" size={18} color="#000" />
+        <CText sx={styles.readTime}>Time to read: {item.readTime}</CText>
       </View>
       <View style={styles.readsContainer}>
-        <Icon name="eye" size={18} color="#007bff" />
-        <Text style={styles.reads}>Reads: {item.reads}</Text>
+        <Icon name="eye" size={18} color="#000" />
+        <CText sx={styles.reads}>Reads: {item.reads}</CText>
       </View>
       <TouchableOpacity onPress={() => navigate.navigate('BlogDetail')}>
-        <Text style={styles.readMoreButton}>Read More</Text>
+        <CText sx={styles.readMoreButton}>Read More</CText>
       </TouchableOpacity>
     </View>
   );
@@ -71,11 +72,11 @@ const HomePage = () => {
   const renderRecruiterItem = ({ item }) => (
     <View style={styles.recruiterCard}>
       <Icon name="user" size={24} color="#5B5B5B" />
-      <Text style={styles.recruiterName}>{item.name}</Text>
-      <Text>Applications Created: {item.jobApplications}</Text>
-      <Text>Hired: {item.hired}</Text>
+      <CText fontWeight={600} fontSize={18}>{item.name}</CText>
+      <CText>Applications Created: {item.jobApplications}</CText>
+      <CText>Hired: {item.hired}</CText>
       <TouchableOpacity onPress={() => console.log('View Recruiter')}>
-        <Text style={styles.viewDetailsButton}>View Details</Text>
+        <CText style={styles.viewDetailsButton}>View Details</CText>
       </TouchableOpacity>
     </View>
   );
@@ -83,20 +84,22 @@ const HomePage = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.subscriptionSection}>
-        <Text style={styles.subscriptionTitle}>Current Subscription: Premium</Text>
+        <CText sx={styles.subscriptionTitle}>Current Subscription: Premium</CText>
         <Icon name="star" size={30} color="#FFD700" />
       </View>
 
-      <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-      <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-      <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-      <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+      <View style={{flex:1, flexDirection:"row", flexWrap:"wrap"}}>
+        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+      </View>
 
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Recruiters</Text>
+        <CText fontWeight={600} sx={styles.sectionTitle}>Recruiters</CText>
         <TouchableOpacity onPress={() => navigate.navigate('AllRecruiters')}>
-          <Text style={styles.moreButton}>More</Text>
+          <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -112,9 +115,9 @@ const HomePage = () => {
 
       {/* Job Applications Section */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Job Applications</Text>
+        <CText fontWeight={600} sx={styles.sectionTitle}>Job Applications</CText>
         <TouchableOpacity onPress={() => navigate.navigate('AllJobApplications')}>
-          <Text style={styles.moreButton}>More</Text>
+          <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -145,6 +148,7 @@ const HomePage = () => {
         snapToAlignment="center"
         pagingEnabled
       />
+      <View style={{marginBottom:120}}></View>
     </ScrollView>
   );
 };
@@ -188,7 +192,6 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
     marginBottom: 10,
   },
   jobStatus: {
@@ -213,7 +216,6 @@ const styles = StyleSheet.create({
   },
   blogTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
     marginBottom: 8,
   },
   blogDescription: {
@@ -254,10 +256,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 5,
-  },
-  recruiterName: {
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 

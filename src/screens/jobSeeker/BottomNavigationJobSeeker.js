@@ -11,6 +11,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 // import RecruiterDetail from './RecruiterDetail';
 import { StyleSheet, View, Text } from 'react-native';
 import CustomHeader from './CustomHeaderApplicant';
+import ProfilePage from './Profile';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
 // import CustomHeader from './Header';
@@ -28,10 +29,6 @@ const MyJobApplication = () => {
 
 const Home = () => {
     return <View><Text>Home</Text></View>
-}
-
-const Profile = () => {
-    return <View><Text>Profile</Text></View>
 }
 
 const MyRecruiter = () => {
@@ -70,7 +67,7 @@ function HomeStack() {
             />
             <Stack.Screen
                 name="Profile"
-                component={Profile}
+                component={ProfilePage}
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Profile" />,

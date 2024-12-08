@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: width / 2 - 15, // Half of the screen width
+    width: width / 2 - 27, // Half of the screen width
     padding: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
+    elevation: 4,  // Adjust this value for Android shadow
   },
   icon: {
     height: '100%',
