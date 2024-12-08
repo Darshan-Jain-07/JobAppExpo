@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import CText from '../../components/CText';
 
 // Helper function to estimate reading time
 const calculateReadingTime = (content) => {
@@ -37,9 +38,18 @@ const BlogListScreen = () => {
     // More blogs...
   ];
 
+  function truncateDecs(description) {
+    const maxLength = 70;
+    const truncatedDescription = description.length > maxLength
+      ? description.substring(0, maxLength) + '...'
+      : description;
+
+    return truncatedDescription;
+  }
+
   // Navigate to the Blog Detail screen
   const handleBlogPress = (blogId) => {
-    navigation.navigate('BlogDetail', { blogId });
+    navigation.navigate('Blog Detail', { blogId });
   };
 
   const renderBlogCard = ({ item }) => {
@@ -47,14 +57,18 @@ const BlogListScreen = () => {
 
     return (
       <TouchableOpacity style={styles.card} onPress={() => handleBlogPress(item.id)}>
-        <Image source={{ uri: item.imageUrl }} style={styles.blogImage} />
-        <View style={styles.cardContent}>
-          <Text style={styles.blogTitle}>{item.title}</Text>
-          <Text style={styles.blogExcerpt}>{item.excerpt}</Text>
-          <Text style={styles.blogAuthor}>By {item.author} - {item.date}</Text>
-          <View style={styles.readingTimeContainer}>
+        <View>
+          <Image source={{ uri: item.imageUrl }} style={styles.blogImage} />
+          <View style={{ flex: 1, flexDirection: "row", marginTop: 7 }}>
             <Icon name="clock-o" size={16} color="#777" style={styles.readingTimeIcon} />
-            <Text style={styles.readingTimeText}>{readingTime} min read</Text>
+            <CText sx={styles.readingTimeText}>{readingTime} min read</CText>
+          </View>
+        </View>
+        <View style={styles.cardContent}>
+          <CText fontWeight={600} sx={styles.blogTitle}>{item.title}</CText>
+          <CText sx={styles.blogExcerpt}>{truncateDecs(item.content)}</CText>
+          <CText sx={styles.blogAuthor}>By {item.author} - {item.date}</CText>
+          <View style={styles.readingTimeContainer}>
           </View>
         </View>
       </TouchableOpacity>
@@ -77,6 +91,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    marginBottom: 70
   },
   listContainer: {
     padding: 16,
@@ -105,11 +120,10 @@ const styles = StyleSheet.create({
   },
   blogTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#333',
   },
   blogExcerpt: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#777',
     marginVertical: 8,
   },
