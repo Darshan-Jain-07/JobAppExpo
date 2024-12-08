@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bottomText: {
-        fontSize: 15,
+        fontSize: 10,
         textAlign: "center",
         paddingHorizontal: 20,
     },
