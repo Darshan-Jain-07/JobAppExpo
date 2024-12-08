@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker'; // Using react-native-image-picker
-import { Formik } from 'formik';
+import { ErrorMessage, Formik } from 'formik';
 import * as Yup from 'yup';
+import CText from '../../components/CText';
+import CustomImageUploader from '../../components/CimageUploader';
+import { Button } from 'react-native-paper';
 
 const CreateBlogScreen = () => {
   const [image, setImage] = useState(null); // State to store selected image
@@ -29,13 +32,19 @@ const CreateBlogScreen = () => {
 
   // Validation schema using Yup
   const validationSchema = Yup.object({
-    topic: Yup.string().required('Topic is required').min(5, 'Topic must be at least 5 characters'),
-    description: Yup.string().required('Description is required').min(20, 'Description must be at least 20 characters'),
-    image: Yup.mixed().required('Image is required').test(
-      'fileSize',
-      'The image is too large',
-      (value) => value && value.size <= 5000000 // 5MB max size
-    ),
+    blog_title: Yup.string()
+      .required('Topic is required')
+      .min(5, 'Topic must be at least 5 characters')
+      .max(200, 'Topic must be less than 200 character'),
+    blog_description: Yup.string()
+      .required('Description is required')
+      .min(20, 'Description must be at least 20 characters'),
+    blog_image: Yup.mixed().required('Image is required'),
+    // .test(
+    //   'fileSize',
+    //   'The image is too large',
+    //   (value) => value && value.size <= 5000000 // 5MB max size
+    // ),
   });
 
   // Form submission handler
@@ -46,52 +55,52 @@ const CreateBlogScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Create Blog</Text>
+      <CText fontWeight={600} sx={styles.header}>Create Blog</CText>
 
       <Formik
-        initialValues={{ topic: '', description: '', image: null }}
+        initialValues={{ blog_title: '', blog_description: '', blog_image: null }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
           <View style={styles.form}>
             {/* Topic */}
+            <View style={{marginBottom:6}}>
             <TextInput
               style={styles.input}
               placeholder="Enter Blog Topic"
-              onChangeText={handleChange('topic')}
-              onBlur={handleBlur('topic')}
-              value={values.topic}
+              onChangeText={handleChange('blog_title')}
+              onBlur={handleBlur('blog_title')}
+              value={values.blog_title}
             />
-            {errors.topic && touched.topic && <Text style={styles.errorText}>{errors.topic}</Text>}
-
+            {errors.blog_title && touched.blog_title && <CText sx={styles.errorText}>{errors.blog_title}</CText>}
+            </View>
             {/* Description */}
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Enter Blog Description"
               multiline
               numberOfLines={6}
-              onChangeText={handleChange('description')}
-              onBlur={handleBlur('description')}
-              value={values.description}
+              onChangeText={handleChange('blog_description')}
+              onBlur={handleBlur('blog_description')}
+              value={values.blog_description}
             />
-            {errors.description && touched.description && <Text style={styles.errorText}>{errors.description}</Text>}
+            {errors.blog_description && touched.blog_description && <CText sx={styles.errorText}>{errors.blog_description}</CText>}
 
             {/* Image Upload */}
-            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-              <Text style={styles.imagePickerText}>
-                {image ? 'Change Image' : 'Pick an Image'}
-              </Text>
-            </TouchableOpacity>
-            {image && (
-              <View style={styles.selectedImageWrapper}>
-                <Image source={{ uri: image }} style={styles.selectedImage} />
-              </View>
-            )}
-            {errors.image && touched.image && <Text style={styles.errorText}>{errors.image}</Text>}
-
-            {/* Submit Button */}
-            <Button title="Submit Blog" onPress={handleSubmit} />
+            <View style={{ marginVertical: 6 }}>
+              <CustomImageUploader
+                setFieldValue={setFieldValue}
+                fieldKey="blog_image"
+                values={values}
+                placeholder={"Select Blog Image"}
+              />
+              <ErrorMessage name="blog_image" component={CText} color="#ff0000" fontSize={12} />
+              {/* {loading && <CText style={{ color: "#ff0000", marginHorizontal: 16 }}>Uploading...</CText>} */}
+            </View>
+            <Button style={{ borderRadius: 5 }} marginTop={20} mode="contained" buttonColor={"black"} onPress={handleSubmit}>
+              Submit Blog
+            </Button>
           </View>
         )}
       </Formik>
@@ -107,8 +116,6 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
     textAlign: 'center',
     color: '#333',
   },
@@ -119,7 +126,6 @@ const styles = StyleSheet.create({
     height: 45,
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 15,
     paddingHorizontal: 10,
     borderRadius: 8,
     backgroundColor: '#fff',
@@ -160,9 +166,8 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   errorText: {
-    color: 'red',
+    color: '#ff0000',
     fontSize: 12,
-    marginBottom: 10,
   },
 });
 

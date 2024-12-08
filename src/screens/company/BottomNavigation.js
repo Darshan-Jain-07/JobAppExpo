@@ -16,6 +16,7 @@ import CustomHeader from './Header';
 import BlogPage from './BlogDetail';
 import CompanyProfilePage from './Profile';
 import CreateBlogScreen from './CreateBlog';
+import BlogListScreen from './BlogList';
 
 const Tab = createBottomTabNavigator();
 
@@ -62,6 +63,14 @@ function HomeStack() {
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Write a Blog" />,
+                }}
+            />
+            <Stack.Screen
+                name="Blog List"
+                component={BlogListScreen}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Blogs" />,
                 }}
             />
             <Stack.Screen

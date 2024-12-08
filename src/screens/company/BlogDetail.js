@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import CText from '../../components/CText';
 
-const BlogPage = () => {
+const BlogPage = ({ route }) => {
+  const { blogId } = route.params;
   const blogDetails = {
     title: "How to Build a Blog App in React Native",
     date: "November 14, 2024",
@@ -37,22 +39,24 @@ const BlogPage = () => {
     imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyv_ORNd0zcFnrBQlA3SSRU3S3dDs0KSt-NA&s",
   };
 
+  console.log(blogId)
+
   return (
     <ScrollView style={styles.container}>
       {/* Blog Image */}
       <Image source={{ uri: blogDetails.imageUrl }} style={styles.blogImage} />
 
       {/* Blog Title */}
-      <Text style={styles.title}>{blogDetails.title}</Text>
+      <CText fontWeight={700} sx={styles.title}>{blogDetails.title}</CText>
 
       {/* Blog Meta Information */}
       <View style={styles.metaContainer}>
-        <Text style={styles.date}>{blogDetails.date}</Text>
-        <Text style={styles.author}>By {blogDetails.author}</Text>
+        <CText sx={styles.date}>{blogDetails.date}</CText>
+        <CText sx={styles.author}>By {blogDetails.author}</CText>
       </View>
 
       {/* Blog Content */}
-      <Text style={styles.content}>{blogDetails.content}</Text>
+      <CText sx={styles.content}>{blogDetails.content}</CText>
     </ScrollView>
   );
 };
@@ -71,7 +75,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
     color: '#333',
     marginBottom: 8,
   },
@@ -92,6 +95,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
     lineHeight: 24,
+    marginBottom: 100
   },
 });
 
