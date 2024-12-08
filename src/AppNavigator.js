@@ -23,6 +23,7 @@ import ViewCompanyDetail from './screens/company/ViewCompanyDetail';
 import BottomNavigationJobSeeker from './screens/jobSeeker/BottomNavigationJobSeeker';
 import BottomNavigationRecruiter from './screens/recruiter/BottomNavigationRecruiter';
 import ViewRecruiterDetail from './screens/recruiter/ViewRecruiterDetail';
+import ViewApplicantDetail from './screens/jobSeeker/ViewApplicantDetail';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -35,9 +36,9 @@ const AppNavigator = () => {
                 <Stack.Screen options={{headerShown: false}} name="Sign Up" component={Signup} />
                 <Stack.Screen options={{headerShown: false}} name="Sign Up Company" component={SignUpCompany} />
                 <Stack.Screen options={{headerShown: false}} name="Sign Up Recruiter" component={SignUpRecruiter} />
-                <Stack.Screen options={{headerShown: false}} name="Sign Up Job Seeker" component={SignUpJobSeeker} />
+                <Stack.Screen options={{headerShown: false}} name="Sign Up Applicant" component={SignUpJobSeeker} />
                 <Stack.Screen options={{headerShown: false}} name="Bottom Navigation App" component={BottomNavigationApp} />
-                <Stack.Screen options={{headerShown: false}} name="Bottom Navigation Job Seeker" component={BottomNavigationJobSeeker} />
+                <Stack.Screen options={{headerShown: false}} name="Bottom Navigation Applicant" component={BottomNavigationJobSeeker} />
                 <Stack.Screen options={{headerShown: false}} name="Bottom Navigation Recruiter" component={BottomNavigationRecruiter} />
                 <Stack.Screen options={{headerShown: false}} name="Recruiter Detail" component={RecruiterDetail} />
                 <Stack.Screen options={{headerShown: false}} name="Home" component={HomePage} />
@@ -45,6 +46,7 @@ const AppNavigator = () => {
                 <Stack.Screen options={{headerShown: false}} name="Profile" component={Profile} />
                 <Stack.Screen options={{headerShown: false}} name="View Company Detail" component={ViewCompanyDetail} />
                 <Stack.Screen options={{headerShown: false}} name="View Recruiter Detail" component={ViewRecruiterDetail} />
+                <Stack.Screen options={{headerShown: false}} name="View Applicant Detail" component={ViewApplicantDetail} />
                 <Stack.Screen options={{headerShown: true, header: ()=><CustomHeader title={"Payment History"} />}} name="Payment History" component={PaymentHistoryScreen} />
                 <Stack.Screen options={{headerShown: false}} name="Blog Detail" component={BlogPage} />
                 <Stack.Screen options={{headerShown: false}} name="Blog List" component={BlogListScreen} />

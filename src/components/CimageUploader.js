@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, Image, Alert, StyleSheet, Platform  } from 'rea
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
+import CText from './CText';
 
 const CustomImageUploader = ({ setFieldValue, fieldKey, values, uploadPreset = "jobApp", cloudName = "dwnqftgj0", placeholder }) => {
   const [loading, setLoading] = useState(null);
@@ -99,9 +100,9 @@ const CustomImageUploader = ({ setFieldValue, fieldKey, values, uploadPreset = "
       {values[fieldKey] ? (
         <Image source={{ uri: values[fieldKey] }} style={styles.logoImage} />
       ) : (
-        <Text>{placeholder}</Text>
+        <CText>{placeholder}</CText>
       )}
-      {loading && <Text style={{ color: '#ff0000', marginHorizontal: 16 }}>Uploading...</Text>}
+      {loading && <CText style={{ color: '#ff0000', marginHorizontal: 16 }}>Uploading...</CText>}
     </TouchableOpacity>
   );
 };

@@ -9,6 +9,7 @@ import * as Yup from 'yup';
 import { ErrorMessage, Formik } from 'formik';
 import { logIn } from '../services/AuthService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CText from '../components/CText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -48,7 +49,7 @@ const Login = () => {
             if (values.role === "company") {
                 navigation.navigate('Bottom Navigation App')
             } else if (values.role === "applicant") {
-                navigation.navigate('Bottom Navigation Job Seeker')
+                navigation.navigate('Bottom Navigation Applicant')
             } else if (values.role === "recruiter") {
                 navigation.navigate('Bottom Navigation Recruiter')
             }
@@ -69,7 +70,7 @@ const Login = () => {
                 >
                     Back
                 </Button>
-                <Text style={{ fontSize: 25, color: "#000", textAlign: "center", marginTop: 5, fontFamily: "Montserrat-Bold" }}>Login</Text>
+                <CText fontWeight={600} fontSize={25} sx={{ color: "#000", textAlign: "center", marginTop: 5 }}>Login</CText>
                 <Formik
                     initialValues={initialValues}
                     validationSchema={validationSchema}
@@ -87,7 +88,7 @@ const Login = () => {
                                     onSelect={(value) => { setFieldValue('role', value) }}
                                     mode={"outlined"}
                                 />
-                                <ErrorMessage name="role" component={Text} style={{ color: 'red' }} />
+                                <ErrorMessage name="role" component={CText} fontSize={12} color={"red"} />
                             </View>
                             <View >
                                 <TextInput
@@ -97,7 +98,7 @@ const Login = () => {
                                     onChangeText={text => setFieldValue('email', text)}
                                     mode='outlined'
                                 />
-                                <ErrorMessage name="email" component={Text} style={{ color: 'red', marginLeft: 16 }} />
+                                <ErrorMessage name="email" component={CText} fontSize={12} color={"red"} sx={{ marginHorizontal: 16 }} />
                             </View>
                             <TextInput
                                 label="Password"
@@ -108,7 +109,7 @@ const Login = () => {
                                 mode='outlined'
                                 right={<TextInput.Icon icon={secureTextEntry ? "eye-off" : "eye"} onPress={() => setSecureTextEntry(!secureTextEntry)} />}
                             />
-                            <ErrorMessage name='password' component={Text} style={{ color: 'red', marginLeft: 16 }} />
+                            <ErrorMessage name='password' component={CText} fontSize={12} color={"red"} sx={{ marginHorizontal: 16 }} />
                             <View style={{marginHorizontal:16}}>
                                 <Button style={{ borderRadius: 5 }} marginTop={20} mode="contained" buttonColor={"black"} onPress={handleSubmit}>
                                     Login

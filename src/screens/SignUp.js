@@ -2,6 +2,7 @@ import { View, Text, Dimensions, StyleSheet, Image, TouchableOpacity } from 'rea
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Button, IconButton } from 'react-native-paper';
+import CText from '../components/CText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,7 +14,7 @@ const ClickableCard = ({ image, onPress, name }) => {
                 style={stylesClickableCard.image}
                 resizeMode="cover"
             />
-            <Text style={stylesClickableCard.text}>{name}</Text>
+            <CText fontWeight={600} sx={stylesClickableCard.text}>{name}</CText>
         </TouchableOpacity>
     );
 };
@@ -39,7 +40,6 @@ const stylesClickableCard = StyleSheet.create({
     text: {
         padding: 10,
         fontSize: 16,
-        fontWeight: 'bold',
     },
 });
 
@@ -50,9 +50,7 @@ const styles = StyleSheet.create({
         paddingTop: 20,
     },
     title: {
-        fontSize: 25,
         color: "#000",
-        fontWeight: '600',
         textAlign: "left",
         marginTop: 20,
     },
@@ -91,7 +89,7 @@ const Signup = () => {
     const navigation = useNavigation();
 
     function handleJobSeeker() {
-        navigation.navigate('Sign Up Job Seeker')
+        navigation.navigate('Sign Up Applicant')
     }
 
     function handleRecruiter() {
@@ -124,8 +122,8 @@ const Signup = () => {
                 Back
             </Button>
 
-            <Text style={{ fontSize: 25, color: "#000", fontWeight: 600, textAlign: "left", marginTop: 20, paddingHorizontal: 20 }}>Great to see you! Can you let us know your role?</Text>
-            <Text style={{ fontSize: 18, color: "#666565", fontWeight: 400, textAlign: "left", marginTop: 10, paddingHorizontal: 20 }}>Understanding your role helps us serve your needs better!</Text>
+            <CText fontSize={20} fontWeight={600} sx={{ textAlign: "left", marginTop: 20, paddingHorizontal: 20 }}>Great to see you! Can you let us know your role?</CText>
+            <CText fontSize={15} color={"#666565"} fontWeight={400} sx={{ textAlign: "left", marginTop: 10, paddingHorizontal: 20 }}>Understanding your role helps us serve your needs better!</CText>
             <View style={styles.cardContainer}>
                 {roleArray.map((d) => {
                     return <ClickableCard key={d.key} image={d.image} name={d.name} onPress={d.onPress} />

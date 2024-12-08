@@ -64,6 +64,28 @@ export const createApplicant = async (data) => {
     }
 };
 
+export const updateApplicant = async (data) => {
+    console.log(data)
+    console.log(data.id)
+    const url = API_BASE_URL;
+    try {
+        const response = await axios.put(url + "/data/applicant", data, {
+            headers: {
+                'Content-Type': 'application/json',
+                // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
+            }
+        });
+        // console.log(data.id)
+        console.log('Response:', response.data);
+        if (response.data?.message === "Data updated successfully") {
+            logInIfSignUp("applicant", "applicant_id", data?.id)
+        }
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
 export const updateRecruiter = async (data) => {
     console.log(data)
     console.log(data.id)

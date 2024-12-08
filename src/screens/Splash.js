@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-paper';
 import { clearUserData, getUserData } from '../services/UserDataService';
+import CText from '../components/CText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,9 +25,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bottomText: {
-        fontSize: 15,
-        color: "#666565",
-        fontWeight: '400',
+        fontSize: 10,
         textAlign: "center",
         paddingHorizontal: 20,
     },
@@ -40,7 +39,7 @@ const Splash = () => {
         if(userData?.role === "company"){
             navigation.navigate('Bottom Navigation App');
         } else if(userData?.role === "applicant"){
-            navigation.navigate('Bottom Navigation Job Seeker');
+            navigation.navigate('Bottom Navigation Applicant');
         } else if(userData?.role === "recruiter"){
             navigation.navigate('Bottom Navigation Recruiter');
         } else {
@@ -55,15 +54,15 @@ const Splash = () => {
                 style={styles.image}
                 resizeMode="contain" // Adjust this as needed
             />
-            <Text style={{ fontSize: 30, color: "#000", fontWeight: 600, textAlign: "center", paddingHorizontal: 20 }}>Welcome to the future of work.</Text>
-            <Text style={{ fontSize: 18, color: "#403f3e", fontWeight: 400, textAlign: "center", paddingHorizontal: 20, marginTop: 15 }}>Find your next job, learn new skills or hire top talent. All on one top platform</Text>
+            <CText fontWeight={600} fontSize={25} sx={{ color: "#000", textAlign: "center", paddingHorizontal: 20 }}>Welcome to the future of work.</CText>
+            <CText sx={{ fontSize: 15, color: "#403f3e", fontWeight: 400, textAlign: "center", paddingHorizontal: 20, marginTop: 15 }}>Find your next job, learn new skills or hire top talent. All on one top platform</CText>
             <Button style={{borderRadius:5}} width={width * 0.9} marginTop={20} mode="contained" buttonColor={"black"} onPress={handleGetStart}>
                 Get Started
             </Button>
             <View style={styles.bottomTextContainer}>
-                <Text style={styles.bottomText}>
+                <CText color={"#666565"} fontWeight={400} sx={styles.bottomText}>
                     By clicking "Get Started" you agree to our Terms of Service and Privacy Policy
-                </Text>
+                </CText>
             </View>
         </View>
     );

@@ -2,6 +2,7 @@ import { View, Text, Dimensions, StyleSheet, Image } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-paper';
+import CText from '../components/CText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,8 +25,6 @@ const styles = StyleSheet.create({
     },
     bottomText: {
         fontSize: 15,
-        color: "#666565",
-        fontWeight: '400',
         textAlign: "center",
         paddingHorizontal: 20,
     },
@@ -50,7 +49,7 @@ const GetStarted = () => {
                 style={styles.image}
                 resizeMode="contain" // Adjust this as needed
             />
-            <Text style={{ fontSize: 30, color: "#000", fontWeight: 600, textAlign: "center", paddingHorizontal: 20 }}>Welcome to the future of work.</Text>
+            <CText fontSize={25} textAlign='center' fontWeight={600} sx={{ color: "#000", paddingHorizontal: 20 }}>Welcome to the future of work.</CText>
             <View style={{ flexDirection:"row", gap:5}}>
                 <Button style={{ borderRadius: 5 }} width={width * 0.4} marginTop={20} mode="contained" buttonColor={"black"} onPress={handleSignup}>
                     Sign Up
@@ -60,9 +59,9 @@ const GetStarted = () => {
                 </Button>
             </View>
             <View style={styles.bottomTextContainer}>
-                <Text style={styles.bottomText}>
+                <CText fontWeight={400} color={"#666565"} sx={styles.bottomText}>
                     By signing up, you agree to our Terms and Privacy Policy
-                </Text>
+                </CText>
             </View>
         </View>
     )
