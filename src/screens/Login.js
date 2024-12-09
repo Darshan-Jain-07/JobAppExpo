@@ -16,7 +16,15 @@ const { width, height } = Dimensions.get('window');
 const validationSchema = Yup.object().shape({
     role: Yup.string().required('Role is required'),
     email: Yup.string()
-        .email('Invalid email')
+    .matches(
+        /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{1,}$/,
+        'Invalid Email'
+      )
+      .test('only-one-dot', 'Invalid Email', (value) => {
+        // Check if the email contains exactly one dot after the '@'
+        const dotCount = (value.match(/\./g) || []).length;
+        return dotCount === 1;
+      })
         .required('Email is required'),
     password: Yup.string()
         .min(8, 'Password must be at least 8 characters')

@@ -17,11 +17,19 @@ const validationSchema = Yup.object().shape({
         .required('Company Name is required')
         .min(3, 'Company Name must be at least 3 characters long'),
     company_email: Yup.string()
-        .email('Invalid email format')
-        .required('Company Email is required'),
+    .matches(
+        /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+        'Invalid Email'
+      )
+      .test('only-one-dot', 'Invalid Email', (value) => {
+        // Check if the email contains exactly one dot after the '@'
+        const dotCount = (value.match(/\./g) || []).length;
+        return dotCount === 1;
+      })
+      .required('Email is required.'),
     company_password: Yup.string()
         .required('Company Password is required')
-        .min(6, 'Password must be at least 6 characters'),
+        .min(8, 'Password must be at least 8 characters'),
     company_phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^[6-9][0-9]{9}$/, "Phone number is not valid"),
@@ -31,7 +39,7 @@ const validationSchema = Yup.object().shape({
     company_logo: Yup.mixed().required('Company Logo is required'),
     company_recruiter_password: Yup.string()
         .required('Recruiter Password is required')
-        .min(6, 'Recruiter Password must be at least 6 characters'), // Recruiter password validation
+        .min(8, 'Recruiter Password must be at least 8 characters'), // Recruiter password validation
 });
 
 const SignUpCompany = () => {
@@ -280,7 +288,11 @@ const SignUpCompany = () => {
                                         label="Company Phone No."
                                         style={styles.input}
                                         value={values.company_phone}
-                                        onChangeText={handleChange('company_phone')}
+                                        onChangeText={(e)=>{
+                                            if (/^\d*$/.test(e) && e.length <= 10) {
+                                                setFieldValue('company_phone', e);
+                                            }
+                                        }}
                                         onBlur={handleBlur('company_phone')}
                                         mode="outlined"
                                         keyboardType="phone-pad"

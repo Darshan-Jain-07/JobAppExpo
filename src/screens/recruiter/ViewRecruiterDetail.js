@@ -72,10 +72,10 @@ const ViewRecruiterDetail = () => {
                             <CText fontWeight={600} sx={styles.label}>Password: </CText>{recruiter.recruiter_password}
                         </CText>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Created At: </CText>{dayjs(recruiter.created_at).format('DD/MM/YYYY')}
+                            <CText fontWeight={600} sx={styles.label}>Created At: </CText>{dayjs(recruiter.created_at).format('DD/MM/YYYY hh:mm a')}
                         </CText>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Updated At: </CText>{dayjs(recruiter.updated_at).format('DD/MM/YYYY')}
+                            <CText fontWeight={600} sx={styles.label}>Updated At: </CText>{dayjs(recruiter.updated_at).format('DD/MM/YYYY hh:mm a')}
                         </CText>
                     </View>
                 </Card.Content>

@@ -49,8 +49,8 @@ const ProfilePage = ({ navigation }) => {
     {
       title: 'Blog',
       data: [
-        { key: 'Create Blog', text: 'Write Blog', icon: 'pencil' },
-        { key: 'viewBlog', text: 'View Blog', icon: 'file-text' },
+        { key: 'Create Blog', text: 'Write Blog', icon: 'pencil', onPress:() => navigation.navigate("Create Blog Applicant") },
+        { key: 'viewBlog', text: 'View Blog', icon: 'file-text', onPress:() => navigation.navigate("Blog List Applicant") },
       ],
     },
     {

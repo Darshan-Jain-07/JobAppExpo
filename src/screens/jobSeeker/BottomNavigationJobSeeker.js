@@ -12,6 +12,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, View, Text } from 'react-native';
 import CustomHeader from './CustomHeaderApplicant';
 import ProfilePage from './Profile';
+import CreateBlogScreen from '../company/CreateBlog';
+import BlogListScreen from '../company/BlogList';
+import BlogPage from '../company/BlogDetail';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
 // import CustomHeader from './Header';
@@ -63,6 +66,31 @@ function HomeStack() {
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Home" />,
+                }}
+            />
+            <Stack.Screen
+                name="Create Blog Applicant"
+                component={CreateBlogScreen}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Write a Blog" />,
+                }}
+            />
+            <Stack.Screen
+                name="Blog List Applicant"
+                component={BlogListScreen}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Blogs" />,
+                }}
+            />
+            <Stack.Screen
+                name="Blog Detail"
+                component={BlogPage}
+                // options={{ headerShown: false }} // TODO: Customize the header for each tab
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Blog" />,
                 }}
             />
             <Stack.Screen

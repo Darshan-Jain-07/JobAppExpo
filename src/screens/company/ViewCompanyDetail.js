@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import { Card, Button, IconButton } from 'react-native-paper';
+import { Card, Button, IconButton, ActivityIndicator } from 'react-native-paper';
 import { getUserData } from '../../services/UserDataService';
 import { useNavigation } from '@react-navigation/native';
 import dayjs from 'dayjs';
@@ -9,6 +9,7 @@ import CText from '../../components/CText';
 const ViewCompanyDetail = () => {
     const [ company, setCompany ] = useState({});
     const navigation = useNavigation();
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
     useEffect(() => {
         // Define an async function inside the useEffect
         const fetchData = async () => {
@@ -16,14 +17,24 @@ const ViewCompanyDetail = () => {
                 const data = await getUserData();
                 setCompany(data);
                 console.log(data);
+                setIsDataLoaded(true);
             } catch (error) {
                 console.error('Error fetching data:', error);
+                setIsDataLoaded(true);
             }
         };
 
         // Call the async function
         fetchData();
     }, []);
+
+    if (!isDataLoaded) {
+        return (
+          <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+            <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+          </View>
+        )
+      }
     return (
         <View style={styles.cardContainer}>
             <Button
@@ -63,10 +74,10 @@ const ViewCompanyDetail = () => {
                             <CText fontWeight={600} sx={styles.label}>Recruiter Password: </CText>{company.company_recruiter_password}
                         </CText>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Created At: </CText>{dayjs(company.created_at).format('DD/MM/YYYY')}
+                            <CText fontWeight={600} sx={styles.label}>Created At: </CText>{dayjs(company.created_at).format('DD/MM/YYYY hh:mm a')}
                         </CText>
                         <CText sx={styles.detailText}>
-                            <CText fontWeight={600} sx={styles.label}>Updated At: </CText>{dayjs(company.updated_at).format('DD/MM/YYYY')}
+                            <CText fontWeight={600} sx={styles.label}>Updated At: </CText>{dayjs(company.updated_at).format('DD/MM/YYYY hh:mm a')}
                         </CText>
                     </View>
                 </Card.Content>
