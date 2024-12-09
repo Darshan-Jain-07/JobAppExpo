@@ -4,6 +4,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // const API_BASE_URL = 'http://192.168.185.35:3000';
 
+export const identifyTable = async (id) => {
+    let table
+    switch (id.substring(0, 4)) {
+        case "APLT":
+            table = "applicant"
+            break;
+        case "COMP":
+            table = "company"
+            break;
+        case "RECR":
+            table = "recruiter"
+            break;
+        default:
+            break;
+    }
+    return table
+}
+
 export const createCompany = async (data) => {
     const url = API_BASE_URL;
     try {
@@ -110,11 +128,11 @@ export const updateRecruiter = async (data) => {
 
 export const createRecruiter = async (data) => {
     const url = API_BASE_URL;
-    console.log(data,"In crete Recruiter")
-    if(data?.company_email_id !== ""){
+    console.log(data, "In crete Recruiter")
+    if (data?.company_email_id !== "") {
         let isCorrectUser = await authenticateRecruiter(data?.company_email_id, data?.company_password)
-        console.log(isCorrectUser,"authenticateRecruiter")
-        if(!isCorrectUser.length){
+        console.log(isCorrectUser, "authenticateRecruiter")
+        if (!isCorrectUser.length) {
             return "Company email id and/or Company Password is wrong"
         }
     }
@@ -142,6 +160,7 @@ export const createRecruiter = async (data) => {
 
 export const logIn = async (table, email, password) => {
     const url = API_BASE_URL;
+    console.log(url);
     try {
         const response = await axios.get(url + `/data/${table}?${table}_email=${email}&${table}_password=${password}`, {
             headers: {
@@ -165,7 +184,24 @@ export const logInIfSignUp = async (table, col_name, id) => {
             }
         });
         console.log('Response:', response.data);
-        await AsyncStorage.setItem('user', JSON.stringify({...response.data?.[0], role:table}));
+        await AsyncStorage.setItem('user', JSON.stringify({ ...response.data?.[0], role: table }));
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
+export const getUserInfo = async (id) => {
+    const url = API_BASE_URL;
+    let table = await identifyTable(id);
+
+    try {
+        const response = await axios.get(url + `/data/${table}?${table}_id=${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);

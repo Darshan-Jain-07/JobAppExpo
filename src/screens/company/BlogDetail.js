@@ -1,62 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import CText from '../../components/CText';
+import { ActivityIndicator } from 'react-native-paper';
+import dayjs from 'dayjs';
+import { getBlog } from '../../services/BlogService';
 
 const BlogPage = ({ route }) => {
   const { blogId } = route.params;
-  const blogDetails = {
-    title: "How to Build a Blog App in React Native",
-    date: "November 14, 2024",
-    author: "Jane Doe",
-    content: `
-      React Native is a popular framework for building mobile applications using JavaScript and React. 
-      It allows developers to write applications for both iOS and Android platforms using a single codebase. 
-      In this tutorial, we will learn how to create a simple blog app in React Native.
-      
-      ## Prerequisites:
-      - You should have basic knowledge of JavaScript and React.
-      - You need to have React Native set up on your machine (you can follow the official React Native documentation to get started).
+  const [isDataLoaded, setIsDataLoaded] = useState(false)
+  const [blogDetail, setBlogDetail] = useState([])
 
-      ## Setting up the Project:
-      To start, create a new React Native project using the following command:
-      
-      \`\`\`
-      npx react-native init BlogApp
-      \`\`\`
+  useEffect(() => {
+    // Define an async function inside the useEffect
+    const fetchData = async () => {
+      try {
+        const data = await getBlog(blogId);
+        setBlogDetail(data?.[0])
+        console.log(data);
+        setIsDataLoaded(true);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setIsDataLoaded(true);
+      }
+    };
 
-      ## App Structure:
-      Your project structure should look like this:
-      - App.js: Main file where you'll write the logic.
-      - assets/: Folder to store images.
-      - components/: Folder for reusable components (like BlogCard).
-      - styles/: Folder to store styles for the app.
-      
-      ## Conclusion:
-      With the above steps, you can create a simple blog app using React Native. Once you are comfortable with this, you can explore adding more features such as user authentication, API integration, and much more.
+    // Call the async function
+    fetchData();
+  }, []);
 
-      Happy coding!
-    `,
-    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyv_ORNd0zcFnrBQlA3SSRU3S3dDs0KSt-NA&s",
-  };
+  if (!isDataLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    )
+  }
 
   console.log(blogId)
 
   return (
     <ScrollView style={styles.container}>
       {/* Blog Image */}
-      <Image source={{ uri: blogDetails.imageUrl }} style={styles.blogImage} />
+      <Image source={{ uri: blogDetail.blog_image }} style={styles.blogImage} />
 
       {/* Blog Title */}
-      <CText fontWeight={700} sx={styles.title}>{blogDetails.title}</CText>
+      <CText fontWeight={700} sx={styles.title}>{blogDetail.blog_title}</CText>
 
       {/* Blog Meta Information */}
       <View style={styles.metaContainer}>
-        <CText sx={styles.date}>{blogDetails.date}</CText>
-        <CText sx={styles.author}>By {blogDetails.author}</CText>
+        <CText sx={styles.date}>{dayjs(blogDetail.created_at).format('DD/MM/YYYY hh:mm a')}</CText>
+        <CText sx={styles.author}>By {blogDetail.created_by_name}</CText>
       </View>
 
       {/* Blog Content */}
-      <CText sx={styles.content}>{blogDetails.content}</CText>
+      <CText sx={styles.content}>{blogDetail.blog_description}</CText>
     </ScrollView>
   );
 };

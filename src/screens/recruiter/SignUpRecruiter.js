@@ -15,13 +15,21 @@ import CText from '../../components/CText';
 const validationSchema = Yup.object().shape({
     recruiter_name: Yup.string()
         .required('Recruiter Name is required')
-        .min(3, 'Recruiter Name must be at least 3 characters long'),
-    recruiter_email: Yup.string()
-        .email('Invalid email format')
-        .required('Recruiter Email is required'),
+        .min(3, 'Recruiter Name must be at least 3 characters long')
+        .matches(/^[a-zA-Z\s]+$/, 'Username must contain only letters.'),
+        recruiter_email: Yup.string().matches(
+            /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+            'Invalid Email'
+          )
+          .test('only-one-dot', 'Invalid Email', (value) => {
+            // Check if the email contains exactly one dot after the '@'
+            const dotCount = (value.match(/\./g) || []).length;
+            return dotCount === 1;
+          })
+          .required('Email is required.'),
     recruiter_password: Yup.string()
         .required('Recruiter Password is required')
-        .min(6, 'Password must be at least 6 characters'),
+        .min(8, 'Password must be at least 8 characters'),
     recruiter_phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^[6-9][0-9]{9}$/, "Phone number is not valid"),
@@ -29,7 +37,15 @@ const validationSchema = Yup.object().shape({
         .required('Recruiter Description is required')
         .max(200, 'Description cannot exceed 200 characters'),
     company_email_id: Yup.string()
-        .email('Invalid email format')
+    .matches(
+        /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+        'Invalid Email'
+      )
+      .test('only-one-dot', 'Invalid Email', (value) => {
+        // Check if the email contains exactly one dot after the '@'
+        const dotCount = (value.match(/\./g) || []).length;
+        return dotCount === 1;
+      })
         .optional(), // email is optional
     recruiter_image: Yup.string().required('Profile Image is required'),
 });
@@ -201,7 +217,11 @@ const SignUpRecruiter = () => {
                                         label="Recruiter Phone No."
                                         style={styles.input}
                                         value={values.recruiter_phone}
-                                        onChangeText={handleChange('recruiter_phone')}
+                                        onChangeText={(e)=>{
+                                            if (/^\d*$/.test(e) && e.length <= 10) {
+                                                setFieldValue('recruiter_phone', e);
+                                            }
+                                        }}
                                         onBlur={handleBlur('recruiter_phone')}
                                         mode="outlined"
                                         keyboardType="phone-pad"

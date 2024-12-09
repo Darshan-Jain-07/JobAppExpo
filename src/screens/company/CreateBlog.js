@@ -1,34 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker'; // Using react-native-image-picker
 import { ErrorMessage, Formik } from 'formik';
 import * as Yup from 'yup';
 import CText from '../../components/CText';
 import CustomImageUploader from '../../components/CimageUploader';
-import { Button } from 'react-native-paper';
+import { ActivityIndicator, Button } from 'react-native-paper';
+import { getUserData } from '../../services/UserDataService';
+import { useNavigation } from '@react-navigation/native';
+import { createBlog } from '../../services/BlogService';
 
 const CreateBlogScreen = () => {
-  const [image, setImage] = useState(null); // State to store selected image
+  const [userData, setUserDate] = useState();
+  const navigate = useNavigation();
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // Image picker handler using react-native-image-picker
-  const pickImage = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        quality: 1,
-        includeBase64: false, // Set true if you need base64 encoding of image
-      },
-      (response) => {
-        if (response.didCancel) {
-          console.log('User canceled image picker');
-        } else if (response.errorCode) {
-          console.log('ImagePicker Error: ', response.errorCode);
-        } else {
-          setImage(response.assets[0].uri); // Get URI of the selected image
-        }
+  useEffect(() => {
+    // Define an async function inside the useEffect
+    const fetchData = async () => {
+      try {
+        const data = await getUserData();
+        setUserDate(data)
+        console.log(data);
+        setIsDataLoaded(true);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setIsDataLoaded(true);
       }
-    );
-  };
+    };
+
+    // Call the async function
+    fetchData();
+  }, []);
+
+  if (!isDataLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    )
+  }
 
   // Validation schema using Yup
   const validationSchema = Yup.object({
@@ -48,9 +59,12 @@ const CreateBlogScreen = () => {
   });
 
   // Form submission handler
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     console.log('Form Values:', values);
+    let response = await createBlog(values);
+    console.log(response)
     Alert.alert('Blog Created', 'Your blog has been successfully created!');
+    navigate.navigate('Home', { screen: 'Profile' })
   };
 
   return (
@@ -58,22 +72,31 @@ const CreateBlogScreen = () => {
       <CText fontWeight={600} sx={styles.header}>Create Blog</CText>
 
       <Formik
-        initialValues={{ blog_title: '', blog_description: '', blog_image: null }}
+        initialValues={{
+          blog_title: '',
+          blog_description: '',
+          blog_image: null,
+          created_by_id: userData?.role === "company" ? userData?.company_id : userData?.role === "applicant" ? userData?.applicant_id : userData?.role === "recruiter" ? userData?.recruiter_id : "",
+          created_by_name: userData?.role === "company" ? userData?.company_name : userData?.role === "applicant" ? userData?.applicant_name : userData?.role === "recruiter" ? userData?.recruiter_name : "",
+          blog_views: 0,
+          blog_likes: 0,
+          is_deleted: "false",
+        }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
           <View style={styles.form}>
             {/* Topic */}
-            <View style={{marginBottom:6}}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Blog Topic"
-              onChangeText={handleChange('blog_title')}
-              onBlur={handleBlur('blog_title')}
-              value={values.blog_title}
-            />
-            {errors.blog_title && touched.blog_title && <CText sx={styles.errorText}>{errors.blog_title}</CText>}
+            <View style={{ marginBottom: 6 }}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Blog Topic"
+                onChangeText={handleChange('blog_title')}
+                onBlur={handleBlur('blog_title')}
+                value={values.blog_title}
+              />
+              {errors.blog_title && touched.blog_title && <CText sx={styles.errorText}>{errors.blog_title}</CText>}
             </View>
             {/* Description */}
             <TextInput

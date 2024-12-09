@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CText from '../../components/CText';
+import { getBlog } from '../../services/BlogService';
+import { ActivityIndicator } from 'react-native-paper';
+import dayjs from 'dayjs';
 
 // Helper function to estimate reading time
 const calculateReadingTime = (content) => {
@@ -14,29 +17,34 @@ const calculateReadingTime = (content) => {
 
 const BlogListScreen = () => {
   const navigation = useNavigation();
+  const [isDataLoaded, setIsDataLoaded] = useState(false)
+  const [blogData, setBlogData] = useState([])
 
-  // Sample blog data
-  const blogs = [
-    {
-      id: '1',
-      title: 'The Future of AI',
-      excerpt: 'Artificial Intelligence is changing the world in incredible ways...',
-      content: 'Artificial Intelligence is changing the world in incredible ways. From autonomous vehicles to AI-driven medical research, AI is making its mark across various industries...',
-      imageUrl: 'https://via.placeholder.com/150',
-      author: 'John Doe',
-      date: '2024-11-01',
-    },
-    {
-      id: '2',
-      title: 'Tech Innovations in 2024',
-      excerpt: 'The tech industry continues to evolve rapidly. Here are the top trends...',
-      content: 'The tech industry continues to evolve rapidly. In 2024, we expect a continued surge in innovations such as 5G, machine learning, and the Internet of Things (IoT)...',
-      imageUrl: 'https://via.placeholder.com/150',
-      author: 'Jane Smith',
-      date: '2024-10-25',
-    },
-    // More blogs...
-  ];
+  useEffect(() => {
+    // Define an async function inside the useEffect
+    const fetchData = async () => {
+      try {
+        const data = await getBlog();
+        setBlogData(data)
+        console.log(data);
+        setIsDataLoaded(true);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setIsDataLoaded(true);
+      }
+    };
+
+    // Call the async function
+    fetchData();
+  }, []);
+
+  if (!isDataLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    )
+  }
 
   function truncateDecs(description) {
     const maxLength = 70;
@@ -52,22 +60,22 @@ const BlogListScreen = () => {
     navigation.navigate('Blog Detail', { blogId });
   };
 
-  const renderBlogCard = ({ item }) => {
-    const readingTime = calculateReadingTime(item.content);
+  const renderBlogCard = async ({ item }) => {
+    const readingTime = calculateReadingTime(item.blog_description);
 
     return (
-      <TouchableOpacity style={styles.card} onPress={() => handleBlogPress(item.id)}>
+      <TouchableOpacity style={styles.card} onPress={() => handleBlogPress(item.blog_id)}>
         <View>
-          <Image source={{ uri: item.imageUrl }} style={styles.blogImage} />
+          <Image source={{ uri: item.blog_image }} style={styles.blogImage} />
           <View style={{ flex: 1, flexDirection: "row", marginTop: 7 }}>
             <Icon name="clock-o" size={16} color="#777" style={styles.readingTimeIcon} />
             <CText sx={styles.readingTimeText}>{readingTime} min read</CText>
           </View>
         </View>
         <View style={styles.cardContent}>
-          <CText fontWeight={600} sx={styles.blogTitle}>{item.title}</CText>
-          <CText sx={styles.blogExcerpt}>{truncateDecs(item.content)}</CText>
-          <CText sx={styles.blogAuthor}>By {item.author} - {item.date}</CText>
+          <CText fontWeight={600} sx={styles.blogTitle}>{item.blog_title}</CText>
+          <CText sx={styles.blogExcerpt}>{truncateDecs(item.blog_description)}</CText>
+          <CText sx={styles.blogAuthor}>By {item.created_by_name} - {dayjs(item.created_at).format("DD/MM/YYYY")}</CText>
           <View style={styles.readingTimeContainer}>
           </View>
         </View>
@@ -78,9 +86,9 @@ const BlogListScreen = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={blogs}
+        data={blogData}
         renderItem={renderBlogCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.blog_id}
         contentContainerStyle={styles.listContainer}
       />
     </View>
