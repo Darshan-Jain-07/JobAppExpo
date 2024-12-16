@@ -5,31 +5,41 @@ import { Formik, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { createRecruiter, updateRecruiter } from '../../services/AuthService';  // Adjust path for your service
+import { authenticateRecruiter, createRecruiter, updateRecruiter } from '../../services/AuthService';  // Adjust path for your service
 import axios from 'axios';
 import CustomImageUploader from '../../components/CimageUploader';
 import { getUserData } from '../../services/UserDataService';
 import CText from '../../components/CText';
+import { sendOtp, verifyOtp } from '../../services/EmailOtpService';
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
     recruiter_name: Yup.string()
         .required('Recruiter Name is required')
-        .min(3, 'Recruiter Name must be at least 3 characters long')
+        .min(2, 'Recruiter Name must be at least 2 characters long')
         .matches(/^[a-zA-Z\s]+$/, 'Username must contain only letters.'),
-        recruiter_email: Yup.string().matches(
-            /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+    recruiter_email: Yup.string()
+        // .matches(
+        // /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+        // 'Invalid Email'
+        //   )
+        .matches(
+            /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/, // Updated to match lowercase letters only
             'Invalid Email'
-          )
-          .test('only-one-dot', 'Invalid Email', (value) => {
-            // Check if the email contains exactly one dot after the '@'
-            const dotCount = (value.match(/\./g) || []).length;
-            return dotCount === 1;
-          })
-          .required('Email is required.'),
+        )
+        //   .test('only-one-dot', 'Invalid Email', (value) => {
+        // Check if the email contains exactly one dot after the '@'
+        // const dotCount = (value.match(/\./g) || []).length;
+        // return dotCount === 1;
+        //   })
+        .required('Email is required.'),
     recruiter_password: Yup.string()
-        .required('Recruiter Password is required')
-        .min(8, 'Password must be at least 8 characters'),
+        .required('Recruiter Password is required')  // Makes the password field required
+        .min(8, 'Password must be at least 8 characters long')  // Ensures password is at least 8 characters long
+        .matches(/[a-z]/, 'Password must contain at least one lowercase letter')  // Ensures at least one lowercase letter
+        .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')  // Ensures at least one uppercase letter
+        .matches(/[\W_]/, 'Password must contain at least one special symbol')  // Ensures at least one special character (non-alphanumeric)
+        .matches(/[0-9]/, 'Password must contain at least one number'),  // Ensures at least one number (optional but good practice)
     recruiter_phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^[6-9][0-9]{9}$/, "Phone number is not valid"),
@@ -37,16 +47,11 @@ const validationSchema = Yup.object().shape({
         .required('Recruiter Description is required')
         .max(200, 'Description cannot exceed 200 characters'),
     company_email_id: Yup.string()
-    .matches(
-        /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-        'Invalid Email'
-      )
-      .test('only-one-dot', 'Invalid Email', (value) => {
-        // Check if the email contains exactly one dot after the '@'
-        const dotCount = (value.match(/\./g) || []).length;
-        return dotCount === 1;
-      })
-        .optional(), // email is optional
+        .matches(
+            /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/, // Updated to match lowercase letters only
+            'Invalid Email'
+        )
+        .optional(),
     recruiter_image: Yup.string().required('Profile Image is required'),
 });
 
@@ -57,6 +62,15 @@ const SignUpRecruiter = () => {
     const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState(null)
     const [isDataLoaded, setIsDataLoaded] = useState(false);
+    const [emailOtpSent, setEmailOtpSent] = useState(false);
+    const [emailOtp, setEmailOtp] = useState('');
+
+    const handleSendEmailOtp = async (email) => {
+        setEmailOtpSent(false);
+        let d = await sendOtp({ email });
+        console.log(d);
+        setEmailOtpSent(true);
+    };
 
     useEffect(() => {
         // Define an async function inside the useEffect
@@ -86,7 +100,7 @@ const SignUpRecruiter = () => {
 
     const handleSubmit = async (values, { setFieldValue }) => {
         console.log(values)
-        if(userData){
+        if (userData) {
             try {
                 delete values["company_password"]
                 const response = await updateRecruiter(values);
@@ -108,17 +122,33 @@ const SignUpRecruiter = () => {
         }
         console.log(values)
         try {
-            delete values["id"]
-            const response = await createRecruiter(values);
-            if (response === "Company email id and/or Company Password is wrong") {
-                setFieldValue("company_email_id", "")
-                setFieldValue("company_password", "")
-                Alert.alert('Failed', 'Company email id and/or Company Password is wrong!');
-                return
+            delete values["id"];
+            if (values?.company_email_id !== "") {
+                let isCorrectUser = await authenticateRecruiter(values?.company_email_id, values?.company_password)
+                console.log(isCorrectUser, "authenticateRecruiter")
+                if (!isCorrectUser.length) {
+                    setFieldValue("company_email_id", "")
+                    setFieldValue("company_password", "")
+                    Alert.alert('Failed', 'Company email id and/or Company Password is wrong!');
+                    return
+                }
             }
-            Alert.alert('Success', 'Recruiter Registration Successful!');
-            navigation.navigate('Bottom Navigation Recruiter');
-            console.log(response);
+            let verified = await verifyOtp({ email: values?.recruiter_email, otp: emailOtp });
+            console.log(verified)
+            if (verified?.message === "OTP verified successfully!") {
+                const response = await createRecruiter(values);
+                if (response === "Company email id and/or Company Password is wrong") {
+                    setFieldValue("company_email_id", "")
+                    setFieldValue("company_password", "")
+                    Alert.alert('Failed', 'Company email id and/or Company Password is wrong!');
+                    return
+                }
+                Alert.alert('Success', 'Recruiter Registration Successful!');
+                navigation.navigate('Bottom Navigation Recruiter');
+                console.log(response);
+            } else {
+                Alert.alert('Error', 'Invalid OTP!');
+            }
         } catch (error) {
             Alert.alert('Error', 'There was an issue submitting the form. Please try again.');
         }
@@ -157,7 +187,7 @@ const SignUpRecruiter = () => {
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue, touched }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue, touched, errors }) => (
                             <View style={styles.formContainer}>
                                 {/* Recruiter Id */}
                                 {userData && <View style={{ marginBottom: 6 }}>
@@ -190,6 +220,7 @@ const SignUpRecruiter = () => {
                                         style={styles.input}
                                         disabled={userData}
                                         value={values.recruiter_email}
+                                        autoCapitalize='none'
                                         onChangeText={handleChange('recruiter_email')}
                                         onBlur={handleBlur('recruiter_email')}
                                         mode="outlined"
@@ -203,7 +234,11 @@ const SignUpRecruiter = () => {
                                         label="Recruiter Password"
                                         style={styles.input}
                                         value={values.recruiter_password}
-                                        onChangeText={handleChange('recruiter_password')}
+                                        // onChangeText={handleChange('recruiter_password')}
+                                        onChangeText={(e) => {
+                                            const valueWithoutSpaces = e.replace(/\s/g, "");
+                                            setFieldValue("recruiter_password", valueWithoutSpaces);
+                                        }}
                                         onBlur={handleBlur('recruiter_password')}
                                         mode="outlined"
                                         secureTextEntry={secureTextEntry}
@@ -217,7 +252,7 @@ const SignUpRecruiter = () => {
                                         label="Recruiter Phone No."
                                         style={styles.input}
                                         value={values.recruiter_phone}
-                                        onChangeText={(e)=>{
+                                        onChangeText={(e) => {
                                             if (/^\d*$/.test(e) && e.length <= 10) {
                                                 setFieldValue('recruiter_phone', e);
                                             }
@@ -234,6 +269,7 @@ const SignUpRecruiter = () => {
                                         label="Company Email ID (Optional)"
                                         style={styles.input}
                                         disabled={userData}
+                                        autoCapitalize='none'
                                         value={values.company_email_id}
                                         onChangeText={handleChange('company_email_id')}
                                         onBlur={handleBlur('company_email_id')}
@@ -280,6 +316,36 @@ const SignUpRecruiter = () => {
                                     placeholder={"Select Profile Image"}
                                 />
                                 <ErrorMessage name="recruiter_image" component={CText} sx={styles.errorMessage} />
+                                {(!Boolean(errors?.recruiter_email)) && values?.recruiter_email !== "" && (
+                                    <Button
+                                        mode="outlined"
+                                        onPress={() => handleSendEmailOtp(values?.recruiter_email)}
+                                        style={styles.otpButton}
+                                    // disabled={!emailOtpSent}
+                                    >
+                                        <Text style={styles.otpButtonText}>
+                                            {emailOtpSent ? "Resend Email OTP" : "Send Email OTP"}
+                                        </Text>
+                                    </Button>
+                                )}
+                                {emailOtpSent && (
+                                    <TextInput
+                                        label="Enter Email OTP"
+                                        style={styles.input}
+                                        mode="outlined"
+                                        onChangeText={(e) => {
+                                            if (/^\d*$/.test(e)) {
+                                                setEmailOtp(e);
+                                            }
+                                        }}
+                                        value={emailOtp}
+                                        keyboardType="number-pad"
+                                    />
+                                )}
+
+                                {emailOtpSent && (
+                                    <Text style={styles.otpSentText}>OTP Sent to your email</Text>
+                                )}
                                 {/* Submit Button */}
                                 <Button
                                     mode="contained"
@@ -335,6 +401,27 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderRadius: 8,
         backgroundColor: "black"
+    },
+    otpButton: {
+        borderRadius: 5,
+        // marginHorizontal: 16,
+        marginTop: 10,
+        backgroundColor: '#f5f5f5',
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+    },
+    otpButtonText: {
+        color: 'black',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    otpSentText: {
+        color: 'green',
+        fontSize: 12,
+        marginTop: 5,
+        textAlign: 'center',
     },
 });
 

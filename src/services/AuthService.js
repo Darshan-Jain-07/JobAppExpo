@@ -65,6 +65,8 @@ export const updateCompany = async (data) => {
 
 export const createApplicant = async (data) => {
     const url = API_BASE_URL;
+    console.log(data)
+    console.log("data")
     try {
         const response = await axios.post(url + "/data/applicant", data, {
             headers: {
@@ -72,6 +74,7 @@ export const createApplicant = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
+        console.log("data")
         console.log('Response:', response.data);
         if (response.data?.insertedId) {
             logInIfSignUp("applicant", "applicant_id", response?.data?.insertedId)
@@ -129,13 +132,13 @@ export const updateRecruiter = async (data) => {
 export const createRecruiter = async (data) => {
     const url = API_BASE_URL;
     console.log(data, "In crete Recruiter")
-    if (data?.company_email_id !== "") {
-        let isCorrectUser = await authenticateRecruiter(data?.company_email_id, data?.company_password)
-        console.log(isCorrectUser, "authenticateRecruiter")
-        if (!isCorrectUser.length) {
-            return "Company email id and/or Company Password is wrong"
-        }
-    }
+    // if (data?.company_email_id !== "") {
+    //     let isCorrectUser = await authenticateRecruiter(data?.company_email_id, data?.company_password)
+    //     console.log(isCorrectUser, "authenticateRecruiter")
+    //     if (!isCorrectUser.length) {
+    //         return "Company email id and/or Company Password is wrong"
+    //     }
+    // }
     console.log("data")
     delete data["company_password"];
     console.log("data")

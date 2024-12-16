@@ -7,25 +7,53 @@ import { useNavigation } from '@react-navigation/native';
 import { createApplicant, updateApplicant } from '../../services/AuthService';
 import { getUserData } from '../../services/UserDataService';
 import CText from '../../components/CText';
+import { sendOtp, verifyOtp } from '../../services/EmailOtpService';
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
-    applicant_name: Yup.string().required('Name is required').min(3, 'Name must be at least 3 characters long')
-    .matches(/^[a-zA-Z\s]+$/, 'Username must contain only letters.'),
+    applicant_name: Yup.string().required('Name is required').min(2, 'Name must be at least 2 characters long')
+        .matches(/^[a-zA-Z\s]+$/, 'Username must contain only letters.'),
     applicant_email: Yup.string().matches(
-        /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+        /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/, // Updated to match lowercase letters only
         'Invalid Email'
-      )
-      .test('only-one-dot', 'Invalid Email', (value) => {
-        // Check if the email contains exactly one dot after the '@'
-        const dotCount = (value.match(/\./g) || []).length;
-        return dotCount === 1;
-      })
-      .required('Email is required.'),
+    )
+        // .test('only-one-dot', 'Invalid Email', (value) => {
+        //     // Ensure there is exactly one dot after the '@'
+        //     const dotCount = (value.match(/\./g) || []).length;
+        //     const atSymbolIndex = value.indexOf('@');
+        //     const substringAfterAt = value.substring(atSymbolIndex); // Get the substring after '@'
+
+        //     return dotCount === 1 && substringAfterAt.indexOf('.') !== -1; // Ensure one dot after '@'
+        // })
+        .required('Email is required.'),
+    // applicant_email: Yup.string()
+    // .email('Invalid email address') // Standard email format validation
+    // .required('Email is required') // Email field must be filled
+    // .test('single-dot-after-at', 'There must be exactly one dot after "@"', (value) => {
+    //   if (value) {
+    //     // Split the string at '@'
+    //     const parts = value.split('@');
+
+    //     if (parts.length !== 2) return false; // Ensure exactly one '@'
+
+    //     // Check if there's exactly one dot after the '@'
+    //     const domain = parts[1]; // Get the domain part (after '@')
+    //     const dotCount = domain.split('.').length - 1; // Count the dots in the domain
+
+    //     return dotCount === 1; // Return true if exactly one dot after '@'
+    //   }
+    //   return false;
+    // }),
     applicant_phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^[6-9][0-9]{9}$/, "Phone number is not valid"),
-    applicant_password: Yup.string().required('Password is required').min(8, 'Password must be at least 8 characters'),
+    applicant_password: Yup.string()
+        .required('Password is required')  // Makes the password field required
+        .min(8, 'Password must be at least 8 characters long')  // Ensures password is at least 8 characters long
+        .matches(/[a-z]/, 'Password must contain at least one lowercase letter')  // Ensures at least one lowercase letter
+        .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')  // Ensures at least one uppercase letter
+        .matches(/[\W_]/, 'Password must contain at least one special symbol')  // Ensures at least one special character (non-alphanumeric)
+        .matches(/[0-9]/, 'Password must contain at least one number'),  // Ensures at least one number (optional but good practice)
 });
 
 const SignUpJobSeeker = () => {
@@ -34,6 +62,11 @@ const SignUpJobSeeker = () => {
     const [loading, setLoading] = useState(false);
     const [applicantData, setApplicantData] = useState(null);
     const [isDataLoaded, setIsDataLoaded] = useState(false);
+    const [emailOtp, setEmailOtp] = useState('');
+    const [phoneOtp, setPhoneOtp] = useState('');
+    const [emailOtpSent, setEmailOtpSent] = useState(false);
+    const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+    const [otpLoading, setOtpLoading] = useState(false);
 
     useEffect(() => {
         // Define an async function inside the useEffect
@@ -41,7 +74,6 @@ const SignUpJobSeeker = () => {
             try {
                 const data = await getUserData();
                 setApplicantData(data);
-                console.log(data);
                 setIsDataLoaded(true); // Set data as loaded
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -67,28 +99,39 @@ const SignUpJobSeeker = () => {
                 const response = await updateApplicant(values);
                 if (response?.message === "Duplicate entry error") {
                     Alert.alert('Error', 'Same email id already exist!');
-                    return
-                } 
+                    return;
+                }
                 Alert.alert('Success', 'Job Seeker Data Updated Successfully!');
                 navigation.navigate('Bottom Navigation Applicant');
                 console.log(response);
             } catch (error) {
                 Alert.alert('Error', 'There was an issue submitting the form. Please try again.');
             }
-            return
+            return;
         }
         try {
-            delete values["id"]
-            setLoading(true);
-            let data = await createApplicant(values);
-            console.log(data)
-            if (data?.message === "Data inserted successfully") {
-                Alert.alert('Success', 'Job Seeker Registration Successful!');
-                navigation.navigate('Bottom Navigation Applicant');
-            } else if (data?.message === "Duplicate entry error") {
-                Alert.alert('Error', 'Email Id and/or Phone No. already exist!');
+            delete values["id"];
+            console.log("check")
+            console.log(values)
+            let verified = await verifyOtp({ email: values?.applicant_email, otp: emailOtp });
+            console.log(verified)
+            if (verified?.message === "OTP verified successfully!") {
+                console.log("Sahi hai")
+                setLoading(true);
+                console.log(values)
+                let data = await createApplicant(values);
+                console.log("resp")
+                console.log(data);
+                if (data?.message === "Data inserted successfully") {
+                    Alert.alert('Success', 'Job Seeker Registration Successful!');
+                    navigation.navigate('Bottom Navigation Applicant');
+                } else if (data?.message === "Duplicate entry error") {
+                    Alert.alert('Error', 'Email Id and/or Phone No. already exist!');
+                } else {
+                    Alert.alert('Error', 'Try Again Later!');
+                }
             } else {
-                Alert.alert('Error', 'Try Again Later!');
+                Alert.alert('Error', 'Invalid OTP!');
             }
             // Send data to backend for registration
             console.log(values);
@@ -97,6 +140,24 @@ const SignUpJobSeeker = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Function to handle OTP sending (simulated)
+    const handleSendEmailOtp = async (email) => {
+        setEmailOtpSent(false);
+        let d = await sendOtp({ email });
+        console.log(d);
+        setEmailOtpSent(true);
+    };
+
+    const handleSendPhoneOtp = (phone) => {
+        setOtpLoading(true);
+        // Simulate OTP sending
+        setTimeout(() => {
+            setOtpLoading(false);
+            setPhoneOtpSent(true);
+            Alert.alert('Success', 'OTP sent to your phone!');
+        }, 2000);
     };
 
     return (
@@ -124,22 +185,13 @@ const SignUpJobSeeker = () => {
                             applicant_email: applicantData?.applicant_email || '',
                             applicant_phone: applicantData?.applicant_phone || '',
                             applicant_password: applicantData?.applicant_password || '',
+                            is_deleted: 'false',
                         }}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue }) => (
+                        {({ handleChange, handleBlur, errors, handleSubmit, values, setFieldValue }) => (
                             <View style={styles.formContainer}>
-                                {/* Id */}
-                                {applicantData && <TextInput
-                                    label="Id"
-                                    style={styles.input}
-                                    disabled={true}
-                                    value={values.id}
-                                    onChangeText={handleChange('id')}
-                                    onBlur={handleBlur('id')}
-                                    mode="outlined"
-                                />}
                                 {/* Name */}
                                 <TextInput
                                     label="Name"
@@ -157,6 +209,7 @@ const SignUpJobSeeker = () => {
                                     style={styles.input}
                                     disabled={applicantData}
                                     value={values.applicant_email}
+                                    autoCapitalize='none'
                                     onChangeText={handleChange('applicant_email')}
                                     onBlur={handleBlur('applicant_email')}
                                     mode="outlined"
@@ -169,7 +222,7 @@ const SignUpJobSeeker = () => {
                                     label="Phone Number"
                                     style={styles.input}
                                     value={values.applicant_phone}
-                                    onChangeText={(e)=>{
+                                    onChangeText={(e) => {
                                         if (/^\d*$/.test(e) && e.length <= 10) {
                                             setFieldValue('applicant_phone', e);
                                         }
@@ -185,7 +238,10 @@ const SignUpJobSeeker = () => {
                                     label="Password"
                                     style={styles.input}
                                     value={values.applicant_password}
-                                    onChangeText={handleChange('applicant_password')}
+                                    onChangeText={(e) => {
+                                        const valueWithoutSpaces = e.replace(/\s/g, "");
+                                        setFieldValue("applicant_password", valueWithoutSpaces);
+                                    }}
                                     onBlur={handleBlur('applicant_password')}
                                     mode="outlined"
                                     secureTextEntry={secureTextEntry}
@@ -193,9 +249,67 @@ const SignUpJobSeeker = () => {
                                 />
                                 <ErrorMessage name="applicant_password" component={CText} sx={styles.errorMessage} />
 
+                                {/* OTP Buttons */}
+                                {(!Boolean(errors?.applicant_email)) && values?.applicant_email !== "" && (
+                                    <Button
+                                        mode="outlined"
+                                        onPress={() => handleSendEmailOtp(values?.applicant_email)}
+                                        style={styles.otpButton}
+                                    // disabled={!emailOtpSent}
+                                    >
+                                        <Text style={styles.otpButtonText}>
+                                            {emailOtpSent ? "Resend Email OTP" : "Send Email OTP"}
+                                        </Text>
+                                    </Button>
+                                )}
+
+                                {emailOtpSent && (
+                                    <TextInput
+                                        label="Enter Email OTP"
+                                        style={styles.input}
+                                        mode="outlined"
+                                        onChangeText={(e) => {
+                                            if (/^\d*$/.test(e)) {
+                                                setEmailOtp(e);
+                                            }
+                                        }}
+                                        value={emailOtp}
+                                        keyboardType="number-pad"
+                                    />
+                                )}
+
+                                {emailOtpSent && (
+                                    <Text style={styles.otpSentText}>OTP Sent to your email</Text>
+                                )}
+
+                                {/* <Button
+                                    mode="outlined"
+                                    onPress={() => handleSendPhoneOtp(values.applicant_phone)}
+                                    style={styles.otpButton}
+                                    disabled={phoneOtpSent || otpLoading}
+                                >
+                                    <Text style={styles.otpButtonText}>
+                                        {phoneOtpSent ? "Resend Phone OTP" : "Send Phone OTP"}
+                                    </Text>
+                                </Button> */}
+
+                                {/* {phoneOtpSent && (
+                                    <TextInput
+                                        label="Enter Phone OTP"
+                                        style={styles.input}
+                                        value={phoneOtp}
+                                        onChangeText={setPhoneOtp}
+                                        keyboardType="number-pad"
+                                    />
+                                )}
+
+                                {phoneOtpSent && (
+                                    <Text style={styles.otpSentText}>OTP Sent to your phone</Text>
+                                )} */}
+
                                 {/* Submit Button */}
                                 <Button mode="contained" style={styles.submitButton} onPress={handleSubmit}>
-                                    {loading ? "Loading..." : applicantData ? "Save" : "Sign Up" }
+                                    {loading ? "Loading..." : applicantData ? "Save" : "Sign Up"}
                                 </Button>
                             </View>
                         )}
@@ -206,10 +320,10 @@ const SignUpJobSeeker = () => {
     );
 };
 
+// Updated styling
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        // padding: 16,
     },
     heading: {
         color: '#000',
@@ -223,25 +337,53 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     backButtonLabel: {
-        color:"black",
+        color: "black",
     },
     formContainer: {
         marginTop: 20,
     },
     input: {
         marginHorizontal: 16,
-        marginTop:6,
+        marginTop: 6,
     },
     errorMessage: {
         color: 'red',
         marginLeft: 16,
-        fontSize:12
+        fontSize: 12,
     },
     submitButton: {
         borderRadius: 5,
         marginHorizontal: 16,
         marginTop: 20,
-        backgroundColor:"black"
+        backgroundColor: 'black',
+        paddingVertical: 12,
+        alignItems: 'center',
+    },
+    submitButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    otpButton: {
+        borderRadius: 5,
+        marginHorizontal: 16,
+        marginTop: 10,
+        backgroundColor: '#f5f5f5',
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+    },
+    otpButtonText: {
+        color: 'black',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    otpSentText: {
+        color: 'green',
+        fontSize: 12,
+        marginTop: 5,
+        textAlign: 'center',
     },
 });
 

@@ -87,13 +87,13 @@ const CText = ({ children, sx, textAlign = 'left', fontWeight, italics = false, 
 
   // Check if fonts are loaded
   
-  // if (!fontsLoaded) {
-  //   return (
-  //     <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
-  //       <ActivityIndicator animating={true} color={"#000"} size={"large"} />
-  //     </View>
-  //   )
-  // }
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <Text>Loading Font...</Text>
+      </View>
+    )
+  }
 
   // Determine font family based on fontWeight and italics
   let fontFamily;
