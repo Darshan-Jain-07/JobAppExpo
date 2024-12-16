@@ -9,13 +9,15 @@ import dayjs from 'dayjs';
 
 // Helper function to estimate reading time
 const calculateReadingTime = (content) => {
-  const wordsPerMinute = 200; // Average reading speed (words per minute)
+  const wordsPerMinute = 30; // Average reading speed (words per minute)
   const wordCount = content.split(' ').length;
   const minutes = Math.ceil(wordCount / wordsPerMinute);
   return minutes;
 };
 
-const BlogListScreen = () => {
+const BlogListScreen = ( {route} ) => {
+  let userId = route.params?.userId || 0;
+  // console.log(userId)
   const navigation = useNavigation();
   const [isDataLoaded, setIsDataLoaded] = useState(false)
   const [blogData, setBlogData] = useState([])
@@ -23,6 +25,18 @@ const BlogListScreen = () => {
   useEffect(() => {
     // Define an async function inside the useEffect
     const fetchData = async () => {
+      if (userId) { 
+        try {
+          const data = await getBlog(null, userId);
+          setBlogData(data)
+          console.log(data);
+          setIsDataLoaded(true);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          setIsDataLoaded(true);
+        }
+        return
+      }
       try {
         const data = await getBlog();
         setBlogData(data)

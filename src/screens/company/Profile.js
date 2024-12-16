@@ -50,7 +50,8 @@ const ProfilePage = ({ navigation }) => {
       title: 'Blog',
       data: [
         { key: 'Create Blog', text: 'Write Blog', icon: 'pencil', onPress: () => { navigate.navigate("Create Blog")} },
-        { key: 'viewBlog', text: 'View Blog', icon: 'file-text', onPress:() => { navigate.navigate("Blog List")} },
+        { key: 'viewBlog', text: 'View Blogs', icon: 'file-text', onPress:() => { navigate.navigate("Blog List")} },
+        { key: 'myBlog', text: 'My Blogs', icon: 'edit', onPress:() => { navigate.navigate("Blog List", { userId: userData?.company_id })} },
       ],
     },
     {

@@ -16,18 +16,18 @@ const { width, height } = Dimensions.get('window');
 const validationSchema = Yup.object().shape({
     role: Yup.string().required('Role is required'),
     email: Yup.string()
-    .matches(
-        /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{1,}$/,
-        'Invalid Email'
-      )
-      .test('only-one-dot', 'Invalid Email', (value) => {
-        // Check if the email contains exactly one dot after the '@'
-        const dotCount = (value.match(/\./g) || []).length;
-        return dotCount === 1;
-      })
+        .matches(
+            /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{1,}$/,
+            'Invalid Email'
+        )
+        .test('only-one-dot', 'Invalid Email', (value) => {
+            // Check if the email contains exactly one dot after the '@'
+            const dotCount = (value.match(/\./g) || []).length;
+            return dotCount === 1;
+        })
         .required('Email is required'),
     password: Yup.string()
-        .min(8, 'Password must be at least 8 characters')
+        // .min(8, 'Password must be at least 8 characters')
         .required('Password is required'),
 });
 
@@ -49,11 +49,13 @@ const Login = () => {
         navigation.navigate('Get Started')
     }
     async function handleSubmit(values) {
+        console.log(values)
         let response = await logIn(values.role, values.email, values.password)
+        console.log(response)
         if (!response.length) {
             Alert.alert('Failed', 'Incorrect Credentials!');
         } else {
-            await AsyncStorage.setItem('user', JSON.stringify({...response?.[0], role:values.role}));
+            await AsyncStorage.setItem('user', JSON.stringify({ ...response?.[0], role: values.role }));
             if (values.role === "company") {
                 navigation.navigate('Bottom Navigation App')
             } else if (values.role === "applicant") {
@@ -73,7 +75,7 @@ const Login = () => {
                     mode="text"
                     icon="keyboard-backspace"
                     onPress={handleBack}
-                    style={{ display: "flex", alignItems: "flex-start", paddingLeft: 10, marginTop:20 }}
+                    style={{ display: "flex", alignItems: "flex-start", paddingLeft: 10, marginTop: 20 }}
                     labelStyle={{ color: 'black' }} // Use labelStyle for text color
                 >
                     Back
@@ -103,6 +105,7 @@ const Login = () => {
                                     label="Email"
                                     style={{ marginHorizontal: 16 }}
                                     value={values.email}
+                                    autoCapitalize='none'
                                     onChangeText={text => setFieldValue('email', text)}
                                     mode='outlined'
                                 />
@@ -118,7 +121,7 @@ const Login = () => {
                                 right={<TextInput.Icon icon={secureTextEntry ? "eye-off" : "eye"} onPress={() => setSecureTextEntry(!secureTextEntry)} />}
                             />
                             <ErrorMessage name='password' component={CText} fontSize={12} color={"red"} sx={{ marginHorizontal: 16 }} />
-                            <View style={{marginHorizontal:16}}>
+                            <View style={{ marginHorizontal: 16 }}>
                                 <Button style={{ borderRadius: 5 }} marginTop={20} mode="contained" buttonColor={"black"} onPress={handleSubmit}>
                                     Login
                                 </Button>

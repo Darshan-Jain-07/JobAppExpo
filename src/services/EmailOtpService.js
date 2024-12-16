@@ -1,13 +1,12 @@
 import axios from 'axios';
 import { API_BASE_URL } from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // const API_BASE_URL = 'http://192.168.185.35:3000';
 
-export const createBlog = async (data) => {
+export const sendOtp = async (data) => {
     const url = API_BASE_URL;
     try {
-        const response = await axios.post(url + "/data/blog", data, {
+        const response = await axios.post(url + "/send-otp-email", data, {
             headers: {
                 'Content-Type': 'application/json',
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
@@ -20,14 +19,14 @@ export const createBlog = async (data) => {
     }
 };
 
-export const getBlog = async (id, userId) => {
+export const verifyOtp = async (data) => {
     const url = API_BASE_URL;
-    let endPoint = id ? `/data/blog?blog_id=${id}` : userId ? `/data/blog?created_by_id=${userId}` : `/data/blog`;
-    console.log(endPoint)
+    console.log(data)
     try {
-        const response = await axios.get(url + endPoint, {
+        const response = await axios.post(url + "/verify-otp-email", data, {
             headers: {
                 'Content-Type': 'application/json',
+                // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
         console.log('Response:', response.data);

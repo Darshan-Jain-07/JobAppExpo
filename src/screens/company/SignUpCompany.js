@@ -10,26 +10,26 @@ import axios from 'axios';
 import CustomImageUploader from '../../components/CimageUploader';
 import { getUserData } from '../../services/UserDataService';
 import CText from '../../components/CText';
+import { sendOtp, verifyOtp } from '../../services/EmailOtpService';
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
     company_name: Yup.string()
         .required('Company Name is required')
-        .min(3, 'Company Name must be at least 3 characters long'),
+        .min(2, 'Company Name must be at least 2 characters long'),
     company_email: Yup.string()
-    .matches(
-        /^[^@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-        'Invalid Email'
-      )
-      .test('only-one-dot', 'Invalid Email', (value) => {
-        // Check if the email contains exactly one dot after the '@'
-        const dotCount = (value.match(/\./g) || []).length;
-        return dotCount === 1;
-      })
-      .required('Email is required.'),
+        .matches(
+            /^[^@]+@[a-z0-9.-]+\.[a-z]{2,}$/,
+            'Invalid Email'
+        )
+        .required('Email is required.'),
     company_password: Yup.string()
-        .required('Company Password is required')
-        .min(8, 'Password must be at least 8 characters'),
+        .required('Company Password is required')  // Makes the password field required
+        .min(8, 'Password must be at least 8 characters long')  // Ensures password is at least 8 characters long
+        .matches(/[a-z]/, 'Password must contain at least one lowercase letter')  // Ensures at least one lowercase letter
+        .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')  // Ensures at least one uppercase letter
+        .matches(/[\W_]/, 'Password must contain at least one special symbol')  // Ensures at least one special character (non-alphanumeric)
+        .matches(/[0-9]/, 'Password must contain at least one number'),  // Ensures at least one number (optional but good practice)
     company_phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^[6-9][0-9]{9}$/, "Phone number is not valid"),
@@ -38,8 +38,12 @@ const validationSchema = Yup.object().shape({
         .max(200, 'Description cannot exceed 200 characters'),
     company_logo: Yup.mixed().required('Company Logo is required'),
     company_recruiter_password: Yup.string()
-        .required('Recruiter Password is required')
-        .min(8, 'Recruiter Password must be at least 8 characters'), // Recruiter password validation
+        .required('Recruiter Password is required')  // Makes the password field required
+        .min(8, 'Password must be at least 8 characters long')  // Ensures password is at least 8 characters long
+        .matches(/[a-z]/, 'Password must contain at least one lowercase letter')  // Ensures at least one lowercase letter
+        .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')  // Ensures at least one uppercase letter
+        .matches(/[\W_]/, 'Password must contain at least one special symbol')  // Ensures at least one special character (non-alphanumeric)
+        .matches(/[0-9]/, 'Password must contain at least one number'),  // Ensures at least one number (optional but good practice)
 });
 
 const SignUpCompany = () => {
@@ -49,6 +53,15 @@ const SignUpCompany = () => {
     const [loading, setLoading] = useState(null);
     const [companyData, setCompanyData] = useState(null);
     const [isDataLoaded, setIsDataLoaded] = useState(false);
+    const [emailOtpSent, setEmailOtpSent] = useState(false);
+    const [emailOtp, setEmailOtp] = useState('');
+
+    const handleSendEmailOtp = async (email) => {
+        setEmailOtpSent(false);
+        let d = await sendOtp({ email });
+        console.log(d);
+        setEmailOtpSent(true);
+    };
 
     useEffect(() => {
         // Define an async function inside the useEffect
@@ -83,7 +96,7 @@ const SignUpCompany = () => {
                 if (response?.message === "Duplicate entry error") {
                     Alert.alert('Error', 'Same email id already exist!');
                     return
-                } 
+                }
                 Alert.alert('Success', 'Company Data Updated Successfully!');
                 navigation.navigate('Bottom Navigation App');
                 console.log(response);
@@ -94,92 +107,24 @@ const SignUpCompany = () => {
         }
         try {
             delete values["id"]
-            const response = await createCompany(values);
-            if (response?.message === "Duplicate entry error") {
-                Alert.alert('Error', 'Same email id already exist!');
-                return
-            } 
-            Alert.alert('Success', 'Company Registration Successful!');
-            navigation.navigate('Bottom Navigation App');
-            console.log(response);
+            let verified = await verifyOtp({ email: values?.company_email, otp: emailOtp });
+            console.log(verified)
+            if (verified?.message === "OTP verified successfully!") {
+                const response = await createCompany(values);
+                if (response?.message === "Duplicate entry error") {
+                    Alert.alert('Error', 'Same email id already exist!');
+                    return
+                }
+                Alert.alert('Success', 'Company Registration Successful!');
+                navigation.navigate('Bottom Navigation App');
+                console.log(response);
+            } else {
+                Alert.alert('Error', 'Invalid OTP!');
+            }
         } catch (error) {
             Alert.alert('Error', 'There was an issue submitting the form. Please try again.');
         }
     };
-
-    // const uploadImageToCloudinary = async (imageUri) => {
-    //     console.log(imageUri);
-    //     if (!imageUri) return;
-
-    //     setLoading(true);
-    //     console.log("hello");
-
-    //     const formData = new FormData();
-    //     const fileType = imageUri.split(';')[0].split('/')[1]; // Extract file type from data URI
-    //     const fileName = `image.${fileType}`;
-
-    //     // Convert Base64 to Blob
-    //     const blob = await fetch(imageUri)
-    //         .then((response) => response.blob())
-    //         .catch((error) => {
-    //             console.error('Error converting Base64 to Blob:', error);
-    //             Alert.alert("Error", "Failed to process the image.");
-    //             return null;
-    //         });
-    //     console.log(blob);
-
-    //     if (blob) {
-    //         formData.append('file', blob);
-    //         formData.append('upload_preset', 'jobApp'); // Replace with your upload preset
-    //         formData.append('cloud_name', 'dwnqftgj0'); // Replace with your cloud name
-
-    //         try {
-    //             const response = await axios.post(
-    //                 'https://api.cloudinary.com/v1_1/dwnqftgj0/image/upload',
-    //                 formData,
-    //                 { headers: { 'Content-Type': 'multipart/form-data' } }
-    //             );
-    //             console.log('Response from Cloudinary:', response);
-
-    //             const cloudinaryUrl = response.data.secure_url;
-    //             console.log('Image uploaded successfully:', cloudinaryUrl);
-    //             Alert.alert('Success', 'Image uploaded successfully!');
-    //             return cloudinaryUrl;
-    //         } catch (error) {
-    //             console.error('Upload failed:', error);
-    //             Alert.alert('Upload failed', 'An error occurred while uploading the image.');
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     } else {
-    //         setLoading(false);
-    //         Alert.alert('Error', 'Failed to convert the image.');
-    //     }
-    // };
-
-    // // Function to request image picker permissions and pick an image
-    // const pickImage = async (setFieldValue, values) => {
-    //     // Request permissions to access the media library
-    //     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    //     if (!permissionResult.granted) {
-    //         Alert.alert('Permission required', 'Permission to access media library is required!');
-    //         return;
-    //     }
-
-    //     // Open the image picker to allow the user to pick an image
-    //     const result = await ImagePicker.launchImageLibraryAsync({
-    //         mediaTypes: ImagePicker.MediaType,
-    //         allowsEditing: true,
-    //         quality: 0.5,
-    //     });
-
-    //     if (!result.canceled) {
-    //         // Update Formik's company_logo field with the selected image URI
-    //         setFieldValue('company_logo', result.assets[0].uri);
-    //         let img_url = await uploadImageToCloudinary(result.assets[0].uri);
-    //         setFieldValue('company_logo', img_url);
-    //     }
-    // };
 
     return (
         <KeyboardAvoidingView
@@ -213,10 +158,10 @@ const SignUpCompany = () => {
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue, errors }) => (
                             <View style={styles.formContainer}>
                                 {/* Company Id */}
-                                { companyData && <View style={{ marginBottom: 6 }}>
+                                {companyData && <View style={{ marginBottom: 6 }}>
                                     <TextInput
                                         label="Company Id"
                                         style={styles.input}
@@ -245,6 +190,7 @@ const SignUpCompany = () => {
                                         label="Company Email"
                                         style={styles.input}
                                         value={values.company_email}
+                                        autoCapitalize='none'
                                         disabled={companyData ? true : false}
                                         onChangeText={handleChange('company_email')}
                                         onBlur={handleBlur('company_email')}
@@ -259,7 +205,10 @@ const SignUpCompany = () => {
                                         label="Company Password"
                                         style={styles.input}
                                         value={values.company_password}
-                                        onChangeText={handleChange('company_password')}
+                                        onChangeText={(e) => {
+                                            const valueWithoutSpaces = e.replace(/\s/g, "");
+                                            setFieldValue("company_password", valueWithoutSpaces);
+                                        }}
                                         onBlur={handleBlur('company_password')}
                                         mode="outlined"
                                         secureTextEntry={secureTextEntry}
@@ -279,8 +228,8 @@ const SignUpCompany = () => {
                                         secureTextEntry={secureTextEntryR}
                                         right={<TextInput.Icon icon={secureTextEntryR ? "eye-off" : "eye"} onPress={() => setSecureTextEntryR(!secureTextEntryR)} />}
                                     />
-                                    <CText sx={{ color: "#696969", marginHorizontal: 16 }}>Note: Keep it different from Company Password else recruiter will have company access</CText>
                                     <ErrorMessage name="company_recruiter_password" component={CText} sx={styles.errorMessage} />
+                                    <CText sx={{ color: "#696969", marginHorizontal: 16 }}>Note: Keep it different from Company Password else recruiter will have company access</CText>
                                 </View>
                                 {/* Company Phone */}
                                 <View style={{ marginBottom: 6 }}>
@@ -288,7 +237,7 @@ const SignUpCompany = () => {
                                         label="Company Phone No."
                                         style={styles.input}
                                         value={values.company_phone}
-                                        onChangeText={(e)=>{
+                                        onChangeText={(e) => {
                                             if (/^\d*$/.test(e) && e.length <= 10) {
                                                 setFieldValue('company_phone', e);
                                             }
@@ -325,6 +274,36 @@ const SignUpCompany = () => {
                                     <ErrorMessage name="company_logo" component={CText} color="#ff0000" fontSize={12} />
                                     {loading && <CText style={{ color: "#ff0000", marginHorizontal: 16 }}>Uploading...</CText>}
                                 </View>
+                                {(!Boolean(errors?.company_email)) && values?.company_email !== "" && companyData === null && (
+                                    <Button
+                                        mode="outlined"
+                                        onPress={() => handleSendEmailOtp(values?.company_email)}
+                                        style={styles.otpButton}
+                                    // disabled={!emailOtpSent}
+                                    >
+                                        <Text style={styles.otpButtonText}>
+                                            {emailOtpSent ? "Resend Email OTP" : "Send Email OTP"}
+                                        </Text>
+                                    </Button>
+                                )}
+                                {emailOtpSent && (
+                                    <TextInput
+                                        label="Enter Email OTP"
+                                        style={styles.input}
+                                        mode="outlined"
+                                        onChangeText={(e) => {
+                                            if (/^\d*$/.test(e)) {
+                                                setEmailOtp(e);
+                                            }
+                                        }}
+                                        value={emailOtp}
+                                        keyboardType="number-pad"
+                                    />
+                                )}
+
+                                {emailOtpSent && (
+                                    <Text style={styles.otpSentText}>OTP Sent to your email</Text>
+                                )}
                                 {/* Submit Button */}
                                 <Button disabled={loading} mode="contained" style={styles.submitButton} onPress={handleSubmit}>
                                     {companyData ? "Save" : "Sign Up"}
@@ -393,6 +372,27 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 20,
         backgroundColor: 'black',
+    },
+    otpButton: {
+        borderRadius: 5,
+        marginHorizontal: 16,
+        marginTop: 10,
+        backgroundColor: '#f5f5f5',
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+    },
+    otpButtonText: {
+        color: 'black',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    otpSentText: {
+        color: 'green',
+        fontSize: 12,
+        marginTop: 5,
+        textAlign: 'center',
     },
 });
 
