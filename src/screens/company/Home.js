@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import CStatisticsCard from '../../components/CIconStatisticsCard';
 import CText from '../../components/CText';
+import { getUserData } from '../../services/UserDataService';
+import { getRecruiter } from '../../services/RecruiterService';
+import { ActivityIndicator } from 'react-native-paper';
 
 const { width } = Dimensions.get('window'); // Get screen width for responsive design
 
@@ -33,6 +36,38 @@ const HomePage = () => {
   const [recruitersDataState, setRecruitersDataState] = useState(recruitersData);
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState(jobApplicationsData);
   const [blogsDataState, setBlogsDataState] = useState(blogsData);
+  const [companyData, setCompanyData] = useState(null)
+  const [isDataLoaded ,setIsDataLoaded] = useState(false)
+  
+  useEffect(() => {
+    // Define an async function inside the useEffect
+    const fetchData = async () => {
+      try {
+        const data = await getUserData();
+        setCompanyData(data);
+        console.log(data);
+        
+        const recruiterData = await getRecruiter(data.company_email,3)
+        setRecruitersDataState(recruiterData)
+        setIsDataLoaded(true);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setIsDataLoaded(true);
+      }
+    };
+  
+    // Call the async function
+    fetchData();
+  }, [])
+
+  console.log(recruitersDataState)
+  if (!isDataLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    )
+  }
 
   // Render function for Job Application Card
   const renderJobApplicationItem = ({ item }) => (
@@ -71,12 +106,13 @@ const HomePage = () => {
   // Render function for Recruiter Card
   const renderRecruiterItem = ({ item }) => (
     <View style={styles.recruiterCard}>
+      {console.log(item)}
       <Icon name="user" size={24} color="#5B5B5B" />
-      <CText fontWeight={600} fontSize={18}>{item.name}</CText>
+      <CText fontWeight={600} fontSize={18}>{item.recruiter_name}</CText>
       <CText>Applications Created: {item.jobApplications}</CText>
       <CText>Hired: {item.hired}</CText>
-      <TouchableOpacity onPress={() => console.log('View Recruiter')}>
-        <CText style={styles.viewDetailsButton}>View Details</CText>
+      <TouchableOpacity onPress={() => {}}>
+        <CText sx={styles.viewDetailsButton}>View Details</CText>
       </TouchableOpacity>
     </View>
   );
@@ -88,7 +124,7 @@ const HomePage = () => {
         <Icon name="star" size={30} color="#FFD700" />
       </View>
 
-      <View style={{flex:1, flexDirection:"row", flexWrap:"wrap"}}>
+      <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
         <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
         <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
         <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
@@ -98,7 +134,7 @@ const HomePage = () => {
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>
         <CText fontWeight={600} sx={styles.sectionTitle}>Recruiters</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('AllRecruiters')}>
+        <TouchableOpacity onPress={() => navigate.navigate('Recruiters',{ screen:"MyRecruiter"})}>
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
@@ -148,7 +184,7 @@ const HomePage = () => {
         snapToAlignment="center"
         pagingEnabled
       />
-      <View style={{marginBottom:120}}></View>
+      <View style={{ marginBottom: 120 }}></View>
     </ScrollView>
   );
 };
@@ -196,6 +232,10 @@ const styles = StyleSheet.create({
   },
   jobStatus: {
     color: 'green',
+  },
+  viewDetailsButton: {
+    marginTop: 10,
+    color: '#0d0ddb'
   },
   blogCard: {
     backgroundColor: '#fff',

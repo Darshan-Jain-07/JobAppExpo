@@ -1,21 +1,58 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, TouchableOpacity, TextInput, Image, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Importing an icon library
 import CText from '../../components/CText';
+// import React from 'react';
+import { getRecruiter } from '../../services/RecruiterService';
+import { getUserData } from '../../services/UserDataService';
+import { ActivityIndicator } from 'react-native-paper';
 
 const RecruiterList = () => {
-    const navigation = useNavigation()
+    const navigation = useNavigation();
+    const [companyData, setCompanyData] = useState(null);
+    const [allRecruiters, setAllRecruiters] = useState([])
+    const [isDataLoaded, setIsDataLoaded] = useState([])
+    const [recruiters, setRecruiters] = useState([]);
   // Simulating recruiter data (you would fetch this from an API or database)
-  const allRecruiters = [
-    { id: '1', name: 'John Doe', position: 'Senior Recruiter', company: 'TechCorp' },
-    { id: '2', name: 'Jane Smith', position: 'Recruiter', company: 'WebSolutions' },
-    { id: '3', name: 'Michael Brown', position: 'Lead Recruiter', company: 'Appify' },
-    { id: '4', name: 'Emily Davis', position: 'Recruitment Manager', company: 'InnovateTech' },
-    { id: '5', name: 'Chris Wilson', position: 'HR Specialist', company: 'DesignPro' },
-  ];
+  // const allRecruiters = [
+  //   { id: '1', name: 'John Doe', position: 'Senior Recruiter', company: 'TechCorp' },
+  //   { id: '2', name: 'Jane Smith', position: 'Recruiter', company: 'WebSolutions' },
+  //   { id: '3', name: 'Michael Brown', position: 'Lead Recruiter', company: 'Appify' },
+  //   { id: '4', name: 'Emily Davis', position: 'Recruitment Manager', company: 'InnovateTech' },
+  //   { id: '5', name: 'Chris Wilson', position: 'HR Specialist', company: 'DesignPro' },
+  // ];
 
-  const [recruiters, setRecruiters] = useState(allRecruiters);
+    useEffect(() => {
+    // Define an async function inside the useEffect
+    const fetchData = async () => {
+      try {
+        const data = await getUserData();
+        setCompanyData(data);
+        console.log(data);
+        
+        const recruiterData = await getRecruiter(data.company_email)
+        setRecruiters(recruiterData)
+        setAllRecruiters(recruiterData)
+        setIsDataLoaded(true);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setIsDataLoaded(true);
+      }
+    };
+  
+    // Call the async function
+    fetchData();
+  }, [])
+
+  if (!isDataLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    )
+  }
+
   const [searchQuery, setSearchQuery] = useState(''); // For storing the search query
 
   // Function to handle search filter
@@ -26,8 +63,8 @@ const RecruiterList = () => {
     } else {
       const filteredRecruiters = allRecruiters.filter(
         (recruiter) =>
-          recruiter.name.toLowerCase().includes(query.toLowerCase()) ||
-          recruiter.id.includes(query) // Filter by name or ID
+          recruiter.recruiter_name.toLowerCase().includes(query.toLowerCase()) ||
+          recruiter.recruiter_email.includes(query) // Filter by name or ID
       );
       setRecruiters(filteredRecruiters);
     }
@@ -39,9 +76,9 @@ const RecruiterList = () => {
       <View style={styles.recruiterInfo}>
         <Icon name="person" size={30} color="#4CAF50" style={styles.recruiterIcon} />
         <View style={styles.textContainer}>
-          <CText fontWeight={600} sx={styles.name}>{item.name}</CText>
-          <CText sx={styles.position}>{item.position}</CText>
-          <CText sx={styles.company}>{item.company}</CText>
+          <CText fontWeight={600} sx={styles.name}>{item.recruiter_name}</CText>
+          <CText sx={styles.position}>{item.recruiter_email}</CText>
+          <CText sx={styles.company}>{companyData.company_name}</CText>
         </View>
       </View>
       <TouchableOpacity onPress={()=>navigation.navigate('Recruiters', { screen: 'RecruiterDetail' })} style={styles.viewDetailsIcon}>
@@ -133,7 +170,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   company: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#888',
   },
   viewDetailsIcon: {
