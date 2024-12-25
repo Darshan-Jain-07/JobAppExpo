@@ -1,61 +1,85 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 // import { Icon } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CText from '../../components/CText';
+import { getUserData } from '../../services/UserDataService';
+import { getJobPost } from '../../services/JobPostService';
+import { getRecruiter } from '../../services/RecruiterService';
+import { useNavigation } from '@react-navigation/native';
 
 // Sample data for job posts
-const jobPosts = [
-  {
-    id: '1',
-    jobTitle: 'Software Engineer',
-    recruiterName: 'John Doe',
-    company: 'TechCorp',
-    status: 'Open',
-    recruiterImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgiFdgv377GbHewlOp8pafN1iCpITSEyXr0A&s', // Example image URL
-  },
-  {
-    id: '2',
-    jobTitle: 'Product Manager',
-    recruiterName: 'Jane Smith',
-    company: 'InnovateX',
-    status: 'Closed',
-    recruiterImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuQEOS-b83YWOSeYdBzWWsEeENYrajb8sROQ&s', // Example image URL
-  },
-  {
-    id: '3',
-    jobTitle: 'UX/UI Designer',
-    recruiterName: 'Alice Johnson',
-    company: 'Designify',
-    status: 'Open',
-    recruiterImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrZEqTQqHH6VL5BJfsCes8n9aLdekV7_nqBA&s', // Example image URL
-  },
-];
+// const jobPosts = [
+//   {
+//     id: '1',
+//     jobTitle: 'Software Engineer',
+//     recruiterName: 'John Doe',
+//     company: 'TechCorp',
+//     status: 'Open',
+//     recruiterImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgiFdgv377GbHewlOp8pafN1iCpITSEyXr0A&s', // Example image URL
+//   },
+//   {
+//     id: '2',
+//     jobTitle: 'Product Manager',
+//     recruiterName: 'Jane Smith',
+//     company: 'InnovateX',
+//     status: 'Closed',
+//     recruiterImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuQEOS-b83YWOSeYdBzWWsEeENYrajb8sROQ&s', // Example image URL
+//   },
+//   {
+//     id: '3',
+//     jobTitle: 'UX/UI Designer',
+//     recruiterName: 'Alice Johnson',
+//     company: 'Designify',
+//     status: 'Open',
+//     recruiterImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrZEqTQqHH6VL5BJfsCes8n9aLdekV7_nqBA&s', // Example image URL
+//   },
+// ];
 
 const JobPostsScreen = () => {
   const [searchText, setSearchText] = useState('');
+  const [jobPosts, setJobPosts] = useState([]);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      let userData = await getUserData();
+
+      let jobPost = await getJobPost(userData?.company_email)
+      setJobPosts(jobPost);
+    }
+    
+    fetchData();
+  }, [])
+  const fetchRecruiter = async (id) => {
+    let recruiterInfo = await getRecruiter(null, null, id)
+    return recruiterInfo?.[0];
+  }
 
   // Filter the job posts based on search text (by recruiter name or job title)
-  const filteredJobPosts = jobPosts.filter(
+  const filteredJobPosts = jobPosts?.filter(
     (job) =>
-      job.id.toLowerCase().includes(searchText.toLowerCase()) ||
-      job.jobTitle.toLowerCase().includes(searchText.toLowerCase())
+      job?.job_post_id?.toLowerCase()?.includes(searchText?.toLowerCase()) ||
+      job?.job_post_name?.toLowerCase()?.includes(searchText?.toLowerCase())
   );
 
-  const renderItem = ({ item }) => (
-    <View style={styles.jobCard}>
-      <Image source={{ uri: item.recruiterImage }} style={styles.recruiterImage} />
-      <View style={styles.jobInfo}>
-        <CText fontWeight={600} sx={styles.jobTitle}>{item.jobTitle}</CText>
-        <CText sx={styles.recruiterName}>{item.recruiterName}</CText>
-        <CText sx={styles.company}>{item.company}</CText>
-        <CText fontWeight={600} sx={styles.status}>{item.status}</CText>
+  const renderItem = async ({ item }) => {
+    let recData = await fetchRecruiter(item?.recruiter_id)
+    return (
+      <View style={styles.jobCard}>
+        <Image source={{ uri: recData?.recruiter_image }} style={styles.recruiterImage} />
+        <View style={styles.jobInfo}>
+          <CText fontWeight={600} sx={styles.jobTitle}>{item.job_post_name}</CText>
+          <CText sx={styles.recruiterName}>{recData?.recruiter_name}</CText>
+          {/* <CText sx={styles.company}>{userData.company}</CText> */}
+          <CText fontWeight={600} sx={styles.status}>{item.is_deleted === "False" ? "Open" : "Closed"}</CText>
+        </View>
+        <TouchableOpacity style={styles.viewButton} onPress={()=>navigation.navigate('Applications', { screen: 'ApplicationDetail', params: {applicationId: item.job_post_id }})}>
+          <Icon name="chevron-right" size={30} color="#888" />
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.viewButton}>
-      <Icon name="chevron-right" size={30} color="#888" />
-      </TouchableOpacity>
-    </View>
-  );
+    )
+  };
 
   return (
     <View style={styles.container}>
@@ -77,7 +101,7 @@ const JobPostsScreen = () => {
         <FlatList
           data={filteredJobPosts}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.job_post_id}
           contentContainerStyle={styles.listContainer}
         />
       ) : (
@@ -98,7 +122,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f8f8',
     padding: 16,
-    marginBottom:70
+    marginBottom: 70
   },
   searchContainer: {
     // flexDirection: 'row',
