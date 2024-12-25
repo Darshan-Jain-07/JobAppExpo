@@ -59,7 +59,7 @@ const HomePage = () => {
         const recruiterData = await getRecruiter(data.company_email,3)
         setRecruitersDataState(recruiterData)
 
-        const jobPostData = await getJobPost(data?.company_email_id,null,3)
+        const jobPostData = await getJobPost(data?.company_email,undefined,3)
         setJobApplicationsDataState(jobPostData)
 
         const blogData = await getBlog(null,null,3)
@@ -93,7 +93,7 @@ const HomePage = () => {
       <CText>Status: <CText sx={styles.jobStatus}>{item.is_deleted === "False" ? "Open" : "Closed"}</CText></CText>
       <CText><Icon name="map-marker" size={16} color="#5B5B5B" /> {item.job_post_location}</CText>
       <CText>Applicants: {item.applicants}</CText>
-      <TouchableOpacity onPress={() => navigate.navigate('Applications', { screen: 'ApplicationDetail' })}>
+      <TouchableOpacity onPress={()=>navigate.navigate('Applications', { screen: 'ApplicationDetail', params: {applicationId: item.job_post_id }})}>
         <CText sx={styles.viewDetailsButton}>View Details</CText>
       </TouchableOpacity>
     </View>
@@ -134,7 +134,7 @@ const HomePage = () => {
       <CText fontWeight={600} fontSize={18}>{item.recruiter_name}</CText>
       <CText>Applications Created: {item.jobApplications}</CText>
       <CText>Hired: {item.hired}</CText>
-      <TouchableOpacity onPress={()=>navigate.navigate('Recruiters', { screen: 'RecruiterDetail' })}>
+      <TouchableOpacity onPress={()=>navigate.navigate('Recruiters', { screen: 'RecruiterDetail',  params: { recruiterId: item.recruiter_id } })}>
         <CText sx={styles.viewDetailsButton}>View Details</CText>
       </TouchableOpacity>
     </View>
@@ -164,7 +164,7 @@ const HomePage = () => {
       <FlatList
         data={recruitersDataState}
         renderItem={renderRecruiterItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.recruiter_id}
         horizontal
         snapToInterval={width * 0.75}
         decelerationRate="fast"
@@ -182,7 +182,7 @@ const HomePage = () => {
       <FlatList
         data={jobApplicationsDataState}
         renderItem={renderJobApplicationItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.job_post_id}
         horizontal
         snapToInterval={width * 0.75}
         decelerationRate="fast"
@@ -200,7 +200,7 @@ const HomePage = () => {
       <FlatList
         data={blogsDataState}
         renderItem={renderBlogItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.blog_id}
         horizontal
         snapToInterval={width * 0.75}
         decelerationRate="fast"

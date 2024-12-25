@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Formik } from 'formik';
@@ -6,46 +6,80 @@ import * as Yup from 'yup';
 import CChip from '../../components/CChip';
 import CText from '../../components/CText';
 import { useNavigation } from '@react-navigation/native';
+import { getJobPost } from '../../services/JobPostService';
+import { getCompanyData } from '../../services/ProfileService';
+import { getRecruiter } from '../../services/RecruiterService';
+import { ActivityIndicator } from 'react-native-paper';
 
 // Job details object
-const jobDetails = {
-  jobTitle: 'Software Engineer',
-  companyName: 'TechCorp Ltd.',
-  location: 'San Francisco, CA',
-  companyLogo: 'https://marketplace.canva.com/EAE0rNNM2Fg/1/0/1600w/canva-letter-c-trade-marketing-logo-design-template-r9VFYrbB35Y.jpg',
-  salaryRange: '70,000 - 90,000',
-  jobType: 'Full-time',
-  experienceLevel: 'Experienced',
-  applicantsCount: 120,
-  description: 'We are looking for a skilled Software Engineer to join our dynamic development team. The ideal candidate will have a passion for technology, a strong understanding of software engineering principles, and the ability to work collaboratively in an Agile environment.',
-  responsibilities: [
-    { id: '1', text: 'Develop and maintain high-quality software applications.' },
-    { id: '2', text: 'Collaborate with cross-functional teams to define and design new features.' },
-    { id: '3', text: 'Ensure the performance, quality, and responsiveness of applications.' },
-    { id: '4', text: 'Participate in code reviews and ensure adherence to best practices.' },
-  ],
-  requirements: [
-    { id: '1', text: 'Bachelor\'s degree in Computer Science or related field.' },
-    { id: '2', text: '3+ years of experience in software development.' },
-    { id: '3', text: 'Proficiency in JavaScript, React Native, and Node.js.' },
-    { id: '4', text: 'Strong problem-solving skills and the ability to work independently.' },
-  ],
-  reviews: [
-    { id: '1', name: 'John Doe', text: 'Great place to work! The team is collaborative.', rating: 4.5 },
-    { id: '2', name: 'Jane Smith', text: 'Challenging projects but great management and career growth opportunities.', rating: 5 },
-    { id: '3', name: 'Michael Brown', text: 'A fantastic work-life balance!', rating: 4.0 },
-  ],
-  applicants: [
-    { id: '1', name: 'Alice Johnson', position: 'Software Engineer' },
-    { id: '2', name: 'Bob Lee', position: 'Frontend Developer' },
-    { id: '3', name: 'Charlie Green', position: 'Backend Developer' },
-  ],
-};
+// const jobDetails = {
+//   jobTitle: 'Software Engineer',
+//   companyName: 'TechCorp Ltd.',
+//   location: 'San Francisco, CA',
+//   companyLogo: 'https://marketplace.canva.com/EAE0rNNM2Fg/1/0/1600w/canva-letter-c-trade-marketing-logo-design-template-r9VFYrbB35Y.jpg',
+//   salaryRange: '70,000 - 90,000',
+//   jobType: 'Full-time',
+//   experienceLevel: 'Experienced',
+//   applicantsCount: 120,
+//   description: 'We are looking for a skilled Software Engineer to join our dynamic development team. The ideal candidate will have a passion for technology, a strong understanding of software engineering principles, and the ability to work collaboratively in an Agile environment.',
+//   responsibilities: [
+//     { id: '1', text: 'Develop and maintain high-quality software applications.' },
+//     { id: '2', text: 'Collaborate with cross-functional teams to define and design new features.' },
+//     { id: '3', text: 'Ensure the performance, quality, and responsiveness of applications.' },
+//     { id: '4', text: 'Participate in code reviews and ensure adherence to best practices.' },
+//   ],
+//   requirements: [
+//     { id: '1', text: 'Bachelor\'s degree in Computer Science or related field.' },
+//     { id: '2', text: '3+ years of experience in software development.' },
+//     { id: '3', text: 'Proficiency in JavaScript, React Native, and Node.js.' },
+//     { id: '4', text: 'Strong problem-solving skills and the ability to work independently.' },
+//   ],
+//   reviews: [
+//     { id: '1', name: 'John Doe', text: 'Great place to work! The team is collaborative.', rating: 4.5 },
+//     { id: '2', name: 'Jane Smith', text: 'Challenging projects but great management and career growth opportunities.', rating: 5 },
+//     { id: '3', name: 'Michael Brown', text: 'A fantastic work-life balance!', rating: 4.0 },
+//   ],
+//   applicants: [
+//     { id: '1', name: 'Alice Johnson', position: 'Software Engineer' },
+//     { id: '2', name: 'Bob Lee', position: 'Frontend Developer' },
+//     { id: '3', name: 'Charlie Green', position: 'Backend Developer' },
+//   ],
+// };
 
-const JobDescription = () => {
+const JobDescription = ({ route }) => {
+  const { applicationId } = route.params;
   const navigation = useNavigation();
-  const [reviews, setReviews] = useState(jobDetails.reviews);
-  const [applicants, setApplicants] = useState(jobDetails.applicants);
+  const [jobDetails, setJobDetails] = useState({});
+  const [companyData, setCompanyData] = useState(null);
+  const [recruiterData, setRecruiterData] = useState(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [reviews, setReviews] = useState(jobDetails?.reviews);
+  const [applicants, setApplicants] = useState(jobDetails?.applicants);
+
+  useEffect(()=>{
+    const fetchData = async () => {
+      const application_details = await getJobPost(null, null, null, applicationId);
+      setJobDetails(application_details?.[0])
+
+      const company_data = await getCompanyData("company_email", application_details?.[0]?.company_id);
+      setCompanyData(company_data?.[0])
+
+      const recruiter_data = await getRecruiter(null, null, application_details?.[0]?.recruiter_id);
+      setRecruiterData(recruiter_data?.[0])
+
+      setIsDataLoaded(true)
+    }
+
+    fetchData();
+  },[ applicationId ])
+
+  if (!isDataLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    )
+  }
 
   const handleReviewSubmit = (values, { resetForm }) => {
     const newReview = { id: Date.now().toString(), name: 'New User', text: values.reviewText, rating: 4 };
@@ -66,12 +100,16 @@ const JobDescription = () => {
     <View style={styles.headerContainer}>
       {/* Job Info */}
       <View style={styles.card}>
-        <Image style={styles.companyLogo} source={{ uri: jobDetails.companyLogo }} />
-        <CText sx={styles.jobTitle} fontSize={24} fontWeight={600}>{jobDetails.jobTitle}</CText>
-        <CText sx={styles.companyName}>{jobDetails.companyName}</CText>
+        <Image style={styles.companyLogo} source={{ uri: companyData?.company_logo }} />
+        <CText sx={styles.jobTitle} fontSize={24} fontWeight={600}>{jobDetails?.job_post_name}</CText>
+        <CText sx={styles.companyName}>{companyData?.company_name}</CText>
         <View style={styles.locationContainer}>
           <Icon name="map-marker" size={18} color="#888" />
-          <Text style={styles.location}>{jobDetails.location}</Text>
+          <Text style={styles.location}>{jobDetails?.job_post_location}</Text>
+        </View>
+        <View style={styles.locationContainer}>
+          <Icon name="user" size={18} color="#888" />
+          <Text style={styles.location}>{recruiterData?.recruiter_name}</Text>
         </View>
       </View>
 
@@ -79,33 +117,33 @@ const JobDescription = () => {
       <View style={styles.chipContainer}>
         <FlatList
           data={[
-            { icon: 'usd', text: jobDetails.salaryRange },
-            { icon: 'clock-o', text: jobDetails.jobType },
-            { icon: 'graduation-cap', text: jobDetails.experienceLevel },
-            { icon: 'users', text: `${jobDetails.applicantsCount} Applicants` },
+            { icon: 'rupee', text: jobDetails?.job_post_salary },
+            { icon: 'clock-o', text: jobDetails?.job_post_employment_type },
+            { icon: 'graduation-cap', text: jobDetails?.job_post_experience_level },
+            { icon: 'users', text: `${jobDetails?.applicantsCount} Applicants` },
           ]}
           horizontal
           renderItem={({ item }) => <CChip icon={item.icon} text={item.text} />}
-          keyExtractor={(item) => item.text}
+          keyExtractor={(item, index) => index.toString()}
         />
       </View>
 
       {/* Job Description */}
       <View style={styles.card}>
         <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Job Description</CText>
-        <CText sx={styles.description}>{jobDetails.description}</CText>
+        <CText sx={styles.description}>{jobDetails?.job_post_description}</CText>
       </View>
 
       {/* Responsibilities */}
       <View style={styles.card}>
         <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Responsibilities</CText>
         <FlatList
-          data={jobDetails.responsibilities}
-          keyExtractor={(item) => item.id}
+          data={jobDetails?.job_post_responsibility}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.listItem}>
               <Icon name="circle" size={10} color="#555" />
-              <CText style={styles.listText}>{item.text}</CText>
+              <CText style={styles.listText}>{item}</CText>
             </View>
           )}
         />
@@ -115,12 +153,12 @@ const JobDescription = () => {
       <View style={styles.card}>
         <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Requirements</CText>
         <FlatList
-          data={jobDetails.requirements}
-          keyExtractor={(item) => item.id}
+          data={jobDetails?.job_post_requirement}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.listItem}>
               <Icon name="circle" size={10} color="#555" />
-              <CText sx={styles.listText}>{item.text}</CText>
+              <CText sx={styles.listText}>{item}</CText>
             </View>
           )}
         />
@@ -137,7 +175,7 @@ const JobDescription = () => {
           data={reviews}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => index.toString()}
           snapToAlignment="center"
           decelerationRate="fast"
           snapToInterval={320}
@@ -196,7 +234,7 @@ const JobDescription = () => {
         <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Applicants</CText>
         <FlatList
           data={applicants}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => handleApplicantCardPress(item.id)} style={styles.applicantCard}>
               <View>

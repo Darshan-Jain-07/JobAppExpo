@@ -20,9 +20,10 @@ export const createJobPost = async (data) => {
     }
 };
 
-export const getJobPost = async (companyId, userId, limit) => {
+export const getJobPost = async (companyId, userId, limit, jobpostId) => {
     const url = API_BASE_URL;
-    let endPoint = companyId ? `/data/job_post?companyId=${companyId}` : userId ? `/data/recruiter_id?recruiter_id=${userId}` : limit ? `/data/job_post?limit=3` : `/data/job_post`;
+    console.log(companyId)
+    let endPoint = companyId ? `/data/job_post?company_id=${companyId}` : userId ? `/data/job_post?recruiter_id=${userId}` : limit ? `/data/job_post?limit=3` : jobpostId ? `/data/job_post?job_post_id=${jobpostId}` : `/data/job_post`;
     console.log(endPoint)
     try {
         const response = await axios.get(url + endPoint, {

@@ -81,7 +81,7 @@ const RecruiterList = () => {
           <CText sx={styles.company}>{companyData.company_name}</CText>
         </View>
       </View>
-      <TouchableOpacity onPress={()=>navigation.navigate('Recruiters', { screen: 'RecruiterDetail' })} style={styles.viewDetailsIcon}>
+      <TouchableOpacity onPress={()=>navigation.navigate('Recruiters', { screen: 'RecruiterDetail',  params: { recruiterId: item.recruiter_id } })} style={styles.viewDetailsIcon}>
         <Icon name="chevron-right" size={30} color="#888" />
       </TouchableOpacity>
     </View>
@@ -112,7 +112,7 @@ const RecruiterList = () => {
         <FlatList
           data={recruiters}
           renderItem={renderRecruiterItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.recruiter_id}
           style={styles.list}
         />
       )}
