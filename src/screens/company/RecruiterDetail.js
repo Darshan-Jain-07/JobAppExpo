@@ -15,7 +15,7 @@ const recruiter = {
     imageUrl: "https://images.pexels.com/photos/3707987/pexels-photo-3707987.jpeg?cs=srgb&dl=pexels-emrekeshavarz-3707987.jpg&fm=jpg",
     recruiterStats: [
         {
-            label: "Job Application",
+            label: "Job Post",
             value: "55",
             icons: "briefcase"
         },
