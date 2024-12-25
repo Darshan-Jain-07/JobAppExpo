@@ -12,6 +12,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, View, Text } from 'react-native';
 import CustomHeader from './CustomHeaderRecruiter';
 import ProfilePage from './Profile';
+import JobPostForm from './CreateJobPost';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
 // import CustomHeader from './Header';
@@ -44,11 +45,11 @@ function ApplicationsStack() {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name="MyJobApplication"
-                component={MyJobApplication}
+                name="createJobPost"
+                component={JobPostForm}
                 options={{
                     headerShown: true,
-                    header: () => <CustomHeader title="Job Application List" />,
+                    header: () => <CustomHeader title="Create Job Post" />,
                 }}
             />
         </Stack.Navigator>
