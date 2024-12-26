@@ -63,10 +63,10 @@ const ProfilePage = ({ navigation }) => {
       ],
     },
     {
-      title: 'Job Application',
+      title: 'Job Post',
       data: [
-        { key: 'myRecruiter', text: 'My Recruiters', icon: 'users' },
-        { key: 'myJobApplication', text: 'My Job Posts', icon: 'briefcase' },
+        { key: 'myRecruiter', text: 'My Recruiters', icon: 'users', onPress: () => { navigate.navigate("Recruiters", {screen:"MyRecruiter"})} },
+        { key: 'myJobApplication', text: 'My Job Posts', icon: 'briefcase', onPress: () => { navigate.navigate("Applications", {screen:"MyJobApplication"})} },
       ],
     },
     {
