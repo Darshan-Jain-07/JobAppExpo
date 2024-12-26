@@ -13,6 +13,13 @@ import { StyleSheet, View, Text } from 'react-native';
 import CustomHeader from './CustomHeaderRecruiter';
 import ProfilePage from './Profile';
 import JobPostForm from './CreateJobPost';
+import Subscription from './Subscription';
+import JobPostsScreen from './MyJobApplication';
+import JobDescription from '../company/JobDescription';
+import HomePage from './Home';
+import CreateBlogScreen from '../company/CreateBlog';
+import BlogListScreen from '../company/BlogList';
+import BlogPage from '../company/BlogDetail';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
 // import CustomHeader from './Header';
@@ -24,22 +31,6 @@ const Tab = createBottomTabNavigator();
 
 const Stack = createStackNavigator();
 
-
-const MyJobApplication = () => {
-    return <View><Text>Job Application</Text></View>
-}
-
-const Home = () => {
-    return <View><Text>Recruiter Home</Text></View>
-}
-
-const MyRecruiter = () => {
-    return <View><Text>MyRecruiter</Text></View>
-}
-
-const Subscription = () => {
-    return <View><Text>Subscription</Text></View>
-}
 
 function ApplicationsStack() {
     return (
@@ -61,10 +52,34 @@ function HomeStack() {
         <Stack.Navigator>
             <Stack.Screen
                 name="Home Page"
-                component={Home}
+                component={HomePage}
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Home" />,
+                }}
+            />
+            <Stack.Screen
+                name="Create Blog"
+                component={CreateBlogScreen}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Write a Blog" />,
+                }}
+            />
+            <Stack.Screen
+                name="Blog List"
+                component={BlogListScreen}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Blogs" />,
+                }}
+            />
+            <Stack.Screen
+                name="Blog Detail"
+                component={BlogPage}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Blog" />,
                 }}
             />
             <Stack.Screen
@@ -84,11 +99,20 @@ function RecruitersStack() {
         <Stack.Navigator>
             <Stack.Screen
                 name="MyRecruiter"
-                component={MyRecruiter}
+                component={JobPostsScreen}
                 // options={{ headerShown: false }} 
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Recruiters List" />,
+                }}
+            />
+            <Stack.Screen
+                name="ApplicationDetail"
+                component={JobDescription}
+                // options={{ headerShown: false }} // TODO: Customize the header for each tab
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="My Job Applications" />,
                 }}
             />
         </Stack.Navigator>

@@ -42,17 +42,18 @@ const ProfilePage = ({ navigation }) => {
   // Define the sections with their respective options and icons
   const sections = [
     {
-      title: 'Recruiter Details',
+      title: 'Your Details',
       data: [
-        { key: 'view', text: 'View Details', icon: 'building', onPress:()=>{navigation.navigate("View Recruiter Detail")} },
+        { key: 'view', text: 'View Details', icon: 'eye', onPress:()=>{navigation.navigate("View Recruiter Detail")} },
         { key: 'edit', text: 'Edit Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Recruiter") },
       ],
     },
     {
       title: 'Blog',
       data: [
-        { key: 'Create Blog', text: 'Write Blog', icon: 'pencil' },
-        { key: 'viewBlog', text: 'View Blog', icon: 'file-text' },
+        { key: 'Create Blog', text: 'Write Blog', icon: 'pencil', onPress: () => { navigate.navigate("Create Blog")} },
+        { key: 'viewBlog', text: 'View Blogs', icon: 'file-text', onPress:() => { navigate.navigate("Blog List")} },
+        { key: 'myBlog', text: 'My Blogs', icon: 'edit', onPress:() => { navigate.navigate("Blog List", { userId: userData?.recruiter_id })} },
       ],
     },
     {
@@ -64,10 +65,10 @@ const ProfilePage = ({ navigation }) => {
       ],
     },
     {
-      title: 'Job Application',
+      title: 'Job Post',
       data: [
-        { key: 'myRecruiter', text: 'My Recruiters', icon: 'users' },
-        { key: 'myJobApplication', text: 'My Job Posts', icon: 'briefcase' },
+        { key: 'companyJobApplication', text: 'Company Job Post', icon: 'building-o', onPress:() => navigate.navigate('Recruiters', { screen: "MyRecruiter", params: { valueParam:"second"} })} ,
+        { key: 'myJobApplication', text: 'My Job Posts', icon: 'briefcase', onPress:() => navigate.navigate('Recruiters', { screen: "MyRecruiter", params: { valueParam:"first"} })} ,
       ],
     },
     {

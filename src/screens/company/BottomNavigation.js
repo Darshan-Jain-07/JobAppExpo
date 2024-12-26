@@ -84,7 +84,6 @@ function HomeStack() {
             <Stack.Screen
                 name="Blog Detail"
                 component={BlogPage}
-                // options={{ headerShown: false }} // TODO: Customize the header for each tab
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Blog" />,
