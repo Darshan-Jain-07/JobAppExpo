@@ -24,6 +24,7 @@ import BottomNavigationJobSeeker from './screens/jobSeeker/BottomNavigationJobSe
 import BottomNavigationRecruiter from './screens/recruiter/BottomNavigationRecruiter';
 import ViewRecruiterDetail from './screens/recruiter/ViewRecruiterDetail';
 import ViewApplicantDetail from './screens/jobSeeker/ViewApplicantDetail';
+import ResumeForm from './screens/jobSeeker/ResumeForm';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -46,10 +47,11 @@ const AppNavigator = () => {
                 <Stack.Screen options={{headerShown: false}} name="Profile" component={Profile} />
                 <Stack.Screen options={{headerShown: false}} name="View Company Detail" component={ViewCompanyDetail} />
                 <Stack.Screen options={{headerShown: false}} name="View Recruiter Detail" component={ViewRecruiterDetail} />
-                <Stack.Screen options={{headerShown: false}} name="View Applicant Detail" component={ViewApplicantDetail} />
+                <Stack.Screen options={{headerShown: true, header: ()=><CustomHeader title={"Resume Details"} />}} name="View Applicant Detail" component={ViewApplicantDetail} />
                 <Stack.Screen options={{headerShown: true, header: ()=><CustomHeader title={"Payment History"} />}} name="Payment History" component={PaymentHistoryScreen} />
                 <Stack.Screen options={{headerShown: false}} name="Blog Detail" component={BlogPage} />
                 <Stack.Screen options={{headerShown: false}} name="Blog List" component={BlogListScreen} />
+                <Stack.Screen options={{headerShown: true, header: ()=><CustomHeader title={"Resume Details Form"} />}} name="Resume Form" component={ResumeForm} />
             </Stack.Navigator>
         </NavigationContainer>
     )

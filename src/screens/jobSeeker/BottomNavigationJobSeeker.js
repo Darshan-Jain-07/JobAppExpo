@@ -15,6 +15,8 @@ import ProfilePage from './Profile';
 import CreateBlogScreen from '../company/CreateBlog';
 import BlogListScreen from '../company/BlogList';
 import BlogPage from '../company/BlogDetail';
+import HomePage from './Home';
+import Subscription from './Subscription';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
 // import CustomHeader from './Header';
@@ -30,16 +32,8 @@ const MyJobApplication = () => {
     return <View><Text>Job Application</Text></View>
 }
 
-const Home = () => {
-    return <View><Text>Home</Text></View>
-}
-
 const MyRecruiter = () => {
     return <View><Text>MyRecruiter</Text></View>
-}
-
-const Subscription = () => {
-    return <View><Text>Subscription</Text></View>
 }
 
 function ApplicationsStack() {
@@ -62,7 +56,7 @@ function HomeStack() {
         <Stack.Navigator>
             <Stack.Screen
                 name="Home Page"
-                component={Home}
+                component={HomePage}
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Home" />,
@@ -77,7 +71,7 @@ function HomeStack() {
                 }}
             />
             <Stack.Screen
-                name="Blog List Applicant"
+                name="Blog List"
                 component={BlogListScreen}
                 options={{
                     headerShown: true,

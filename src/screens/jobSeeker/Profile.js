@@ -42,8 +42,9 @@ const ProfilePage = ({ navigation }) => {
     {
       title: 'Recruiter Details',
       data: [
-        { key: 'view', text: 'View Details', icon: 'building', onPress:()=>{navigation.navigate("View Applicant Detail")} },
-        { key: 'edit', text: 'Edit Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Applicant") },
+        { key: 'view', text: 'View Your Details', icon: 'building', onPress:()=>{navigation.navigate("View Applicant Detail")} },
+        { key: 'edit', text: 'Edit Login Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Applicant") },
+        { key: 'edit', text: 'Edit Resume Details', icon: 'edit', onPress:() => navigation.navigate("Resume Form") },
       ],
     },
     {

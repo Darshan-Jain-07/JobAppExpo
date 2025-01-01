@@ -250,7 +250,7 @@ const SignUpJobSeeker = () => {
                                 <ErrorMessage name="applicant_password" component={CText} sx={styles.errorMessage} />
 
                                 {/* OTP Buttons */}
-                                {(!Boolean(errors?.applicant_email)) && values?.applicant_email !== "" && (
+                                {(!Boolean(errors?.applicant_email)) && values?.applicant_email !== "" && !applicantData?.applicant_email && (
                                     <Button
                                         mode="outlined"
                                         onPress={() => handleSendEmailOtp(values?.applicant_email)}
