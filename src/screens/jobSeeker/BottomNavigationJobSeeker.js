@@ -9,7 +9,7 @@ import FontistoIcon from 'react-native-vector-icons/Fontisto';
 // import Subscription from './Subscription';
 import { createStackNavigator } from '@react-navigation/stack';
 // import RecruiterDetail from './RecruiterDetail';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import CustomHeader from './CustomHeaderApplicant';
 import ProfilePage from './Profile';
 import CreateBlogScreen from '../company/CreateBlog';
@@ -17,6 +17,15 @@ import BlogListScreen from '../company/BlogList';
 import BlogPage from '../company/BlogDetail';
 import HomePage from './Home';
 import Subscription from './Subscription';
+import CompanyProfileScreen from './CompanyProfile';
+import ChatScreen from './ChatScreen';
+import ChatList from '../chat/ChatList';
+import JobDescription from './JobPostDetail';
+import JobPostList from './JobPostList';
+import CompaniesList from './CompaniesList';
+import { FAB } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+// import JobDescription from '../company/JobDescription';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
 // import CustomHeader from './Header';
@@ -40,11 +49,11 @@ function ApplicationsStack() {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name="MyJobApplication"
-                component={MyJobApplication}
+                name="Companies List"
+                component={CompaniesList}
                 options={{
                     headerShown: true,
-                    header: () => <CustomHeader title="Job Application List" />,
+                    header: () => <CustomHeader title="Companies" />,
                 }}
             />
         </Stack.Navigator>
@@ -59,7 +68,7 @@ function HomeStack() {
                 component={HomePage}
                 options={{
                     headerShown: true,
-                    header: () => <CustomHeader title="Home" />,
+                    header: () => <CustomHeader title="Home" chat={true} />,
                 }}
             />
             <Stack.Screen
@@ -95,6 +104,31 @@ function HomeStack() {
                     header: () => <CustomHeader title="Profile" />,
                 }}
             />
+            <Stack.Screen
+                name="Company Profile"
+                component={CompanyProfileScreen}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Company Profile" />,
+                }}
+            />
+            <Stack.Screen
+                name="ChatList"
+                component={ChatList}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Chat" />,
+                }}
+            />
+            <Stack.Screen
+                name="ApplicationDetail"
+                component={JobDescription}
+                // options={{ headerShown: false }} // TODO: Customize the header for each tab
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Job Post Details" />,
+                }}
+            />
         </Stack.Navigator>
     );
 }
@@ -103,12 +137,12 @@ function RecruitersStack() {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name="MyRecruiter"
-                component={MyRecruiter}
+                name="Job Post List"
+                component={JobPostList}
                 // options={{ headerShown: false }} 
                 options={{
                     headerShown: true,
-                    header: () => <CustomHeader title="Recruiters List" />,
+                    header: () => <CustomHeader title="Jobs" />,
                 }}
             />
         </Stack.Navigator>
@@ -116,60 +150,71 @@ function RecruitersStack() {
 }
 
 export default function BottomNavigationJobSeeker() {
+    const navigation = useNavigation();
+    const openChatbot = () => {
+        navigation.navigate("ChatBot");
+        // Here you would open the chatbot (e.g., navigate to a new screen or show a modal)
+      };
     return (
-        <Tab.Navigator
-            screenOptions={() => ({
-                tabBarStyle: styles.tabBarStyle,
-                tabBarItemStyle: styles.tabBarItemStyle,
-                tabBarActiveBackgroundColor: "#ffffff",
-                tabBarActiveTintColor: "#000000",
-                tabBarInactiveTintColor: "#ffffff",
-            })}>
-            <Tab.Screen
-                name="Home"
-                component={HomeStack}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <FontistoIcon name="home" color={color} size={size} />
-                    ),
-                    headerShown: false
-                }}
-            />
-            <Tab.Screen
-                name="Recruiters"
-                component={RecruitersStack}
-                // component={Recruiter}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <FontistoIcon name="person" color={color} size={size} />
-                    ),
-                    headerShown: false
-                }}
-            />
-            <Tab.Screen
-                name="Applications"
-                // component={Application}  // Use the stack navigator here
-                component={ApplicationsStack}  // Use the stack navigator here
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <FoundationIcon name="page-edit" color={color} size={size} />
-                    ),
-                    headerShown: false
-                }}
-            />
-            <Tab.Screen
-                name="Subscription"
-                component={Subscription}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <FontAwesomeIcon name="rupee" color={color} size={size} />
-                    ),
-                    headerShown: true,
-                    //   headerShown: false,
-                    header: () => <CustomHeader title="Subscription" />,
-                }}
-            />
-        </Tab.Navigator>
+        <View style={{ flex: 1 }}>
+            <Tab.Navigator
+                screenOptions={() => ({
+                    tabBarStyle: styles.tabBarStyle,
+                    tabBarItemStyle: styles.tabBarItemStyle,
+                    tabBarActiveBackgroundColor: "#ffffff",
+                    tabBarActiveTintColor: "#000000",
+                    tabBarInactiveTintColor: "#ffffff",
+                })}>
+                <Tab.Screen
+                    name="Home"
+                    component={HomeStack}
+                    options={{
+                        tabBarIcon: ({ color, size }) => (
+                            <FontistoIcon name="home" color={color} size={size} />
+                        ),
+                        headerShown: false
+                    }}
+                />
+                <Tab.Screen
+                    name="Jobs"
+                    component={RecruitersStack}
+                    options={{
+                        tabBarIcon: ({ color, size }) => (
+                            <FontistoIcon name="person" color={color} size={size} />
+                        ),
+                        headerShown: false
+                    }}
+                />
+                <Tab.Screen
+                    name="Companies"
+                    component={ApplicationsStack}
+                    options={{
+                        tabBarIcon: ({ color, size }) => (
+                            <FoundationIcon name="page-edit" color={color} size={size} />
+                        ),
+                        headerShown: false
+                    }}
+                />
+                <Tab.Screen
+                    name="Subscription"
+                    component={Subscription}
+                    options={{
+                        tabBarIcon: ({ color, size }) => (
+                            <FontAwesomeIcon name="rupee" color={color} size={size} />
+                        ),
+                        headerShown: true,
+                        header: () => <CustomHeader title="Subscription" />,
+                    }}
+                />
+            </Tab.Navigator>
+            <FAB
+        style={styles.fab}
+        icon="robot" // You can use any icon from MaterialCommunityIcons or custom
+        onPress={openChatbot}
+        color="white"
+        backgroundColor="#222222" // Customize the FAB color
+      />
+        </View>
     );
 }
 
@@ -189,6 +234,17 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
         elevation: 5
     },
+    fab: {
+        position: "absolute",
+        right: 20, 
+        bottom: 100,
+        width: 60, 
+        height: 60,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#6200ee',
+        borderRadius: 30, // Make it circular if needed
+      },
     tabBarItemStyle: {
         paddingVertical: 10,
         margin: 10,

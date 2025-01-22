@@ -25,33 +25,49 @@ import BottomNavigationRecruiter from './screens/recruiter/BottomNavigationRecru
 import ViewRecruiterDetail from './screens/recruiter/ViewRecruiterDetail';
 import ViewApplicantDetail from './screens/jobSeeker/ViewApplicantDetail';
 import ResumeForm from './screens/jobSeeker/ResumeForm';
+import ChatList from './screens/chat/ChatList';
+import ChatScreen from './screens/chat/ChatScreen';
+import ChatBotScreen from './screens/chatbot/ChatScreen';
+import CustomChatBotHeader from './screens/chatbot/CustomChatBotHeader';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
     return (
         <NavigationContainer>
             <Stack.Navigator>
-                <Stack.Screen options={{headerShown: false}} name="Splash" component={Splash} />
-                <Stack.Screen options={{headerShown: false}} name="Get Started" component={GetStarted} />
-                <Stack.Screen options={{headerShown: false}} name="Log In" component={Login} />
-                <Stack.Screen options={{headerShown: false}} name="Sign Up" component={Signup} />
-                <Stack.Screen options={{headerShown: false}} name="Sign Up Company" component={SignUpCompany} />
-                <Stack.Screen options={{headerShown: false}} name="Sign Up Recruiter" component={SignUpRecruiter} />
-                <Stack.Screen options={{headerShown: false}} name="Sign Up Applicant" component={SignUpJobSeeker} />
-                <Stack.Screen options={{headerShown: false}} name="Bottom Navigation App" component={BottomNavigationApp} />
-                <Stack.Screen options={{headerShown: false}} name="Bottom Navigation Applicant" component={BottomNavigationJobSeeker} />
-                <Stack.Screen options={{headerShown: false}} name="Bottom Navigation Recruiter" component={BottomNavigationRecruiter} />
-                <Stack.Screen options={{headerShown: false}} name="Recruiter Detail" component={RecruiterDetail} />
-                <Stack.Screen options={{headerShown: false}} name="Home" component={HomePage} />
-                <Stack.Screen options={{headerShown: false}} name="Create Blog" component={CreateBlogScreen} />
-                <Stack.Screen options={{headerShown: false}} name="Profile" component={Profile} />
-                <Stack.Screen options={{headerShown: false}} name="View Company Detail" component={ViewCompanyDetail} />
-                <Stack.Screen options={{headerShown: false}} name="View Recruiter Detail" component={ViewRecruiterDetail} />
-                <Stack.Screen options={{headerShown: true, header: ()=><CustomHeader title={"Resume Details"} />}} name="View Applicant Detail" component={ViewApplicantDetail} />
-                <Stack.Screen options={{headerShown: true, header: ()=><CustomHeader title={"Payment History"} />}} name="Payment History" component={PaymentHistoryScreen} />
-                <Stack.Screen options={{headerShown: false}} name="Blog Detail" component={BlogPage} />
-                <Stack.Screen options={{headerShown: false}} name="Blog List" component={BlogListScreen} />
-                <Stack.Screen options={{headerShown: true, header: ()=><CustomHeader title={"Resume Details Form"} />}} name="Resume Form" component={ResumeForm} />
+                <Stack.Screen options={{ headerShown: false }} name="Splash" component={Splash} />
+                <Stack.Screen options={{ headerShown: false }} name="Get Started" component={GetStarted} />
+                <Stack.Screen options={{ headerShown: false }} name="Log In" component={Login} />
+                <Stack.Screen options={{ headerShown: false }} name="Sign Up" component={Signup} />
+                <Stack.Screen options={{ headerShown: false }} name="Sign Up Company" component={SignUpCompany} />
+                <Stack.Screen options={{ headerShown: false }} name="Sign Up Recruiter" component={SignUpRecruiter} />
+                <Stack.Screen options={{ headerShown: false }} name="Sign Up Applicant" component={SignUpJobSeeker} />
+                <Stack.Screen options={{ headerShown: false }} name="Bottom Navigation App" component={BottomNavigationApp} />
+                <Stack.Screen options={{ headerShown: false }} name="Bottom Navigation Applicant" component={BottomNavigationJobSeeker} />
+                <Stack.Screen options={{ headerShown: false }} name="Bottom Navigation Recruiter" component={BottomNavigationRecruiter} />
+                <Stack.Screen options={{ headerShown: false }} name="Recruiter Detail" component={RecruiterDetail} />
+                <Stack.Screen options={{ headerShown: false }} name="Home" component={HomePage} />
+                <Stack.Screen options={{ headerShown: false }} name="Create Blog" component={CreateBlogScreen} />
+                <Stack.Screen options={{ headerShown: false }} name="Profile" component={Profile} />
+                <Stack.Screen options={{ headerShown: false }} name="View Company Detail" component={ViewCompanyDetail} />
+                <Stack.Screen options={{ headerShown: false }} name="View Recruiter Detail" component={ViewRecruiterDetail} />
+                <Stack.Screen options={{ headerShown: true, header: () => <CustomHeader title={"Resume Details"} /> }} name="View Applicant Detail" component={ViewApplicantDetail} />
+                <Stack.Screen options={{ headerShown: true, header: () => <CustomHeader title={"Payment History"} /> }} name="Payment History" component={PaymentHistoryScreen} />
+                <Stack.Screen options={{ headerShown: false }} name="Blog Detail" component={BlogPage} />
+                <Stack.Screen options={{ headerShown: false }} name="Blog List" component={BlogListScreen} />
+                <Stack.Screen options={{ headerShown: true, header: () => <CustomHeader title={"Resume Details Form"} /> }} name="Resume Form" component={ResumeForm} />
+                <Stack.Screen options={{ headerShown: true, header: () => <CustomHeader title={"Chat"} /> }} name="ChatReact" component={ChatList} />
+                <Stack.Screen
+                    name="Chat"
+                    component={ChatScreen}
+                />
+                <Stack.Screen
+                options={{
+                    header: () => <CustomChatBotHeader />,
+                  }}
+                    name="ChatBot"
+                    component={ChatBotScreen}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     )

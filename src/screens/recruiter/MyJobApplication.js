@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ActivityIndicator, Provider, RadioButton } from 'react-native-paper';
 
 const JobPostsScreen = ({ route }) => {
-  const { valueParam } = route?.params
+  const { valueParam } = route?.params || "first"
   console.log(valueParam)
   console.log("valueParam")
   const [searchText, setSearchText] = useState('');
