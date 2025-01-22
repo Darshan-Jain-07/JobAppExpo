@@ -39,7 +39,7 @@ function ApplicationsStack() {
                 // options={{ headerShown: false }} // TODO: Customize the header for each tab
                 options={{
                     headerShown: true,
-                    header: () => <CustomHeader title="My Job Applications" />,
+                    header: () => <CustomHeader title="Job Post Detail" />,
                 }}
             />
         </Stack.Navigator>

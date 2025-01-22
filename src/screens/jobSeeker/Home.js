@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions, Image, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import CStatisticsCard from '../../components/CIconStatisticsCard';
 import CText from '../../components/CText';
 import { getUserData } from '../../services/UserDataService';
@@ -10,6 +10,7 @@ import { ActivityIndicator } from 'react-native-paper';
 import { getJobPost } from '../../services/JobPostService';
 import { getBlog } from '../../services/BlogService';
 import { getCompanyData } from '../../services/ProfileService';
+import { appliedJob, applyJobPost } from '../../services/ApplicationService';
 
 const { width } = Dimensions.get('window'); // Get screen width for responsive design
 
@@ -47,9 +48,11 @@ const HomePage = () => {
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState([]);
   const [blogsDataState, setBlogsDataState] = useState(blogsData);
   const [companyData, setCompanyData] = useState(null)
-  const [isDataLoaded ,setIsDataLoaded] = useState(false)
+  const [isDataLoaded, setIsDataLoaded] = useState(false)
   const [companyList, setCompanyList] = useState(null)
-  
+  const [appliedJobs, setAppliedJobs] = useState({});
+  const [loadingJobPost, setLoadingJobPost] = useState({});
+
   useEffect(() => {
     // Define an async function inside the useEffect
     const fetchData = async () => {
@@ -57,15 +60,23 @@ const HomePage = () => {
         const data = await getUserData();
         setCompanyData(data);
         console.log(data);
-        
+
         const companyData = await getCompanyData()
         setCompanyList(companyData)
         console.log(companyData)
 
-        const jobPostData = await getJobPost(undefined,undefined,3)
+        const jobPostData = await getJobPost(undefined, undefined, 3)
         setJobApplicationsDataState(jobPostData)
 
-        const blogData = await getBlog(null,null,3)
+        const appliedJobsStatus = {};
+        for (const job of jobPostData) {
+          const isApplied = await appliedJob(data.applicant_id, job.job_post_id);
+          appliedJobsStatus[job.job_post_id] = isApplied.length ? true : false;
+        }
+
+        setAppliedJobs(appliedJobsStatus);
+
+        const blogData = await getBlog(null, null, 3)
         setBlogsDataState(blogData)
 
         setIsDataLoaded(true);
@@ -74,10 +85,61 @@ const HomePage = () => {
         setIsDataLoaded(true);
       }
     };
-  
+
     // Call the async function
     fetchData();
   }, [])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (companyData?.applicant_id) {
+        fetchAppliedJobsStatus(companyData?.applicant_id, jobApplicationsDataState);
+      }
+    }, [companyData, jobApplicationsDataState])
+  );
+
+  const fetchAppliedJobsStatus = async (userId, jobPostData) => {
+    const appliedJobsStatus = {};
+    for (const job of jobPostData) {
+      const isApplied = await appliedJob(userId, job.job_post_id);
+      appliedJobsStatus[job.job_post_id] = isApplied.length ? true : false;
+    }
+    setAppliedJobs(appliedJobsStatus);
+  };
+
+  const applyJobForApplicant = async (jobpostId) => {
+    console.log("hello")
+    setAppliedJobs((prevState) => ({
+      ...prevState,
+      [jobpostId]: true, // Mark the job as applied immediately
+    }));
+    // Mark the job as "loading" before sending the request
+    setLoadingJobPost((prevState) => ({ ...prevState, [jobpostId]: true }));
+
+    let data = {
+      applicant_id: companyData.applicant_id,
+      job_post_id: jobpostId,
+      application_status: "pending",
+      application_ats_score: 7.5,
+      is_deleted: "false"
+    };
+
+    try {
+      // Apply for the job
+      let resp = await applyJobPost(data);
+      console.log(resp);
+    } catch (error) {
+      console.error('Error applying for job:', error);
+      // If there's an error, revert the applied status
+      setAppliedJobs((prevState) => ({
+        ...prevState,
+        [jobpostId]: false, // Revert to "not applied"
+      }));
+    } finally {
+      // Set loading state back to false after the API call is done
+      setLoadingJobPost((prevState) => ({ ...prevState, [jobpostId]: false }));
+    }
+  };
 
   console.log(recruitersDataState)
   if (!isDataLoaded) {
@@ -89,78 +151,118 @@ const HomePage = () => {
   }
 
   // Render function for Job Application Card
-  const renderJobApplicationItem = ({ item }) => (
-    <View style={styles.jobCard}>
-      <Icon name="briefcase" size={24} color="#5B5B5B" />
-      <CText fontWeight={600} sx={styles.jobTitle}>{item.job_post_name}</CText>
-      <CText>Status: <CText sx={styles.jobStatus}>{item.is_deleted === "False" ? "Open" : "Closed"}</CText></CText>
-      <CText><Icon name="map-marker" size={16} color="#5B5B5B" /> {item.job_post_location}</CText>
-      <CText>Applicants: {item.applicants}</CText>
-      <TouchableOpacity onPress={()=>navigate.navigate('Applications', { screen: 'ApplicationDetail', params: {applicationId: item.job_post_id }})}>
-        <CText sx={styles.viewDetailsButton}>View Details</CText>
+  const renderJobApplicationItem = ({ item }) => {
+    const isApplied = appliedJobs[item.job_post_id];
+    const isLoading = loadingJobPost[item.job_post_id];
+    return (
+      <TouchableOpacity style={styles.jobCard} onPress={() => navigate.navigate('Home', { screen: 'ApplicationDetail', params: { applicationId: item.job_post_id } })}>
+        <View style={styles.jobContent}>
+          {/* Left side (Job details) */}
+          <View style={styles.jobDetails}>
+            <CText fontWeight={600} sx={styles.jobTitle}>{item.job_post_name}</CText>
+            {/* <CText sx={styles.companyName}>{item.company_name}</CText> */}
+            <CText sx={styles.jobStatus}>Status: <CText sx={styles.jobStatusText}>{item.is_deleted === "False" ? "Open" : "Closed"}</CText></CText>
+            <CText sx={styles.jobLocation}><Icon name="map-marker" size={16} color="#5B5B5B" /> {item.job_post_location}</CText>
+
+            {/* Apply Now Button */}
+            {isApplied ? (
+              <TouchableOpacity style={{ ...styles.applyNowButton, backgroundColor: 'green' }}>
+                <CText fontWeight={600} sx={styles.applyNowText}>
+                  Applied
+                </CText>
+              </TouchableOpacity>
+            ) : isLoading ? (
+              <ActivityIndicator animating={true} color="#fff" size="small" />
+            ) : (
+              <TouchableOpacity style={styles.applyNowButton} onPress={() => applyJobForApplicant(item.job_post_id)}>
+                <CText fontWeight={600} sx={styles.applyNowText}>
+                  Apply Now
+                </CText>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Right side (Image) */}
+          <Image source={{ uri: "https://cdn3.pixelcut.app/7/20/uncrop_hero_bdf08a8ca6.jpg" }} style={styles.jobImage} resizeMode="contain" />
+        </View>
       </TouchableOpacity>
-    </View>
-  );
+    )
+  };
 
   // Render function for Blog Card
   const renderBlogItem = ({ item }) => {
     const truncatedDescription = item.blog_description.length > 50
-    ? item.blog_description.slice(0, 50) + "..."
-    : item.blog_description;
-    
-    return(
-    <View style={styles.blogCard}>
-      <View style={styles.blogImage}>
-        <Image source={{ uri: item.blog_image }} style={{borderRadius:8}} height={100} />
+      ? item.blog_description.slice(0, 50) + "..."
+      : item.blog_description;
+
+    return (
+      <View style={styles.blogCard}>
+        <View style={styles.blogImage}>
+          <Image source={{ uri: item.blog_image }} style={{ borderRadius: 8 }} height={100} />
+        </View>
+        <CText fontWeight={600} sx={styles.blogTitle}>{item.blog_title}</CText>
+        <CText sx={styles.blogDescription}>{truncatedDescription}</CText>
+        <View style={styles.readTimeContainer}>
+          <Icon name="clock-o" size={18} color="#000" />
+          <CText sx={styles.readTime}>Time to read: {calculateReadingTime(item.blog_description)}</CText>
+        </View>
+        <View style={styles.readsContainer}>
+          <Icon name="eye" size={18} color="#000" />
+          <CText sx={styles.reads}>Reads: {item.reads}</CText>
+        </View>
+        <TouchableOpacity onPress={() => navigate.navigate('Blog Detail', { blogId: item.blog_id })}>
+          <CText sx={styles.readMoreButton}>Read More</CText>
+        </TouchableOpacity>
       </View>
-      <CText fontWeight={600} sx={styles.blogTitle}>{item.blog_title}</CText>
-      <CText sx={styles.blogDescription}>{truncatedDescription}</CText>
-      <View style={styles.readTimeContainer}>
-        <Icon name="clock-o" size={18} color="#000" />
-        <CText sx={styles.readTime}>Time to read: {calculateReadingTime(item.blog_description)}</CText>
-      </View>
-      <View style={styles.readsContainer}>
-        <Icon name="eye" size={18} color="#000" />
-        <CText sx={styles.reads}>Reads: {item.reads}</CText>
-      </View>
-      <TouchableOpacity onPress={()=>navigate.navigate('Blog Detail', {blogId: item.blog_id })}>
-        <CText sx={styles.readMoreButton}>Read More</CText>
-      </TouchableOpacity>
-    </View>
-  )};
+    )
+  };
 
   // Render function for Company Card
-  const renderCompanyItem = ({ item, navigate }) => {
+  const renderCompanyItem = ({ item }) => {
     const truncateDescription = (desc) => {
       // Truncate description to a maximum of 30 characters
       return desc.length > 30 ? desc.substring(0, 30) + '...' : desc;
     };
-  
+
+    console.log(item)
+
     return (
       <View style={styles.blogCard}>
         {/* Company Logo */}
-        <Image source={{ uri: item.logo }} style={styles.logo} />
-  
+        <Image source={{ uri: item.company_logo }} style={[styles.logo, { width: 50, height: 50, borderRadius: 50 }]} resizeMode="contain" />
+
         {/* Company Name */}
         <CText fontWeight={600} fontSize={18}>{item.company_name}</CText>
-  
+
         {/* Truncated Description */}
         <CText>{truncateDescription(item.company_description)}</CText>
-  
-        {/* Phone Number */}
-        <CText>Phone: {item.company_phone}</CText>
-  
-        {/* Email */}
-        <CText>Email: {item.company_email}</CText>
-  
+
+        <View style={styles.contactInfo}>
+          {/* Phone Icon and Phone Number */}
+          <View style={styles.contactItem}>
+            <Icon name="phone" size={18} color="#4CAF50" style={styles.icon} />
+            <CText>{item.company_phone}</CText>
+          </View>
+
+          {/* Email Icon and Email */}
+          <View style={styles.contactItem}>
+            <Icon name="envelope" size={18} color="#2196F3" style={styles.icon} />
+            <CText>{item.company_email}</CText>
+          </View>
+        </View>
+
         {/* View Details Button */}
-        <TouchableOpacity onPress={() => navigate('CompanyDetails', { companyId: item.company_id })}>
-          <CText sx={styles.viewDetailsButton}>View Details</CText>
+        <TouchableOpacity
+          onPress={() => navigate.navigate('Home', { screen: "Company Profile" })}
+          // onPress={() => console.log("hello")}
+          style={styles.viewDetailsButton}
+        >
+          <CText>View Details</CText>
         </TouchableOpacity>
       </View>
     );
   };
-  
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.subscriptionSection}>
@@ -177,15 +279,15 @@ const HomePage = () => {
 
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>
-        <CText fontWeight={600} sx={styles.sectionTitle}>Recruiters</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Recruiters',{ screen:"MyRecruiter"})}>
+        <CText fontWeight={600} sx={styles.sectionTitle}>Companies</CText>
+        <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: "MyRecruiter" })}>
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
       <FlatList
         data={companyList}
         renderItem={renderCompanyItem}
-        keyExtractor={(item) => item.recruiter_id}
+        keyExtractor={(item) => item.company_id}
         horizontal
         snapToInterval={width * 0.75}
         decelerationRate="fast"
@@ -195,8 +297,8 @@ const HomePage = () => {
 
       {/* Job Applications Section */}
       <View style={styles.sectionHeader}>
-        <CText fontWeight={600} sx={styles.sectionTitle}>Job Applications</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Applications',{ screen:"MyJobApplication"})}>
+        <CText fontWeight={600} sx={styles.sectionTitle}>Job Posts</CText>
+        <TouchableOpacity onPress={() => navigate.navigate('Jobs', { screen: "Job Post List" })}>
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
@@ -205,7 +307,7 @@ const HomePage = () => {
         renderItem={renderJobApplicationItem}
         keyExtractor={(item) => item.job_post_id}
         horizontal
-        snapToInterval={width * 0.75}
+        snapToInterval={width * 0.9}
         decelerationRate="fast"
         snapToAlignment="center"
         pagingEnabled
@@ -244,6 +346,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
+  contactInfo: {
+    marginBottom: 1,
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // marginBottom: 10,
+  },
+  icon: {
+    marginRight: 10,
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -277,9 +390,72 @@ const styles = StyleSheet.create({
   jobStatus: {
     color: 'green',
   },
+  jobCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    margin: 8,
+    width: width * 0.85,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+    flexDirection: 'row', // Use row layout for left and right side
+    alignItems: 'center', // Center vertically in the row
+  },
+  jobContent: {
+    flexDirection: 'row', // Make job content layout horizontal
+    justifyContent: 'space-between', // Space between left and right sides
+    width: '100%', // Ensure the content takes full width
+  },
+  jobDetails: {
+    flex: 1, // Left side takes available space
+    marginRight: 10, // Add space between the text content and image
+  },
+  jobTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 5,
+    color: '#333', // Dark text color for job title
+  },
+  companyName: {
+    fontSize: 16,
+    color: '#555', // Lighter color for company name
+    marginBottom: 5,
+  },
+  jobStatus: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  jobStatusText: {
+    color: 'green', // Green color for "Open" status
+  },
+  jobLocation: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 10,
+  },
+  jobImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8, // Rounded corners for the image
+  },
   viewDetailsButton: {
     marginTop: 10,
+    padding: 5,
     color: '#0d0ddb'
+  },
+  applyNowButton: {
+    backgroundColor: '#007bff', // Attractive blue color for the button
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25, // Rounded corners for the button
+    alignItems: 'center', // Center the text inside the button
+    marginTop: 10,
+  },
+  applyNowText: {
+    color: '#fff', // White text for the button
+    // fontWeight: '600',
   },
   blogCard: {
     backgroundColor: '#fff',
