@@ -11,7 +11,7 @@ import { getCompanyData } from '../../services/ProfileService';
 import { getRecruiter } from '../../services/RecruiterService';
 import { ActivityIndicator } from 'react-native-paper';
 import { getUserData } from '../../services/UserDataService';
-import { appliedJob } from '../../services/ApplicationService';
+import { appliedJob, applyJobPost, getApplication } from '../../services/ApplicationService';
 
 // Job details object
 // const jobDetails = {
@@ -60,6 +60,7 @@ const JobDescription = ({ route }) => {
   const [applicants, setApplicants] = useState(jobDetails?.applicants);
   const [isApplied, setIsApplied] = useState();
   const [loadingJobPost, setLoadingJobPost] = useState({});
+  const [noOfApplicants, setNoOfApplicants] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,10 +70,13 @@ const JobDescription = ({ route }) => {
       const job_post_details = await getJobPost(null, null, null, applicationId);
       setJobDetails(job_post_details?.[0])
 
+      const applicants = await getApplication(null, applicationId);
+      setNoOfApplicants(applicants.length || 0)
+
       const company_data = await getCompanyData("company_email", job_post_details?.[0]?.company_id);
       setCompanyData(company_data?.[0]);
 
-      console.log(job_post_details, "dfgdfg")
+      console.log(job_post_details)
       const isApply = await appliedJob(data?.applicant_id, job_post_details?.[0]?.job_post_id);
       setIsApplied(isApply.length ? true : false);
 
@@ -110,13 +114,12 @@ const JobDescription = ({ route }) => {
   };
 
   const applyJobForApplicant = async (jobpostId) => {
-    console.log("hello")
-    isApplied(true);
+    setIsApplied(true);
     // Mark the job as "loading" before sending the request
     setLoadingJobPost((prevState) => ({ ...prevState, [jobpostId]: true }));
 
     let data = {
-      applicant_id: companyData.applicant_id,
+      applicant_id: applicantData?.applicant_id,
       job_post_id: jobpostId,
       application_status: "pending",
       application_ats_score: 7.5,
@@ -126,6 +129,8 @@ const JobDescription = ({ route }) => {
     try {
       // Apply for the job
       let resp = await applyJobPost(data);
+      // Increase the application count by one
+      setNoOfApplicants(prevState => prevState + 1);
       console.log(resp);
     } catch (error) {
       console.error('Error applying for job:', error);
@@ -163,7 +168,7 @@ const JobDescription = ({ route }) => {
               { icon: 'rupee', text: jobDetails?.job_post_salary },
               { icon: 'clock-o', text: jobDetails?.job_post_employment_type },
               { icon: 'graduation-cap', text: jobDetails?.job_post_experience_level },
-              { icon: 'users', text: `${jobDetails?.applicantsCount} Applicants` },
+              { icon: 'users', text: `${noOfApplicants} Applicants` },
             ]}
             horizontal
             renderItem={({ item }) => <CChip icon={item.icon} text={item.text} />}

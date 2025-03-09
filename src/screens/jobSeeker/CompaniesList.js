@@ -59,9 +59,9 @@ const CompaniesList = () => {
           {/* Left side (Company details) */}
           <View style={styles.companyDetails}>
             <CText fontWeight={600} sx={styles.companyName}>{item.company_name}</CText>
-            <CText sx={styles.companyLocation}>
+            {/* <CText sx={styles.companyLocation}> */}
               {/* <Icon name="mail" size={16} color="#5B5B5B" /> {item.company_email} */}
-            </CText>
+            {/* </CText> */}
             <CText sx={styles.companyDescription}>{item.company_description}</CText>
             
             {/* Contact/Website */}
@@ -92,7 +92,7 @@ const CompaniesList = () => {
       <FlatList
         data={companiesData}
         renderItem={renderCompanyItem}
-        keyExtractor={(item) => item.job_post_id}
+        keyExtractor={(item) => item.company_id}
         // Optional for horizontal scrolling
         // snapToInterval={width * 0.9}
         // decelerationRate="fast"

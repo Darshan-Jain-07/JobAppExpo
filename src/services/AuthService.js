@@ -171,7 +171,21 @@ export const logIn = async (table, email, password) => {
             }
         });
         console.log('Response:', response.data);
-        return response.data
+        try {
+            const colName = `${table}_id`;
+            console.log('colName:', response?.data?.[0]?.[colName]);
+            const userResponse = await axios.get(url + `/data/users?user_id=${response?.data?.[0]?.[colName]}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            response.data[0]["user_id"] = userResponse?.data?.[0]?.id;
+            // console.log('Response:', response.data);
+            return response.data
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        // return response.data
     } catch (error) {
         console.error('Error:', error);
     }

@@ -11,6 +11,7 @@ import { getJobPost } from '../../services/JobPostService';
 import { getBlog } from '../../services/BlogService';
 import { getCompanyData } from '../../services/ProfileService';
 import { appliedJob, applyJobPost } from '../../services/ApplicationService';
+import { getResume } from '../../services/ResumeService';
 
 const { width } = Dimensions.get('window'); // Get screen width for responsive design
 
@@ -52,6 +53,7 @@ const HomePage = () => {
   const [companyList, setCompanyList] = useState(null)
   const [appliedJobs, setAppliedJobs] = useState({});
   const [loadingJobPost, setLoadingJobPost] = useState({});
+  const [resumeData, setResumeData] = useState(null);
 
   useEffect(() => {
     // Define an async function inside the useEffect
@@ -60,6 +62,10 @@ const HomePage = () => {
         const data = await getUserData();
         setCompanyData(data);
         console.log(data);
+
+        const resumeData = await getResume(data.applicant_id);
+        console.log(resumeData, "resume");
+        setResumeData(resumeData);
 
         const companyData = await getCompanyData()
         setCompanyList(companyData)
@@ -71,7 +77,7 @@ const HomePage = () => {
         const appliedJobsStatus = {};
         for (const job of jobPostData) {
           const isApplied = await appliedJob(data.applicant_id, job.job_post_id);
-          appliedJobsStatus[job.job_post_id] = isApplied.length ? true : false;
+          appliedJobsStatus[job.job_post_id] = isApplied?.length ? true : false;
         }
 
         setAppliedJobs(appliedJobsStatus);
@@ -174,7 +180,7 @@ const HomePage = () => {
             ) : isLoading ? (
               <ActivityIndicator animating={true} color="#fff" size="small" />
             ) : (
-              <TouchableOpacity style={styles.applyNowButton} onPress={() => applyJobForApplicant(item.job_post_id)}>
+              <TouchableOpacity style={!Boolean(resumeData.length) ? {...styles.applyNowButton} : {backgroundColor:"#000"}} disabled={!Boolean(resumeData.length)} onPress={() => applyJobForApplicant(item.job_post_id)}>
                 <CText fontWeight={600} sx={styles.applyNowText}>
                   Apply Now
                 </CText>

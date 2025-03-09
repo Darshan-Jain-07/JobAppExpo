@@ -1,126 +1,163 @@
-import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View, Text } from 'react-native';
-import { GiftedChat, InputToolbar } from 'react-native-gifted-chat';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, FlatList, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import io from 'socket.io-client';
+import { useRoute } from '@react-navigation/native';
+import axios from 'axios';
+import { getUserData } from '../../services/UserDataService';
 
-const ChatScreen = ({ route }) => {
-    const { userId } = route.params;
-    const [messages, setMessages] = useState([]);
-    const [socket, setSocket] = useState(null);
+// Your backend server URL
+const SOCKET_SERVER_URL = 'http://localhost:3001'; 
 
-    const renderMessageImage = (props) => {
-        return <Image source={{ uri: props.currentMessage.image }} style={{ width: 200, height: 200 }} />;
-      };
-      const renderMessageDocument = (props) => {
-        return (
-          <TouchableOpacity onPress={() => Linking.openURL(props.currentMessage.document)}>
-            <Text>{props.currentMessage.text}</Text>
-          </TouchableOpacity>
-        );
-      };      
+// Establish socket connection
+const socket = io(SOCKET_SERVER_URL);
 
-    useEffect(() => {
-        // Connect to the socket server
-        const socketInstance = io('http://192.168.5.45:3001');
-        setSocket(socketInstance);
+const ChatScreen = () => {
+  const route = useRoute();
+  const [messages, setMessages] = useState([]);
+  const [messageText, setMessageText] = useState('');
+  const [senderId, setSenderId] = useState(null);
+  
+  // Get recipientId from route params (passed in navigation)
+  const { recipientId } = route.params;
 
-        // Join the specific chat room (userId)
-        socketInstance.emit('join', userId);
 
-        // Listen for incoming messages
-        socketInstance.on('message', (message) => {
-            setMessages((previousMessages) => GiftedChat.append(previousMessages, message));
-        });
+  // Fetch messages from the database on initial load
+  useEffect(() => {
+    const userData = getUserData();
+    setSenderId(userData);
 
-        return () => {
-            socketInstance.disconnect();
-        };
-    }, [userId]);
-
-    const onSend = (newMessages = []) => {
-        // Send the new message to the server
-        socket.emit('sendMessage', newMessages[0]);
-        setMessages((previousMessages) => GiftedChat.append(previousMessages, newMessages));
+    // Fetch previous chat messages from the backend
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(`${SOCKET_SERVER_URL}/messages/${userId}/${recipientId}`);
+        setMessages(response.data);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
     };
 
-    const handleImagePick = () => {
-        launchImageLibrary({ mediaType: 'photo', includeBase64: true }, (response) => {
-            if (response.didCancel) return;
-            const { uri, base64 } = response.assets[0];
+    fetchMessages();
+  }, [recipientId]);
 
-            // Create a message with image
-            const imageMessage = {
-                _id: Math.random().toString(36).substring(7), // Unique message ID
-                text: '', // Empty text for the image
-                createdAt: new Date(),
-                user: {
-                    _id: userId,
-                },
-                image: uri, // URI of the image
-                base64, // Base64 encoded string of the image (optional)
-            };
+  // Handle sending a message
+  const sendMessage = () => {
+    if (messageText.trim() === '') return;
 
-            // Emit the image message
-            socket.emit('sendMessage', imageMessage);
-            setMessages((previousMessages) => GiftedChat.append(previousMessages, [imageMessage]));
-        });
-    };
-    const handleDocumentPick = async () => {
-        try {
-            const res = await DocumentPicker.pick({
-                type: [DocumentPicker.types.allFiles],
-            });
-
-            const documentMessage = {
-                _id: Math.random().toString(36).substring(7),
-                text: res.name, // Document name
-                createdAt: new Date(),
-                user: {
-                    _id: userId,
-                },
-                document: res.uri, // URI of the document
-            };
-
-            // Emit the document message
-            socket.emit('sendMessage', documentMessage);
-            setMessages((previousMessages) => GiftedChat.append(previousMessages, [documentMessage]));
-        } catch (err) {
-            if (DocumentPicker.isCancel(err)) {
-                console.log('User canceled the picker');
-            } else {
-                throw err;
-            }
-        }
+    const message = {
+      senderId,
+      recipientId,
+      text: messageText,
     };
 
-    const renderCustomActions = () => (
-        <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity onPress={handleImagePick}>
-                <Text style={{ fontSize: 20, margin: 10 }}>📷</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleDocumentPick}>
-                <Text style={{ fontSize: 20, margin: 10 }}>📄</Text>
-            </TouchableOpacity>
-        </View>
-    );
+    // Emit the message to the backend (via WebSocket)
+    socket.emit('sendMessage', message);
 
+    // Update the local messages list for immediate UI update
+    const newMessage = {
+      _id: Math.random().toString(36).substring(7),
+      text: messageText,
+      createdAt: new Date(),
+      user: { _id: senderId, name: 'Current User' }, // Replace 'Current User' with actual name
+    };
 
-    return (
-        <View style={{ flex: 1 }}>
-            <GiftedChat
-                messages={messages}
-                onSend={onSend}
-                user={{
-                    _id: userId, // the current logged-in user id
-                }}
-                renderMessageDocument={renderMessageDocument}
-                renderMessageImage={renderMessageImage}
-                renderInputToolbar={(props) => (
-                    <InputToolbar {...props} renderActions={renderCustomActions} />
-                )}
-            />
-        </View>
-    );
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+
+    // Optionally, store the message in the backend database
+    axios.post(`${SOCKET_SERVER_URL}/messages`, message).catch(console.error);
+
+    // Clear the message input field
+    setMessageText('');
+  };
+
+  // Listen for new messages coming from the backend (via WebSocket)
+  useEffect(() => {
+    socket.on('message', (newMessage) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      socket.off('message');
+    };
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={messages}
+        renderItem={({ item }) => (
+          <View
+            style={[
+              styles.messageContainer,
+              item.user._id === senderId ? styles.sentMessage : styles.receivedMessage,
+            ]}
+          >
+            <Text style={styles.messageText}>{item.text}</Text>
+            <Text style={styles.messageTime}>
+              {new Date(item.createdAt).toLocaleTimeString()}
+            </Text>
+          </View>
+        )}
+        keyExtractor={(item) => item._id}
+        inverted
+      />
+
+      <KeyboardAvoidingView
+        style={styles.inputContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <TextInput
+          style={styles.input}
+          value={messageText}
+          onChangeText={setMessageText}
+          placeholder="Type a message..."
+        />
+        <Button title="Send" onPress={sendMessage} />
+      </KeyboardAvoidingView>
+    </View>
+  );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  messageContainer: {
+    marginBottom: 10,
+    padding: 10,
+    borderRadius: 5,
+    maxWidth: '80%',
+    alignSelf: 'flex-start',
+  },
+  sentMessage: {
+    backgroundColor: '#DCF8C6',
+    alignSelf: 'flex-end',
+  },
+  receivedMessage: {
+    backgroundColor: '#E4E6EB',
+    alignSelf: 'flex-start',
+  },
+  messageText: {
+    fontSize: 16,
+  },
+  messageTime: {
+    fontSize: 12,
+    color: '#888',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+  },
+  input: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    marginRight: 10,
+  },
+});
 
 export default ChatScreen;

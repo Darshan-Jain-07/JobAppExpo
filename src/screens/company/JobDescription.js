@@ -10,6 +10,8 @@ import { getJobPost } from '../../services/JobPostService';
 import { getCompanyData } from '../../services/ProfileService';
 import { getRecruiter } from '../../services/RecruiterService';
 import { ActivityIndicator } from 'react-native-paper';
+import { getApplication } from '../../services/ApplicationService';
+import { getUserInfo } from '../../services/AuthService';
 
 // Job details object
 // const jobDetails = {
@@ -46,6 +48,38 @@ import { ActivityIndicator } from 'react-native-paper';
 //   ],
 // };
 
+const ApplicantItem = ({ item }) => {
+  const navigation = useNavigation();
+  const handleApplicantCardPress = (id) => {
+    navigation.navigate('ApplicantDetail', { applicationId: id });
+  }
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const data = await getUserInfo(item.applicant_id);
+      setUserData(data?.[0]);
+    };
+    fetchUserData();
+  }, [item.applicant_id]);
+  if (!userData) {
+    return null;
+  }
+
+  return (
+    <TouchableOpacity onPress={() => handleApplicantCardPress(item.application_id)} style={styles.applicantCard}>
+      <View style={styles.applicantInfo}>
+        <Image source={{ uri: userData?.applicant_profile_url }} style={styles.profilePhoto} />
+        <View>
+          <CText sx={styles.applicantName} fontSize={18} fontWeight={600}>{userData?.applicant_name}</CText>
+          {/* <CText sx={styles.applicantPosition}>{item.position}</CText> */}
+        </View>
+      </View>
+      <CText color={"#0017ff"} sx={{ marginTop: 8 }}>View</CText>
+    </TouchableOpacity>
+  );
+};
+
 const JobDescription = ({ route }) => {
   const { applicationId } = route.params;
   const navigation = useNavigation();
@@ -54,12 +88,18 @@ const JobDescription = ({ route }) => {
   const [recruiterData, setRecruiterData] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [reviews, setReviews] = useState(jobDetails?.reviews);
-  const [applicants, setApplicants] = useState(jobDetails?.applicants);
+  const [applicants, setApplicants] = useState([]);
+  const [noOfApplicants, setNoOfApplicants] = useState(0);
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchData = async () => {
       const application_details = await getJobPost(null, null, null, applicationId);
       setJobDetails(application_details?.[0])
+
+      const applicants = await getApplication(null, applicationId, null);
+      setNoOfApplicants(applicants.length || 0);
+      console.log("Application", applicants)
+      setApplicants(applicants);
 
       const company_data = await getCompanyData("company_email", application_details?.[0]?.company_id);
       setCompanyData(company_data?.[0])
@@ -71,7 +111,7 @@ const JobDescription = ({ route }) => {
     }
 
     fetchData();
-  },[ applicationId ])
+  }, [applicationId])
 
   if (!isDataLoaded) {
     return (
@@ -120,7 +160,7 @@ const JobDescription = ({ route }) => {
             { icon: 'rupee', text: jobDetails?.job_post_salary },
             { icon: 'clock-o', text: jobDetails?.job_post_employment_type },
             { icon: 'graduation-cap', text: jobDetails?.job_post_experience_level },
-            { icon: 'users', text: `${jobDetails?.applicantsCount} Applicants` },
+            { icon: 'users', text: `${noOfApplicants} Applicants` },
           ]}
           horizontal
           renderItem={({ item }) => <CChip icon={item.icon} text={item.text} />}
@@ -170,7 +210,7 @@ const JobDescription = ({ route }) => {
     <View style={styles.footerContainer}>
       {/* Reviews Section */}
       <View style={styles.card}>
-        <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Employee Reviews</CText>
+        <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Reviews</CText>
         <FlatList
           data={reviews}
           horizontal
@@ -201,7 +241,7 @@ const JobDescription = ({ route }) => {
       </View>
 
       {/* Review Form */}
-      <View style={styles.card}>
+      {/* <View style={styles.card}>
         <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Write a Review</CText>
         <Formik
           initialValues={{ reviewText: '' }}
@@ -227,23 +267,22 @@ const JobDescription = ({ route }) => {
             </View>
           )}
         </Formik>
-      </View>
+      </View> */}
 
       {/* Applicants Section */}
       <View style={styles.card}>
-        <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Applicants</CText>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '97%' }}>
+          <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Applicants</CText>
+          <TouchableOpacity onPress={() => navigation.navigate('Bottom Navigation Recruiter', { screen: "Recruiters", params: { screen: "ApplicantsList", params:{applicationId} } })} style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <CText fontSize={15} fontWeight={600} color={"#0084D1"}>View All ({noOfApplicants})</CText>
+          </TouchableOpacity>
+        </View>
         <FlatList
-          data={applicants}
+          data={applicants.slice(0, 3)}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleApplicantCardPress(item.id)} style={styles.applicantCard}>
-              <View>
-                <CText sx={styles.applicantName} fontSize={18} fontWeight={600}>{item.name}</CText>
-                <CText sx={styles.applicantPosition}>{item.position}</CText>
-              </View>
-              <CText color={"#0017ff"} sx={{marginTop:8}}>View Details</CText>
-            </TouchableOpacity>
-          )}
+          renderItem={({ item }) => {
+            return (<ApplicantItem item={item} />)
+          }}
         />
       </View>
 
@@ -272,6 +311,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // backgroundColor: '#fff',
+  },
+  applicantInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profilePhoto: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
   },
   scrollContainer: {
   },
