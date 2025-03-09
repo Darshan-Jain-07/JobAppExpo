@@ -37,3 +37,21 @@ export const appliedJob = async (applicantId, jobpostId) => {
         console.error('Error:', error);
     }
 };
+
+export const getApplication = async (application_id, job_post_id, limit) => {
+    const url = API_BASE_URL;
+    // console.log(companyId)
+    let endPoint = `/data/application?${application_id ? `application_id=${application_id}&` : ``}${job_post_id ? `job_post_id=${job_post_id}&` : ``}${limit ? `limit=${limit}&` : ``}`;
+    console.log(endPoint)
+    try {
+        const response = await axios.get(url + endPoint, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        console.log('Response:', response.data);
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};

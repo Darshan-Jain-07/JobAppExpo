@@ -20,6 +20,8 @@ import HomePage from './Home';
 import CreateBlogScreen from '../company/CreateBlog';
 import BlogListScreen from '../company/BlogList';
 import BlogPage from '../company/BlogDetail';
+import ApplicantDetails from '../company/ApplicationDetail';
+import ApplicantsList from './ApplicantsList';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
 // import CustomHeader from './Header';
@@ -109,6 +111,24 @@ function RecruitersStack() {
             <Stack.Screen
                 name="ApplicationDetail"
                 component={JobDescription}
+                // options={{ headerShown: false }} // TODO: Customize the header for each tab
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="My Job Applications" />,
+                }}
+            />
+            <Stack.Screen
+                name="ApplicantsList"
+                component={ApplicantsList}
+                // options={{ headerShown: false }} // TODO: Customize the header for each tab
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Applicants List" />,
+                }}
+            />
+            <Stack.Screen
+                name="ApplicantDetail"
+                component={ApplicantDetails}
                 // options={{ headerShown: false }} // TODO: Customize the header for each tab
                 options={{
                     headerShown: true,

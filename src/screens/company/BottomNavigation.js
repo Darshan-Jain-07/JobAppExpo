@@ -17,6 +17,7 @@ import BlogPage from './BlogDetail';
 import CompanyProfilePage from './Profile';
 import CreateBlogScreen from './CreateBlog';
 import BlogListScreen from './BlogList';
+import ApplicantsList from '../recruiter/ApplicantsList';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,6 +32,14 @@ function ApplicationsStack() {
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Job Application List" />,
+                }}
+            />
+            <Stack.Screen
+                name="ApplicantsList"
+                component={ApplicantsList}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Applicants List" />,
                 }}
             />
             <Stack.Screen

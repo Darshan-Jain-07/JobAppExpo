@@ -1,16 +1,41 @@
 // src/screens/ApplicantDetails.js
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // For icons like email, phone
 import { useRoute, useNavigation } from '@react-navigation/native'; // For navigation and routing
 import CChip from '../../components/CChip';
+import { getUserInfo } from '../../services/AuthService';
+import { ActivityIndicator } from 'react-native-paper';
+import { getResume } from '../../services/ResumeService';
 
-const ApplicantDetails = () => {
-  const route = useRoute();
+const ApplicantDetails = ({ route }) => {
+  const { applicantId } = route.params;
+  console.log(applicantId)
   const navigation = useNavigation();
+  const [userData, setUserData] = useState(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-//   const { applicant } = route.params; // Receive applicant data passed via navigation
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const data = await getUserInfo(applicantId);
+      const resumeData = await getResume(applicantId);
+      data[0].resume = resumeData; // Merge resume data with user data
+      setUserData(data?.[0]);
+      setIsDataLoaded(true);
+    };
+    fetchUserData();
+  }, [applicantId]);
+
+  if (!isDataLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    )
+  }
+
+  //   const { applicant } = route.params; // Receive applicant data passed via navigation
   const applicant = {
     id: '4',
     name: 'Emily Clark',
@@ -33,13 +58,12 @@ const ApplicantDetails = () => {
 
   return (
     <ScrollView style={styles.container}>
-      
+
 
       {/* Applicant Info */}
       <View style={styles.profileSection}>
-        {console.log(applicant?.profilePicture)}
-        <Image style={styles.profileImage} source={{ uri: applicant?.profilePicture }} />
-        <Text style={styles.applicantName}>{applicant?.name}</Text>
+        <Image style={styles.profileImage} source={{ uri: userData?.applicant_profile_url }} />
+        <Text style={styles.applicantName}>{userData?.applicant_name}</Text>
         <Text style={styles.applicantPosition}>{applicant?.position}</Text>
       </View>
 
@@ -48,11 +72,11 @@ const ApplicantDetails = () => {
         <Text style={styles.sectionTitle}>Contact Information</Text>
         <View style={styles.contactItem}>
           <Icon name="envelope" size={20} color="#333" />
-          <Text style={styles.contactText}>{applicant?.email}</Text>
+          <Text style={styles.contactText}>{userData?.applicant_email}</Text>
         </View>
         <View style={styles.contactItem}>
           <Icon name="phone" size={20} color="#333" />
-          <Text style={styles.contactText}>{applicant?.phone}</Text>
+          <Text style={styles.contactText}>{userData?.applicant_phone}</Text>
         </View>
       </View>
 
@@ -60,7 +84,7 @@ const ApplicantDetails = () => {
       <View style={styles.skillsSection}>
         <Text style={styles.sectionTitle}>Skills</Text>
         <View style={styles.skillsList}>
-          {applicant?.skills.map((skill, index) => (
+          {userData?.resume?.[0]?.resume_skills?.map((skill, index) => (
             <CChip key={index} text={skill} />
           ))}
         </View>
@@ -70,7 +94,7 @@ const ApplicantDetails = () => {
       <View style={styles.experienceSection}>
         <Text style={styles.sectionTitle}>Experience</Text>
         <View style={styles.experienceItem}>
-          <Text style={styles.experienceText}>{applicant?.experience}</Text>
+          <Text style={styles.experienceText}>{userData.resume[0].resume_experience}</Text>
         </View>
       </View>
 

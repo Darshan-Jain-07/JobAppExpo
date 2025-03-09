@@ -17,6 +17,7 @@ const JobPostList = () => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [appliedJobs, setAppliedJobs] = useState({});
   const [loadingJobPost, setLoadingJobPost] = useState({});
+  // const [resumeData, setResumeData] = useState([]);
 
   const fetchAppliedJobsStatus = async (userId, jobPostData) => {
     const appliedJobsStatus = {};
@@ -32,7 +33,7 @@ const JobPostList = () => {
       ...prevState,
       [jobpostId]: true, // Set loading to true before sending the request
     }));
-  
+
     let data = {
       applicant_id: userData.applicant_id,
       job_post_id: jobpostId,
@@ -40,7 +41,7 @@ const JobPostList = () => {
       application_ats_score: 7.5,
       is_deleted: "false",
     };
-  
+
     try {
       let resp = await applyJobPost(data);
       console.log(resp);
@@ -63,7 +64,7 @@ const JobPostList = () => {
       }));
     }
   };
-  
+
   useFocusEffect(
     React.useCallback(() => {
       if (userData.applicant_id) {
@@ -78,6 +79,10 @@ const JobPostList = () => {
       try {
         const user = await getUserData();
         setUserData(user);
+
+        // const resumeData = await getResume(data.applicant_id);
+        // console.log(resumeData, "resume");
+        // setResumeData(resumeData);
 
         const jobPostData = await getJobPost();
         setJobApplicationsDataState(jobPostData);
@@ -111,7 +116,7 @@ const JobPostList = () => {
   const renderJobApplicationItem = ({ item }) => {
     const isApplied = appliedJobs[item.job_post_id]; // Check if the job has been applied
     const isLoading = loadingJobPost[item.job_post_id]; // Check if the job is being applied for
-    console.log(isApplied,"isApplied")
+    console.log(isApplied, "isApplied")
     return (
       <TouchableOpacity style={styles.jobCard} onPress={() => navigate.navigate('Home', { screen: 'ApplicationDetail', params: { applicationId: item.job_post_id } })}>
         <View style={styles.jobContent}>

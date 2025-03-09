@@ -21,7 +21,7 @@ const ChatList = () => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.cardContainer}
-            onPress={() => navigation.navigate('Chat', { userId: item.id })}>
+            onPress={() => navigation.navigate('Chat', { recipientId: "USER0000000000000002" })}>
             <Card style={styles.card}>
               <View style={styles.cardContent}>
                 <Avatar.Image size={50} source={{ uri: item.avatar }} />
