@@ -163,7 +163,7 @@ export const createRecruiter = async (data) => {
 
 export const logIn = async (table, email, password) => {
     const url = API_BASE_URL;
-    console.log(url);
+    console.log(url, table, email, password);
     try {
         const response = await axios.get(url + `/data/${table}?${table}_email=${email}&${table}_password=${password}`, {
             headers: {

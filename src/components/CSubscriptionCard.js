@@ -1,7 +1,9 @@
-import { View, Text, Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Dimensions, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
 import CText from './CText';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import RazorpayCheckout from 'react-native-razorpay';
+import { RAZORPAY_API } from '@env';
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,13 +60,41 @@ const styles = StyleSheet.create({
 
 const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText }) => {
 
+    const handlePayment = (amount) => {
+        
+        const options = {
+            description: "Find your job ASAP",
+            image: "", // Can set ur company logo
+            currency: "INR",
+            key: RAZORPAY_API,
+            amount: parseInt(amount?.slice(1))*100,
+            name: "9 to 5",
+            prefill: {
+                email: "9to5@gmail.com",
+                contact: "9988776655",
+                name: "John Doe"
+            },
+            theme: { color: "#eaeaea" },
+        }
+
+        RazorpayCheckout.open(options)
+            .then((d) => {
+                console.log(d); // optional, good for debugging
+                Alert.alert("Payment Successful", `Payment ID: ${d.razorpay_payment_id}`);
+            })
+            .catch((e) => {
+                console.log(e); // optional
+                Alert.alert("Payment Failed", e.description || "Something went wrong");
+            });
+    }
+
     return (
         <View style={styles.card}>
             <CText sx={styles.subscriptionName} fontWeight={800} fontSize={30}>{name}</CText>
 
             <View style={styles.header}>
                 <CText sx={styles.price} fontSize={50}>{price}</CText>
-                <CText sx={{ color: "#797b82", marginTop: 45 }} fontSize={25} fontWeight={900}>{timeSpan}</CText>
+                {/* <CText sx={{ color: "#797b82", marginTop: 45 }} fontSize={25} fontWeight={900}>{timeSpan}</CText> */}
             </View>
 
             <View style={styles.descriptionContainer}>
@@ -76,7 +106,7 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText }) =
                 ))}
             </View>
 
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={()=>handlePayment(price)}>
                 <CText sx={styles.buttonText} fontSize={20} fontWeight={600}>{buttonText}</CText>
             </TouchableOpacity>
         </View>

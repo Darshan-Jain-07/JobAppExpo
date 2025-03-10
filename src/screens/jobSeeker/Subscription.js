@@ -21,8 +21,8 @@ const Subscription = () => {
   const subscriptionData = [
     {
       name: 'Premium Plan',
-      price: '$9.99',
-      timeSpan: "/month",
+      price: '₹9999',
+      timeSpan: "/year",
       description: [
         'Access to all premium features',
         'Ad-free experience',
@@ -31,8 +31,8 @@ const Subscription = () => {
     },
     {
       name: 'Basic Plan',
-      price: '$4.99',
-      timeSpan: "/month",
+      price: '₹149',
+      timeSpan: "/year",
       description: [
         'Access to basic features',
         'Limited ads',
@@ -41,8 +41,8 @@ const Subscription = () => {
     },
     {
       name: 'Ultimate Plan',
-      price: '$19.99',
-      timeSpan: "/month",
+      price: '₹4999',
+      timeSpan: "/year",
       description: [
         'Unlimited access to all features',
         'Ad-free experience',
