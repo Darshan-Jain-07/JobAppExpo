@@ -24,14 +24,25 @@
       "supportsTablet": true
     },
     "android": {
-      "permissions": ["ACCESS_NETWORK_STATE", "INTERNET","ACCESS_WIFI_STATE"],
+      "permissions": [
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.RECORD_AUDIO"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.darshanjain7.myapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8ef8f26b-ede0-4033-9bcc-79e1bf69afda"
+      }
     }
   }
 }
