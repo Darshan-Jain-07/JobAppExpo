@@ -1,9 +1,13 @@
 import React from 'react';
 import AppNavigator from './src/AppNavigator';
+import { StatusBar, View } from 'react-native';
 
 const App = () => {
-    return(
-        <AppNavigator />
+    return (
+        <View style={{ flex: 1 }}>
+            <StatusBar backgroundColor="#000" barStyle="light-content" />
+            <AppNavigator />
+        </View>
     )
 }
 

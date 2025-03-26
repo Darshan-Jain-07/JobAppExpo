@@ -4,6 +4,7 @@ import CText from './CText';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import RazorpayCheckout from 'react-native-razorpay';
 import { RAZORPAY_API } from '@env';
+import { addSubscription } from '../services/SubscriptionService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,16 +59,16 @@ const styles = StyleSheet.create({
     },
 });
 
-const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText }) => {
+const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id, applicantId, runFunc }) => {
 
-    const handlePayment = (amount) => {
-        
+    const handlePayment = (id, amount) => {
+
         const options = {
             description: "Find your job ASAP",
             image: "", // Can set ur company logo
             currency: "INR",
             key: RAZORPAY_API,
-            amount: parseInt(amount?.slice(1))*100,
+            amount: parseInt(amount) * 100,
             name: "9 to 5",
             prefill: {
                 email: "9to5@gmail.com",
@@ -79,12 +80,14 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText }) =
 
         RazorpayCheckout.open(options)
             .then((d) => {
-                console.log(d); // optional, good for debugging
-                Alert.alert("Payment Successful", `Payment ID: ${d.razorpay_payment_id}`);
+                // console.log(d); // optional, good for debugging
+                console.log({applicant_id: applicantId, subscription_id: id, subscription_mapping_application_left: timeSpan, is_deleted: 0})
+                let resp = addSubscription({applicant_id: applicantId, subscription_id: id, subscription_mapping_application_left: timeSpan, is_deleted: 0})
+                Alert.alert("Subscribed Successfully");
             })
             .catch((e) => {
                 console.log(e); // optional
-                Alert.alert("Payment Failed", e.description || "Something went wrong");
+                Alert.alert("Payment Failed", "Something went wrong");
             });
     }
 
@@ -94,19 +97,19 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText }) =
 
             <View style={styles.header}>
                 <CText sx={styles.price} fontSize={50}>{price}</CText>
-                {/* <CText sx={{ color: "#797b82", marginTop: 45 }} fontSize={25} fontWeight={900}>{timeSpan}</CText> */}
             </View>
+            <CText sx={{ color: "#797b82" }} fontSize={25} fontWeight={900}>{timeSpan}</CText>
 
             <View style={styles.descriptionContainer}>
                 <CText fontSize={18} sx={styles.descriptionItem}>Benefits:-</CText>
-                {description.map((point, index) => (
+                {description?.map((point, index) => (
                     <CText key={index} fontSize={18} sx={styles.descriptionItem}>
                         <FontAwesomeIcon size={20} name="check-circle" /> {point}
                     </CText>
                 ))}
             </View>
 
-            <TouchableOpacity style={styles.button} onPress={()=>handlePayment(price)}>
+            <TouchableOpacity style={styles.button} onPress={() => runFunc && handlePayment(id, price)}>
                 <CText sx={styles.buttonText} fontSize={20} fontWeight={600}>{buttonText}</CText>
             </TouchableOpacity>
         </View>

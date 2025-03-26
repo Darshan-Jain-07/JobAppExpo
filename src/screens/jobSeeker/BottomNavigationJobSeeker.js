@@ -154,17 +154,24 @@ export default function BottomNavigationJobSeeker() {
     const openChatbot = () => {
         navigation.navigate("ChatBot");
         // Here you would open the chatbot (e.g., navigate to a new screen or show a modal)
-      };
+    };
     return (
         <View style={{ flex: 1 }}>
             <Tab.Navigator
-                screenOptions={() => ({
-                    tabBarStyle: styles.tabBarStyle,
-                    tabBarItemStyle: styles.tabBarItemStyle,
-                    tabBarActiveBackgroundColor: "#ffffff",
-                    tabBarActiveTintColor: "#000000",
-                    tabBarInactiveTintColor: "#ffffff",
-                })}>
+                screenOptions={{
+                    tabBarActiveTintColor: "#fff",
+                    tabBarInactiveTintColor: "gray",
+                    tabBarShowLabel: false,
+                    headerShown: false,
+                    tabBarStyle: {
+                        backgroundColor: "#000",
+                        height: "8%",
+                    },
+                    tabBarIconStyle: {
+                        marginTop: 10,
+                    }
+                }}
+            >
                 <Tab.Screen
                     name="Home"
                     component={HomeStack}
@@ -208,12 +215,12 @@ export default function BottomNavigationJobSeeker() {
                 />
             </Tab.Navigator>
             <FAB
-        style={styles.fab}
-        icon="robot" // You can use any icon from MaterialCommunityIcons or custom
-        onPress={openChatbot}
-        color="white"
-        backgroundColor="#222222" // Customize the FAB color
-      />
+                style={styles.fab}
+                icon="robot" // You can use any icon from MaterialCommunityIcons or custom
+                onPress={openChatbot}
+                color="white"
+                backgroundColor="#222222" // Customize the FAB color
+            />
         </View>
     );
 }
@@ -236,15 +243,15 @@ const styles = StyleSheet.create({
     },
     fab: {
         position: "absolute",
-        right: 20, 
-        bottom: 100,
-        width: 60, 
+        right: 20,
+        bottom: 70,
+        width: 60,
         height: 60,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#6200ee',
         borderRadius: 30, // Make it circular if needed
-      },
+    },
     tabBarItemStyle: {
         paddingVertical: 10,
         margin: 10,

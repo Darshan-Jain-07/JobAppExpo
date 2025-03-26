@@ -17,7 +17,7 @@ const calculateReadingTime = (content) => {
 
 const BlogListScreen = ( {route} ) => {
   let userId = route.params?.userId || 0;
-  // console.log(userId)
+  console.log(userId)
   const navigation = useNavigation();
   const [isDataLoaded, setIsDataLoaded] = useState(false)
   const [blogData, setBlogData] = useState([])

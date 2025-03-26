@@ -54,13 +54,13 @@ const HomePage = () => {
         const data = await getUserData();
         setCompanyData(data);
         console.log(data);
-
+        
         const jobPostComp = await getJobPost(null, data?.recruiter_id, 3)
         setCompanyJobPost(jobPostComp)
-
+        
         const jobPostData = await getJobPost(data?.company_email, undefined, 3)
         setJobApplicationsDataState(jobPostData)
-
+        
         const blogData = await getBlog(null, null, 3)
         setBlogsDataState(blogData)
 

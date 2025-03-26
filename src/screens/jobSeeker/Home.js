@@ -12,6 +12,10 @@ import { getBlog } from '../../services/BlogService';
 import { getCompanyData } from '../../services/ProfileService';
 import { appliedJob, applyJobPost } from '../../services/ApplicationService';
 import { getResume } from '../../services/ResumeService';
+import { Animated } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+
+
 
 const { width } = Dimensions.get('window'); // Get screen width for responsive design
 
@@ -54,6 +58,10 @@ const HomePage = () => {
   const [appliedJobs, setAppliedJobs] = useState({});
   const [loadingJobPost, setLoadingJobPost] = useState({});
   const [resumeData, setResumeData] = useState(null);
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [notification, setNotification] = useState("");
+  const isFocused = useIsFocused();
+
 
   useEffect(() => {
     // Define an async function inside the useEffect
@@ -62,29 +70,29 @@ const HomePage = () => {
         const data = await getUserData();
         setCompanyData(data);
         console.log(data);
-
-        const resumeData = await getResume(data.applicant_id);
-        console.log(resumeData, "resume");
-        setResumeData(resumeData);
-
+        
+        const resumeData = await getResume(data?.applicant_id);
+        console.log(resumeData || null, "resume");
+        setResumeData(resumeData || null);
+        
         const companyData = await getCompanyData()
         setCompanyList(companyData)
         console.log(companyData)
-
+        
         const jobPostData = await getJobPost(undefined, undefined, 3)
         setJobApplicationsDataState(jobPostData)
-
+        
         const appliedJobsStatus = {};
         for (const job of jobPostData) {
-          const isApplied = await appliedJob(data.applicant_id, job.job_post_id);
+          const isApplied = await appliedJob(data?.applicant_id, job?.job_post_id);
           appliedJobsStatus[job.job_post_id] = isApplied?.length ? true : false;
         }
-
+        
         setAppliedJobs(appliedJobsStatus);
-
+        
         const blogData = await getBlog(null, null, 3)
         setBlogsDataState(blogData)
-
+        
         setIsDataLoaded(true);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -94,8 +102,8 @@ const HomePage = () => {
 
     // Call the async function
     fetchData();
-  }, [])
-
+  }, [isFocused])
+  
   useFocusEffect(
     React.useCallback(() => {
       if (companyData?.applicant_id) {
@@ -103,7 +111,7 @@ const HomePage = () => {
       }
     }, [companyData, jobApplicationsDataState])
   );
-
+  
   const fetchAppliedJobsStatus = async (userId, jobPostData) => {
     const appliedJobsStatus = {};
     for (const job of jobPostData) {
@@ -121,7 +129,7 @@ const HomePage = () => {
     }));
     // Mark the job as "loading" before sending the request
     setLoadingJobPost((prevState) => ({ ...prevState, [jobpostId]: true }));
-
+    
     let data = {
       applicant_id: companyData.applicant_id,
       job_post_id: jobpostId,
@@ -129,11 +137,30 @@ const HomePage = () => {
       application_ats_score: 7.5,
       is_deleted: "false"
     };
-
+    
     try {
       // Apply for the job
       let resp = await applyJobPost(data);
       console.log(resp);
+      if (resp?.message === "Could not apply as subscription limit is over") {
+        setNotification("Please subscribe to apply for job")
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+
+        // Auto fade-out after 2s
+        setTimeout(() => {
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => setNotification(null));
+        }, 2000);
+
+        return
+      }
     } catch (error) {
       console.error('Error applying for job:', error);
       // If there's an error, revert the applied status
@@ -146,7 +173,7 @@ const HomePage = () => {
       setLoadingJobPost((prevState) => ({ ...prevState, [jobpostId]: false }));
     }
   };
-
+  
   console.log(recruitersDataState)
   if (!isDataLoaded) {
     return (
@@ -162,6 +189,7 @@ const HomePage = () => {
     const isLoading = loadingJobPost[item.job_post_id];
     return (
       <TouchableOpacity style={styles.jobCard} onPress={() => navigate.navigate('Home', { screen: 'ApplicationDetail', params: { applicationId: item.job_post_id } })}>
+        {console.log("hello20")}
         <View style={styles.jobContent}>
           {/* Left side (Job details) */}
           <View style={styles.jobDetails}>
@@ -180,7 +208,7 @@ const HomePage = () => {
             ) : isLoading ? (
               <ActivityIndicator animating={true} color="#fff" size="small" />
             ) : (
-              <TouchableOpacity style={!Boolean(resumeData.length) ? {...styles.applyNowButton} : {backgroundColor:"#000"}} disabled={!Boolean(resumeData.length)} onPress={() => applyJobForApplicant(item.job_post_id)}>
+              <TouchableOpacity style={Boolean(resumeData.length) ? { ...styles.applyNowButton } : { backgroundColor: "#000" }} disabled={!Boolean(resumeData.length)} onPress={() => applyJobForApplicant(item.job_post_id)}>
                 <CText fontWeight={600} sx={styles.applyNowText}>
                   Apply Now
                 </CText>
@@ -275,6 +303,11 @@ const HomePage = () => {
         <CText sx={styles.subscriptionTitle}>Current Subscription: Premium</CText>
         <Icon name="star" size={30} color="#FFD700" />
       </View>
+      {notification ?
+        <Animated.View style={[styles.notificationContainer, { opacity: fadeAnim }]}>
+          <CText sx={styles.notificationText}>{notification}</CText>
+        </Animated.View>
+        : null}
 
       <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
         <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
@@ -522,6 +555,31 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 5,
+  },
+
+  // Notification
+  notificationContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#ff4d4f', // Red for error/alert
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    zIndex: 999,
+    minWidth: 200,
+    maxWidth: '80%',
+  },
+
+  notificationText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

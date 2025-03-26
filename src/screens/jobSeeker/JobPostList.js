@@ -7,6 +7,8 @@ import { getUserData } from '../../services/UserDataService';
 import { getJobPost } from '../../services/JobPostService';
 import { ActivityIndicator } from 'react-native-paper';
 import { appliedJob, applyJobPost } from '../../services/ApplicationService';
+import { Animated } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -17,6 +19,10 @@ const JobPostList = () => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [appliedJobs, setAppliedJobs] = useState({});
   const [loadingJobPost, setLoadingJobPost] = useState({});
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [notification, setNotification] = useState("");
+  const isFocused = useIsFocused();
+
   // const [resumeData, setResumeData] = useState([]);
 
   const fetchAppliedJobsStatus = async (userId, jobPostData) => {
@@ -45,6 +51,25 @@ const JobPostList = () => {
     try {
       let resp = await applyJobPost(data);
       console.log(resp);
+      if (resp?.message === "Could not apply as subscription limit is over") {
+        setNotification("Please subscribe to apply for job")
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+
+        // Auto fade-out after 2s
+        setTimeout(() => {
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => setNotification(null));
+        }, 2000);
+
+        return
+      }
       // After successful application, update applied jobs
       setAppliedJobs((prevState) => ({
         ...prevState,
@@ -102,7 +127,7 @@ const JobPostList = () => {
     };
 
     fetchData();
-  }, []);
+  }, [isFocused]);
 
   if (!isDataLoaded) {
     return (
@@ -157,7 +182,11 @@ const JobPostList = () => {
       <View style={styles.sectionHeader}>
         <CText fontWeight={600} sx={styles.sectionTitle}>Job Posts</CText>
       </View>
-
+      {notification ?
+        <Animated.View style={[styles.notificationContainer, { opacity: fadeAnim }]}>
+          <CText sx={styles.notificationText}>{notification}</CText>
+        </Animated.View>
+        : null}
       <FlatList
         data={jobApplicationsDataState}
         renderItem={renderJobApplicationItem}
@@ -239,6 +268,32 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
   },
+  // Notification
+  notificationContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#ff4d4f', // Red for error/alert
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    zIndex: 999,
+    minWidth: 200,
+    maxWidth: '80%',
+  },
+
+  notificationText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+
 });
 
 export default JobPostList;
