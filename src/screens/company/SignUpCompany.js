@@ -229,7 +229,7 @@ const SignUpCompany = () => {
                                         right={<TextInput.Icon icon={secureTextEntryR ? "eye-off" : "eye"} onPress={() => setSecureTextEntryR(!secureTextEntryR)} />}
                                     />
                                     <ErrorMessage name="company_recruiter_password" component={CText} sx={styles.errorMessage} />
-                                    <CText sx={{ color: "#696969", marginHorizontal: 16 }}>Note: Keep it different from Company Password else recruiter will have company access</CText>
+                                    <CText sx={{ color: "#696969", marginHorizontal: 16, fontSize:12 }}>Note: Use a different password than the Company Password to protect access.</CText>
                                 </View>
                                 {/* Company Phone */}
                                 <View style={{ marginBottom: 6 }}>
@@ -263,13 +263,12 @@ const SignUpCompany = () => {
                                     <ErrorMessage name="company_description" component={CText} sx={styles.errorMessage} />
                                 </View>
                                 {/* Company Logo */}
-                                <View style={{ marginBottom: 6, marginHorizontal: 16 }}>
-                                    <CText style={styles.logoLabel}>Company Logo</CText>
+                                <View style={{ marginBottom: 6, marginHorizontal: 16, marginTop: 10 }}>
                                     <CustomImageUploader
                                         setFieldValue={setFieldValue}
                                         fieldKey="company_logo"
                                         values={values}
-                                        placeholder={"Select Logo"}
+                                        placeholder={"Select Company Logo"}
                                     />
                                     <ErrorMessage name="company_logo" component={CText} color="#ff0000" fontSize={12} />
                                     {loading && <CText style={{ color: "#ff0000", marginHorizontal: 16 }}>Uploading...</CText>}

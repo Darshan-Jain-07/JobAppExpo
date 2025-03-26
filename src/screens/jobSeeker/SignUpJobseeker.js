@@ -356,12 +356,12 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         marginTop: 20,
         backgroundColor: 'black',
-        paddingVertical: 12,
-        alignItems: 'center',
+        paddingVertical: 5,
+        alignItems: 'center'
     },
     submitButtonText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: 'bold',
     },
     otpButton: {

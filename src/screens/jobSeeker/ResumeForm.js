@@ -83,7 +83,7 @@ const ResumeForm = () => {
     let data = await addResume(values);
     console.log(data)
     if(data){
-      navigation.navigate("Home",{screen:"Home Page"})
+      navigation.navigate("View Applicant Detail")
     }
     console.log('Form data submitted:', values);
   };

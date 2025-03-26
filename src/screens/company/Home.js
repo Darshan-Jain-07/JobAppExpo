@@ -35,7 +35,7 @@ const blogsData = [
 
 const calculateReadingTime = (content) => {
   const wordsPerMinute = 30; // Average reading speed (words per minute)
-  const wordCount = content.split(' ').length;
+  const wordCount = content.split(' ')?.length;
   const minutes = Math.ceil(wordCount / wordsPerMinute);
   return minutes;
 };
@@ -46,8 +46,8 @@ const HomePage = () => {
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState([]);
   const [blogsDataState, setBlogsDataState] = useState(blogsData);
   const [companyData, setCompanyData] = useState(null)
-  const [isDataLoaded ,setIsDataLoaded] = useState(false)
-  
+  const [isDataLoaded, setIsDataLoaded] = useState(false)
+
   useEffect(() => {
     // Define an async function inside the useEffect
     const fetchData = async () => {
@@ -55,14 +55,16 @@ const HomePage = () => {
         const data = await getUserData();
         setCompanyData(data);
         console.log(data);
-        
-        const recruiterData = await getRecruiter(data.company_email,3)
+
+        const recruiterData = await getRecruiter(data?.company_email, 3)
+        console.log(recruiterData)
         setRecruitersDataState(recruiterData)
 
-        const jobPostData = await getJobPost(data?.company_email,undefined,3)
+        const jobPostData = await getJobPost(data?.company_email, undefined, 3)
+        console.log(jobPostData)
         setJobApplicationsDataState(jobPostData)
 
-        const blogData = await getBlog(null,null,3)
+        const blogData = await getBlog(null, null, 3)
         setBlogsDataState(blogData)
 
         setIsDataLoaded(true);
@@ -71,7 +73,7 @@ const HomePage = () => {
         setIsDataLoaded(true);
       }
     };
-  
+
     // Call the async function
     fetchData();
   }, [])
@@ -93,7 +95,7 @@ const HomePage = () => {
       <CText>Status: <CText sx={styles.jobStatus}>{item.is_deleted === "False" ? "Open" : "Closed"}</CText></CText>
       <CText><Icon name="map-marker" size={16} color="#5B5B5B" /> {item.job_post_location}</CText>
       <CText>Applicants: {item.applicants}</CText>
-      <TouchableOpacity onPress={()=>navigate.navigate('Applications', { screen: 'ApplicationDetail', params: {applicationId: item.job_post_id }})}>
+      <TouchableOpacity onPress={() => navigate.navigate('Applications', { screen: 'ApplicationDetail', params: { applicationId: item.job_post_id } })}>
         <CText sx={styles.viewDetailsButton}>View Details</CText>
       </TouchableOpacity>
     </View>
@@ -101,30 +103,31 @@ const HomePage = () => {
 
   // Render function for Blog Card
   const renderBlogItem = ({ item }) => {
-    const truncatedDescription = item.blog_description.length > 50
-    ? item.blog_description.slice(0, 50) + "..."
-    : item.blog_description;
-    
-    return(
-    <View style={styles.blogCard}>
-      <View style={styles.blogImage}>
-        <Image source={{ uri: item.blog_image }} style={{borderRadius:8}} height={100} />
+    const truncatedDescription = item.blog_description?.length > 50
+      ? item.blog_description.slice(0, 50) + "..."
+      : item.blog_description;
+
+    return (
+      <View style={styles.blogCard}>
+        <View style={styles.blogImage}>
+          <Image source={{ uri: item.blog_image }} style={{ borderRadius: 8 }} height={100} />
+        </View>
+        <CText fontWeight={600} sx={styles.blogTitle}>{item.blog_title}</CText>
+        <CText sx={styles.blogDescription}>{truncatedDescription}</CText>
+        <View style={styles.readTimeContainer}>
+          <Icon name="clock-o" size={18} color="#000" />
+          <CText sx={styles.readTime}>Time to read: {calculateReadingTime(item.blog_description)}</CText>
+        </View>
+        <View style={styles.readsContainer}>
+          <Icon name="eye" size={18} color="#000" />
+          <CText sx={styles.reads}>Reads: {item.reads}</CText>
+        </View>
+        <TouchableOpacity onPress={() => navigate.navigate('Blog Detail', { blogId: item.blog_id })}>
+          <CText sx={styles.readMoreButton}>Read More</CText>
+        </TouchableOpacity>
       </View>
-      <CText fontWeight={600} sx={styles.blogTitle}>{item.blog_title}</CText>
-      <CText sx={styles.blogDescription}>{truncatedDescription}</CText>
-      <View style={styles.readTimeContainer}>
-        <Icon name="clock-o" size={18} color="#000" />
-        <CText sx={styles.readTime}>Time to read: {calculateReadingTime(item.blog_description)}</CText>
-      </View>
-      <View style={styles.readsContainer}>
-        <Icon name="eye" size={18} color="#000" />
-        <CText sx={styles.reads}>Reads: {item.reads}</CText>
-      </View>
-      <TouchableOpacity onPress={()=>navigate.navigate('Blog Detail', {blogId: item.blog_id })}>
-        <CText sx={styles.readMoreButton}>Read More</CText>
-      </TouchableOpacity>
-    </View>
-  )};
+    )
+  };
 
   // Render function for Recruiter Card
   const renderRecruiterItem = ({ item }) => (
@@ -134,7 +137,7 @@ const HomePage = () => {
       <CText fontWeight={600} fontSize={18}>{item.recruiter_name}</CText>
       <CText>Applications Created: {item.jobApplications}</CText>
       <CText>Hired: {item.hired}</CText>
-      <TouchableOpacity onPress={()=>navigate.navigate('Recruiters', { screen: 'RecruiterDetail',  params: { recruiterId: item.recruiter_id } })}>
+      <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: 'RecruiterDetail', params: { recruiterId: item.recruiter_id } })}>
         <CText sx={styles.viewDetailsButton}>View Details</CText>
       </TouchableOpacity>
     </View>
@@ -157,7 +160,7 @@ const HomePage = () => {
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>
         <CText fontWeight={600} sx={styles.sectionTitle}>Recruiters</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Recruiters',{ screen:"MyRecruiter"})}>
+        <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: "MyRecruiter" })}>
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
@@ -174,12 +177,16 @@ const HomePage = () => {
 
       {/* Job Applications Section */}
       <View style={styles.sectionHeader}>
-        <CText fontWeight={600} sx={styles.sectionTitle}>Job Applications</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Applications',{ screen:"MyJobApplication"})}>
+        <CText fontWeight={600} sx={styles.sectionTitle}>Job Posts</CText>
+        <TouchableOpacity onPress={() => navigate.navigate('Applications', { screen: "MyJobApplication" })}>
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
-      <FlatList
+      {
+        jobApplicationsDataState.length === 0 ? (
+          <View style={styles.noResultsContainer}>
+            <CText style={styles.noResultsText}>No Job Post Present</CText>
+          </View>) : (<FlatList
         data={jobApplicationsDataState}
         renderItem={renderJobApplicationItem}
         keyExtractor={(item) => item.job_post_id}
@@ -188,7 +195,9 @@ const HomePage = () => {
         decelerationRate="fast"
         snapToAlignment="center"
         pagingEnabled
-      />
+      />)
+      }
+      
 
       {/* Blogs Section */}
       <View style={styles.sectionHeader}>

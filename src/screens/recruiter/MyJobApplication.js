@@ -100,7 +100,10 @@ const JobPostsScreen = ({ route }) => {
         <View style={styles.jobInfo}>
           <CText fontWeight={600} sx={styles.jobTitle}>{item.job_post_name}</CText>
           {recData && <CText sx={styles.recruiterName}>{recData?.recruiter_name}</CText>}
-          <CText fontWeight={600} sx={styles.status}>{item.is_deleted === "False" ? "Open" : "Closed"}</CText>
+          <View style={{flex: 1, flexDirection: "row"}}>
+
+          <CText>Status: </CText><CText fontWeight={600} sx={styles.status}>{item.is_deleted === "False" ? "Available" : "Unavailable"}</CText>
+          </View>
         </View>
         <TouchableOpacity style={styles.viewButton} onPress={() => navigation.navigate('ApplicationDetail', { applicationId: item.job_post_id })}>
           <Icon name="chevron-right" size={30} color="#888" />

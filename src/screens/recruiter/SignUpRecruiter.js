@@ -370,12 +370,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 30,
         flexGrow: 1,
+        // backgroundColor: '#fff',
     },
     backButton: {
         display: 'flex',
         alignItems: 'flex-start',
-        // paddingLeft: 10,
-        marginTop: 20,
     },
     backButtonLabel: {
         color: 'black',

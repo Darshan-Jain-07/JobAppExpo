@@ -97,13 +97,27 @@ const Login = () => {
                                     value={values.role}
                                     onSelect={(value) => { setFieldValue('role', value) }}
                                     mode={"outlined"}
+                                    style={styles.dropdownContainer}
+                                    inputProps={{
+                                        style: styles.input,
+                                        theme: {
+                                            colors: {
+                                                background: 'white',
+                                                text: 'black',
+                                                placeholder: '#999',
+                                                primary: '#6200ee', // border & focus color
+                                            },
+                                        },
+                                    }}
+                                    dropDownItemStyle={styles.dropDownItem}
+                                    dropDownItemSelectedStyle={styles.dropDownItemSelected}
                                 />
                                 <ErrorMessage name="role" component={CText} fontSize={12} color={"red"} />
                             </View>
                             <View >
                                 <TextInput
                                     label="Email"
-                                    style={{ marginHorizontal: 16 }}
+                                    style={styles.input}
                                     value={values.email}
                                     autoCapitalize='none'
                                     onChangeText={text => setFieldValue('email', text)}
@@ -113,7 +127,7 @@ const Login = () => {
                             </View>
                             <TextInput
                                 label="Password"
-                                style={{ marginHorizontal: 16, marginTop: 16 }}
+                                style={styles.input}
                                 value={values.password}
                                 secureTextEntry={secureTextEntry}
                                 onChangeText={pass => setFieldValue('password', pass)}
@@ -134,5 +148,24 @@ const Login = () => {
         </PaperProvider>
     )
 }
+
+const styles = StyleSheet.create({
+    input: {
+        backgroundColor: 'white', // ← this fixes the black background
+        color: 'black',
+        padding: 2,
+        borderRadius: 8,
+        borderColor: '#ccc',
+        marginHorizontal: 16
+    },
+    dropDownItem: {
+        backgroundColor: 'white',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+    },
+    dropDownItemSelected: {
+        backgroundColor: '#e0e0e0',
+    },
+});
 
 export default Login;

@@ -42,7 +42,7 @@ const ProfilePage = ({ navigation }) => {
     {
       title: 'Recruiter Details',
       data: [
-        { key: 'view', text: 'View Your Details', icon: 'building', onPress:()=>{navigation.navigate("View Applicant Detail")} },
+        { key: 'view', text: 'View Your Details', icon: 'eye', onPress:()=>{navigation.navigate("View Applicant Detail")} },
         { key: 'edit', text: 'Edit Login Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Applicant") },
         { key: 'edit', text: 'Edit Resume Details', icon: 'edit', onPress:() => navigation.navigate("Resume Form") },
       ],
@@ -51,7 +51,8 @@ const ProfilePage = ({ navigation }) => {
       title: 'Blog',
       data: [
         { key: 'Create Blog', text: 'Write Blog', icon: 'pencil', onPress:() => navigation.navigate("Create Blog Applicant") },
-        { key: 'viewBlog', text: 'View Blog', icon: 'file-text', onPress:() => navigation.navigate("Blog List Applicant") },
+        { key: 'viewBlog', text: 'View Blog', icon: 'file-text', onPress:() => navigation.navigate("Blog List") },
+        { key: 'myBlog', text: 'My Blog', icon: 'file-text', onPress:() => navigation.navigate("Blog List", {userId: userData?.applicant_id}) },
       ],
     },
     {
@@ -65,8 +66,7 @@ const ProfilePage = ({ navigation }) => {
     {
       title: 'Job Application',
       data: [
-        { key: 'myRecruiter', text: 'My Recruiters', icon: 'users' },
-        { key: 'myJobApplication', text: 'My Job Posts', icon: 'briefcase' },
+        { key: 'myJobApplication', text: 'My Job Application', icon: 'briefcase' },
       ],
     },
     {
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    marginBottom:100
+    // marginBottom:100
   },
   headerContainer: {
     flexDirection: 'row',
