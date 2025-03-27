@@ -149,7 +149,6 @@ const CompanyProfileScreen = () => {
         renderItem={renderItem}
         ListFooterComponent={<View style={styles.footer}></View>}
       />
-      <Text>Hello</Text>
     </View>
   );
 };
