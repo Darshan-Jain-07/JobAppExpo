@@ -1,11 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, SectionList, TouchableOpacity } from 'react-native';
-import { ActivityIndicator, Avatar } from 'react-native-paper';
-import Icon from 'react-native-vector-icons/FontAwesome'; // You can choose any icon set
-import { getCompanyData } from '../../services/ProfileService';
-import { clearUserData, getUserData } from '../../services/UserDataService';
-import { useNavigation } from '@react-navigation/native';
-import CText from '../../components/CText';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  SectionList,
+  TouchableOpacity,
+} from "react-native";
+import { ActivityIndicator, Avatar } from "react-native-paper";
+import Icon from "react-native-vector-icons/FontAwesome"; // You can choose any icon set
+import { getCompanyData } from "../../services/ProfileService";
+import { clearUserData, getUserData } from "../../services/UserDataService";
+import { useNavigation } from "@react-navigation/native";
+import CText from "../../components/CText";
 
 const ProfilePage = ({ navigation }) => {
   const [userData, setUserDate] = useState();
@@ -17,11 +24,11 @@ const ProfilePage = ({ navigation }) => {
     const fetchData = async () => {
       try {
         const data = await getUserData();
-        setUserDate(data)
+        setUserDate(data);
         console.log(data);
         setIsDataLoaded(true);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setIsDataLoaded(true);
       }
     };
@@ -32,47 +39,121 @@ const ProfilePage = ({ navigation }) => {
 
   if (!isDataLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+      <View
+        style={{ flex: 1, justifyContent: "center", alignContent: "center" }}
+      >
         <ActivityIndicator animating={true} color={"#000"} size={"large"} />
       </View>
-    )
+    );
   }
   // Define the sections with their respective options and icons
   const sections = [
     {
-      title: 'Company Details',
+      title: "Company Details",
       data: [
-        { key: 'view', text: 'View Company', icon: 'building', onPress: () => { navigate.navigate("View Company Detail") } },
-        { key: 'edit', text: 'Edit Company Details', icon: 'edit', onPress: () => navigation.navigate("Sign Up Company") },
+        {
+          key: "view",
+          text: "View Company",
+          icon: "building",
+          onPress: () => {
+            navigate.navigate("View Company Detail");
+          },
+        },
+        {
+          key: "edit",
+          text: "Edit Company Details",
+          icon: "edit",
+          onPress: () => navigation.navigate("Sign Up Company"),
+        },
       ],
     },
     {
-      title: 'Blog',
+      title: "Blog",
       data: [
-        { key: 'Create Blog', text: 'Write Blog', icon: 'pencil', onPress: () => { navigate.navigate("Create Blog")} },
-        { key: 'viewBlog', text: 'View Blogs', icon: 'file-text', onPress:() => { navigate.navigate("Blog List")} },
-        { key: 'myBlog', text: 'My Blogs', icon: 'edit', onPress:() => { navigate.navigate("Blog List", { userId: userData?.company_id })} },
+        {
+          key: "Create Blog",
+          text: "Write Blog",
+          icon: "pencil",
+          onPress: () => {
+            navigate.navigate("Create Blog");
+          },
+        },
+        {
+          key: "viewBlog",
+          text: "View Blogs",
+          icon: "file-text",
+          onPress: () => {
+            navigate.navigate("Blog List");
+          },
+        },
+        {
+          key: "myBlog",
+          text: "My Blogs",
+          icon: "edit",
+          onPress: () => {
+            navigate.navigate("Blog List", { userId: userData?.company_id });
+          },
+        },
       ],
     },
     {
-      title: 'Subscription',
+      title: "Subscription",
       data: [
-        { key: 'mySubscription', text: 'My Subscription', icon: 'gift' },
-        { key: 'viewSubscription', text: 'View All Subscription', icon: 'list' },
-        { key: 'paymentHistory', text: 'Payment History', icon: 'credit-card' },
+        { key: "mySubscription", text: "My Subscription", icon: "gift" },
+        {
+          key: "viewSubscription",
+          text: "View All Subscription",
+          icon: "list",
+        },
+        { key: "paymentHistory", text: "Payment History", icon: "credit-card" },
       ],
     },
     {
-      title: 'Job Post',
+      title: "Job Post",
       data: [
-        { key: 'myRecruiter', text: 'My Recruiters', icon: 'users', onPress: () => { navigate.navigate("Recruiters", {screen:"MyRecruiter"})} },
-        { key: 'myJobApplication', text: 'My Job Posts', icon: 'briefcase', onPress: () => { navigate.navigate("Applications", {screen:"MyJobApplication"})} },
+        {
+          key: "myRecruiter",
+          text: "My Recruiters",
+          icon: "users",
+          onPress: () => {
+            navigate.navigate("Recruiters", { screen: "MyRecruiter" });
+          },
+        },
+        {
+          key: "myJobApplication",
+          text: "My Job Posts",
+          icon: "briefcase",
+          onPress: () => {
+            navigate.navigate("Applications", { screen: "MyJobApplication" });
+          },
+        },
       ],
     },
     {
-      title: 'Other',
+      title: "Other",
       data: [
-        { key: 'logout', text: 'Logout', icon: 'sign-out', onPress: () => { clearUserData(); navigate.navigate("Splash") } },
+        {
+          key: "logout",
+          text: "Logout",
+          icon: "sign-out",
+          onPress: () => {
+            clearUserData();
+            navigate.navigate("Splash");
+          },
+        },
+      ],
+    },
+    {
+      title: "Help",
+      data: [
+        {
+          key: "HAS",
+          text: "Help&Support",
+          icon: "support",
+          onPress: () => {
+            navigate.navigate("FAQ");
+          },
+        },
       ],
     },
   ];
@@ -80,7 +161,9 @@ const ProfilePage = ({ navigation }) => {
   // Render each section header and item
   const renderSectionHeader = ({ section }) => (
     <View style={styles.sectionHeader}>
-      <CText fontWeight={600} style={styles.sectionHeaderText}>{section.title}</CText>
+      <CText fontWeight={600} style={styles.sectionHeaderText}>
+        {section.title}
+      </CText>
     </View>
   );
 
@@ -105,7 +188,9 @@ const ProfilePage = ({ navigation }) => {
           size={80}
         />
         <View style={styles.companyInfo}>
-          <CText fontWeight={600} sx={styles.companyName}>{userData?.company_name}</CText>
+          <CText fontWeight={600} sx={styles.companyName}>
+            {userData?.company_name}
+          </CText>
           <CText sx={styles.companyEmail}>{userData?.company_email}</CText>
         </View>
       </View>
@@ -125,17 +210,17 @@ const ProfilePage = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    marginBottom: 100
+    backgroundColor: "#f5f5f5",
+    marginBottom: 100,
   },
   headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 24,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -146,47 +231,47 @@ const styles = StyleSheet.create({
   },
   companyName: {
     fontSize: 22,
-    color: '#333',
+    color: "#333",
   },
   companyEmail: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
   },
   sectionHeader: {
-    backgroundColor: '#f1f1f1',
+    backgroundColor: "#f1f1f1",
     padding: 10,
     borderTopWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   sectionHeaderText: {
     fontSize: 18,
-    color: '#333',
+    color: "#333",
   },
   optionButton: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingVertical: 16,
     paddingHorizontal: 20,
     marginHorizontal: 10,
     marginBottom: 8,
     borderRadius: 8,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
   optionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   optionText: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     marginLeft: 10,
   },
   separator: {
     height: 1,
-    backgroundColor: '#ddd',
+    backgroundColor: "#ddd",
   },
 });
 
