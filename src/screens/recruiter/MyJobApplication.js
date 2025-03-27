@@ -11,7 +11,6 @@ import { ActivityIndicator, Provider, RadioButton } from 'react-native-paper';
 const JobPostsScreen = ({ route }) => {
   const { valueParam } = route?.params || "first"
   console.log(valueParam)
-  console.log("valueParam")
   const [searchText, setSearchText] = useState('');
   const [jobPosts, setJobPosts] = useState([]);
   const [recruiters, setRecruiters] = useState({});

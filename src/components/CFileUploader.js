@@ -94,6 +94,7 @@ const CustomFileUploader = ({ setFieldValue, fieldKey, values, placeholder }) =>
         setFieldValue('resume_experience', extractedData.experience);
         setFieldValue('resume_project', extractedData.project);
         setFieldValue('resume_education', extractedData.education);
+        setFieldValue('resume_score', extractedData.resume_score);
         setFieldValue('resume_hobby', extractedData.hobby);
       }
 

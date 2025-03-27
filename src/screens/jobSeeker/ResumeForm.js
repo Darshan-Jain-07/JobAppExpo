@@ -9,7 +9,7 @@ import { ActivityIndicator, Button } from 'react-native-paper';
 import DatePicker from '@react-native-community/datetimepicker';
 import dayjs from 'dayjs';
 import CustomImageUploader from '../../components/CimageUploader';
-import { addResume, getResume } from '../../services/ResumeService';
+import { addResume, getResume, updateResume } from '../../services/ResumeService';
 import { useNavigation } from '@react-navigation/native';
 import { getUserData } from '../../services/UserDataService';
 
@@ -80,7 +80,13 @@ const ResumeForm = () => {
 
   const handleSubmit = async (values) => {
     values.resume_dob = dayjs(values.resumeData).format("YYYY-MM-DD")
-    let data = await addResume(values);
+    let data;
+    if(resumeData){
+      data = await updateResume({...values, id: resumeData?.resume_id});
+    }
+    else{
+      data = await addResume(values);
+    }
     console.log(data)
     if(data){
       navigation.navigate("View Applicant Detail")
@@ -238,7 +244,7 @@ const ResumeForm = () => {
           <FieldArray name="resume_skills">
             {({ remove, push }) => (
               <View>
-                {values.resume_skills.map((skill, index) => (
+                {values?.resume_skills?.map((skill, index) => (
                   <View key={index}>
                     <TextInput
                       style={{ ...styles.input, marginBottom: 0 }}
@@ -273,7 +279,7 @@ const ResumeForm = () => {
           <FieldArray name="resume_education">
             {({ remove, push }) => (
               <View>
-                {values.resume_education.map((edu, index) => (
+                {values?.resume_education?.map((edu, index) => (
                   <View key={index} style={styles.fieldContainer}>
                     <TextInput
                       style={{ ...styles.input, marginBottom: 0 }}
@@ -326,7 +332,7 @@ const ResumeForm = () => {
           <FieldArray name="resume_experience">
             {({ remove, push }) => (
               <View>
-                {values.resume_experience.map((exp, index) => (
+                {values?.resume_experience?.map((exp, index) => (
                   <View key={index} style={styles.fieldContainer}>
                     <TextInput
                       style={{ ...styles.input, marginBottom: 0 }}
@@ -373,7 +379,7 @@ const ResumeForm = () => {
           <FieldArray name="resume_project">
             {({ remove, push }) => (
               <View>
-                {values.resume_project.map((pro, index) => (
+                {values?.resume_project?.map((pro, index) => (
                   <View key={index} style={styles.fieldContainer}>
                     <TextInput
                       style={{ ...styles.input, marginBottom: 0 }}
@@ -414,7 +420,7 @@ const ResumeForm = () => {
           <FieldArray name="resume_hobby">
             {({ remove, push }) => (
               <View>
-                {values.resume_hobby.map((resume_hobby, index) => (
+                {values?.resume_hobby?.map((resume_hobby, index) => (
                   <View key={index}>
                     <TextInput
                       style={{ ...styles.input, marginBottom: 0 }}
@@ -449,7 +455,7 @@ const ResumeForm = () => {
           <FieldArray name="resume_language">
             {({ remove, push }) => (
               <View>
-                {values.resume_language.map((resume_language, index) => (
+                {values?.resume_language?.map((resume_language, index) => (
                   <View key={index}>
                     <TextInput
                       style={{ ...styles.input, marginBottom: 0 }}
@@ -484,7 +490,7 @@ const ResumeForm = () => {
           <FieldArray name="resume_additional_details">
             {({ remove, push }) => (
               <View>
-                {values.resume_additional_details.map((resume_additional_details, index) => (
+                {values?.resume_additional_details?.map((resume_additional_details, index) => (
                   <View key={index}>
                     <TextInput
                       style={{ ...styles.input, marginBottom: 0 }}
