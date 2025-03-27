@@ -10,7 +10,7 @@ import {
   ScrollView,
   ImageBackground,
 } from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
+// import Icon from "react-native-vector-icons/FontAwesome";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import CStatisticsCard from "../../components/CIconStatisticsCard";
@@ -20,8 +20,32 @@ import { getRecruiter } from "../../services/RecruiterService";
 import { ActivityIndicator } from "react-native-paper";
 import { getJobPost } from "../../services/JobPostService";
 import { getBlog } from "../../services/BlogService";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 const { width } = Dimensions.get("window"); // Get screen width for responsive design
+
+const features = [
+  {
+    id: "1",
+    title: "Smart Job Matching",
+    description:
+      "AI-powered recommendations based on skills, experience, and preferences.",
+    icon: "briefcase-search",
+  },
+  {
+    id: "2",
+    title: "Company Reviews & Ratings",
+    description:
+      "Ensures authenticity by verifying company and recruiter credentials.",
+    icon: "star-settings",
+  },
+  {
+    id: "3",
+    title: "One-Click Apply",
+    description: "Save time by applying to jobs with a single tap.",
+    icon: "cursor-pointer",
+  },
+];
 
 // Sample data for recruiters and applications
 const recruitersData = [
@@ -86,29 +110,6 @@ const calculateReadingTime = (content) => {
   const minutes = Math.ceil(wordCount / wordsPerMinute);
   return minutes;
 };
-const companyData = {
-  recruitmentRate: "500+ New Hires in 2024",
-  milestones: [
-    "Expanded to 10 countries",
-    "1M+ users on our platform",
-    "Launched AI-powered hiring tool",
-  ],
-  awards: [
-    { name: "Best Startup 2023", year: "2023" },
-    { name: "Innovation Excellence Award", year: "2022" },
-  ],
-  news: [
-    {
-      title: "Company raises $50M in Series B funding",
-      date: "March 2024",
-    },
-    {
-      title: "Partnership with XYZ Corp announced",
-      date: "Jan 2024",
-    },
-  ],
-};
-
 const HomePage = () => {
   const navigate = useNavigation();
   const [recruitersDataState, setRecruitersDataState] =
@@ -117,6 +118,41 @@ const HomePage = () => {
   const [blogsDataState, setBlogsDataState] = useState(blogsData);
   const [companyData, setCompanyData] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  const notifications = [
+    {
+      id: "1",
+      type: "new_application",
+      message: "You received 5 new applications.",
+      time: "2h ago",
+    },
+    {
+      id: "2",
+      type: "job_expiry",
+      message: 'Your job posting "Software Engineer" expires in 2 days.',
+      time: "1d ago",
+    },
+    {
+      id: "3",
+      type: "interview_reminder",
+      message: "Interview scheduled with John Doe tomorrow at 10 AM.",
+      time: "1d ago",
+    },
+  ];
+
+  const getIcon = (type) => {
+    switch (type) {
+      case "new_application":
+        return <MaterialIcons name="person-add" size={24} color="#4CAF50" />;
+      case "job_expiry":
+        return <MaterialIcons name="warning" size={24} color="#FF9800" />;
+      case "interview_reminder":
+        return <MaterialIcons name="event" size={24} color="#3F51B5" />;
+      default:
+        return <MaterialIcons name="notifications" size={24} color="#000" />;
+    }
+  };
+
   const partners = [
     {
       id: 1,
@@ -331,7 +367,7 @@ const HomePage = () => {
       </View>
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>
-        <CText sx={styles.sectionTitle} fontWeight={700}>
+        <CText fontWeight={600} fontSize={22}>
           Recruiters
         </CText>
         <TouchableOpacity
@@ -352,9 +388,28 @@ const HomePage = () => {
         snapToAlignment="center"
         pagingEnabled
       />
+      {/* notification */}
+      <View style={styles.sectionHeader}>
+        <CText fontWeight={600} fontSize={22}>
+          Notifications
+        </CText>
+      </View>
+      <FlatList
+        data={notifications}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.notificationCard}>
+            {getIcon(item.type)}
+            <View style={styles.textContainer}>
+              <Text style={styles.message}>{item.message}</Text>
+              <Text style={styles.time}>{item.time}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
       {/* Job Applications Section */}
       <View style={styles.sectionHeader}>
-        <CText fontWeight={700} sx={styles.sectionTitle}>
+        <CText fontWeight={600} fontSize={22}>
           Job Posts
         </CText>
         <TouchableOpacity
@@ -381,32 +436,15 @@ const HomePage = () => {
           pagingEnabled
         />
       )}
-      {/* Blogs Section */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Latest Blogs</Text>
-        <TouchableOpacity onPress={() => navigate.navigate("Blog List")}>
-          <Text style={styles.moreButton}>More</Text>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        data={blogsDataState}
-        renderItem={renderBlogItem}
-        keyExtractor={(item) => item.blog_id}
-        horizontal
-        snapToInterval={width * 0.75}
-        decelerationRate="fast"
-        snapToAlignment="center"
-        pagingEnabled
-      />
-      <View style={styles.highlightSection}>
+      <View>
         {/* Recruitment Rate */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <MaterialIcons name="group" size={24} color="#007bff" />
           <Text style={styles.sectionTitle}>Recruitment Rate</Text>
         </View>
-        <Text style={styles.text}>{recruitmentRate}</Text>
+        <Text style={styles.text}>{recruitmentRate}</Text> */}
         {/* Milestones */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <FontAwesome name="flag-checkered" size={24} color="#28a745" />
           <Text style={styles.sectionTitle}>Milestones</Text>
         </View>
@@ -414,8 +452,8 @@ const HomePage = () => {
           data={milestones}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => <Text style={styles.listItem}>{item}</Text>}
-        />
-        {/* Awards */}
+        /> */}
+        {/* Awards
         <View style={styles.section}>
           <FontAwesome name="trophy" size={24} color="#ff9800" />
           <Text style={styles.sectionTitle}>Awards</Text>
@@ -428,9 +466,9 @@ const HomePage = () => {
               {item.name} - {item.year}
             </Text>
           )}
-        />
+        /> */}
         {/* News */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <MaterialIcons name="article" size={24} color="#e91e63" />
           <Text style={styles.sectionTitle}>Recent News</Text>
         </View>
@@ -442,13 +480,13 @@ const HomePage = () => {
               {item.title} ({item.date})
             </Text>
           )}
-        />
+        /> */}
       </View>
-      <View style={styles.sectionHeader}>
+      {/* <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Know our Co-Founders</Text>
-      </View>
+      </View> */}
       {/* First Row (Two Co-Founders) */}
-      <View style={styles.row}>
+      {/* <View style={styles.row}>
         {coFounders.slice(0, 2).map((founder, index) => (
           <View key={index} style={styles.card}>
             <Image source={{ uri: founder.image }} style={styles.image} />
@@ -456,17 +494,17 @@ const HomePage = () => {
             <Text style={styles.title}>{founder.title}</Text>
           </View>
         ))}
-      </View>
+      </View> */}
       {/* Second Row (One Co-Founder) */}
-      <View style={styles.centeredRow}>
+      {/* <View style={styles.centeredRow}>
         <View style={styles.card}>
           <Image source={{ uri: coFounders[2].image }} style={styles.image} />
           <Text style={styles.name}>{coFounders[2].name}</Text>
           <Text style={styles.title}>{coFounders[2].title}</Text>
         </View>
-      </View>
+      </View> */}
       {/* our Partners */}
-      <View style={styles.sectionHeader}>
+      {/* <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Our Partners</Text>
       </View>
       <ScrollView
@@ -481,7 +519,43 @@ const HomePage = () => {
             style={[styles.logo, { resizeMode: "contain" }]}
           />
         ))}
-      </ScrollView>
+      </ScrollView> */}
+      <View style={styles.sectionHeader}>
+        <CText fontWeight={600} fontSize={22}>
+          Features
+        </CText>
+      </View>
+      <FlatList
+        data={features}
+        keyExtractor={(item) => item.id}
+        numColumns={3} // Three items in a row
+        renderItem={({ item }) => (
+          <View style={styles.featureCard}>
+            <Icon name={item.icon} size={30} color="#000" />
+            <Text style={styles.title}>{item.title}</Text>
+            {/* <Text style={styles.description}>{item.description}</Text> */}
+          </View>
+        )}
+      />
+      {/* Blogs Section */}
+      <View style={styles.sectionHeader}>
+        <CText fontWeight={600} fontSize={22}>
+          Latest Blogs
+        </CText>
+        <TouchableOpacity onPress={() => navigate.navigate("Blog List")}>
+          <Text style={styles.moreButton}>More</Text>
+        </TouchableOpacity>
+      </View>
+      <FlatList
+        data={blogsDataState}
+        renderItem={renderBlogItem}
+        keyExtractor={(item) => item.blog_id}
+        horizontal
+        snapToInterval={width * 0.75}
+        decelerationRate="fast"
+        snapToAlignment="center"
+        pagingEnabled
+      />
       <View style={{ marginBottom: 120 }}></View>
     </ScrollView>
   );
@@ -515,7 +589,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     color: "#053766",
     fontWeight: "600",
   },
@@ -649,7 +723,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   title: {
-    fontSize: 14,
+    fontSize: 12,
     color: "gray",
   },
   section: {
@@ -678,6 +752,46 @@ const styles = StyleSheet.create({
   highlightSection: {
     padding: 20,
     backgroundColor: "#f8f9fa",
+  },
+  notificationCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    padding: 12,
+    borderRadius: 6,
+    marginVertical: 5,
+  },
+  textContainer: {
+    marginLeft: 10,
+  },
+  message: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  time: {
+    fontSize: 12,
+    color: "gray",
+  },
+  featureCard: {
+    alignItems: "center",
+    padding: 10,
+    margin: 5,
+    flex: 1,
+  },
+  icon: {
+    width: 50,
+    height: 50,
+    // marginBottom: 15,
+  },
+  title: {
+    marginTop: 10,
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  description: {
+    fontSize: 12,
+    textAlign: "center",
+    color: "#555",
   },
 });
 
