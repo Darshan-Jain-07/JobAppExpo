@@ -142,7 +142,7 @@ const CompanyProfileScreen = () => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <FlatList
         data={data}
         keyExtractor={(item, index) => index.toString()} // Use index for the sections

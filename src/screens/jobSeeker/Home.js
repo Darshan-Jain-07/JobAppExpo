@@ -38,8 +38,8 @@ const HomePage = () => {
   const [appliedJobs, setAppliedJobs] = useState({});
   const [loadingJobPost, setLoadingJobPost] = useState({});
   const [resumeData, setResumeData] = useState(null);
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [notification, setNotification] = useState("");
+  const [fadeAnim] = useState(new Animated.Value(100));
+  const [notification, setNotification] = useState(null);
   const [userSubscriptionData, setUserSubscriptionData] = useState("");
   const [userJobs, setUserJobs] = useState("");
   const isFocused = useIsFocused();
@@ -51,41 +51,38 @@ const HomePage = () => {
       try {
         const data = await getUserData();
         setCompanyData(data);
-        console.log(data);
-        
+
         const resumeData = await getResume(data?.applicant_id);
-        console.log(resumeData || null, "resume");
         setResumeData(resumeData || null);
-        
+
         const companyData = await getCompanyData()
         setCompanyList(companyData)
-        console.log(companyData)
-        
+
         const jobPostData = await getJobPost(undefined, undefined, 3)
         setJobApplicationsDataState(jobPostData)
-        
+
         const appliedJobsStatus = {};
         for (const job of jobPostData) {
           const isApplied = await appliedJob(data?.applicant_id, job?.job_post_id);
           appliedJobsStatus[job.job_post_id] = isApplied?.length ? true : false;
         }
-        
+
         setAppliedJobs(appliedJobsStatus);
-        
+
         const uJobs = await appliedJob(data?.applicant_id, null);
         setUserJobs(uJobs)
 
         let subscriptionData = await getSubscriptionMapping(data?.applicant_id, "0");
-        
-        if(subscriptionData.length) {
+
+        if (subscriptionData.length) {
           let subscription = await getSubscription(null, null, subscriptionData?.[0]?.subscription_id);
           console.log(subscription)
-          setUserSubscriptionData({...subscriptionData?.[0], ...subscription?.[0]})
+          setUserSubscriptionData({ ...subscriptionData?.[0], ...subscription?.[0] })
         }
-        
+
         const blogData = await getBlog(null, null, 3)
         setBlogsDataState(blogData)
-        
+
         setIsDataLoaded(true);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -96,7 +93,7 @@ const HomePage = () => {
     // Call the async function
     fetchData();
   }, [isFocused])
-  
+
   useFocusEffect(
     React.useCallback(() => {
       if (companyData?.applicant_id) {
@@ -104,7 +101,7 @@ const HomePage = () => {
       }
     }, [companyData, jobApplicationsDataState])
   );
-  
+
   const fetchAppliedJobsStatus = async (userId, jobPostData) => {
     const appliedJobsStatus = {};
     for (const job of jobPostData) {
@@ -122,7 +119,7 @@ const HomePage = () => {
     }));
     // Mark the job as "loading" before sending the request
     setLoadingJobPost((prevState) => ({ ...prevState, [jobpostId]: true }));
-    
+
     let data = {
       applicant_id: companyData.applicant_id,
       job_post_id: jobpostId,
@@ -130,18 +127,21 @@ const HomePage = () => {
       application_ats_score: 7.5,
       is_deleted: "false"
     };
-    
+
     try {
       // Apply for the job
       let resp = await applyJobPost(data);
       console.log(resp, "dhfgg");
-      if (resp?.message === "Could not apply as subscription limit is over") {
+      if (resp?.message === "Could not apply as subscription limit is over" || resp?.message === "No subscription_mapping found for applicant") {
+        console.log("hello1")
         setNotification("Please subscribe to apply for job")
+        console.log("hello2")
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }).start();
+        console.log("hello3")
 
         // Auto fade-out after 2s
         setTimeout(() => {
@@ -150,7 +150,13 @@ const HomePage = () => {
             duration: 300,
             useNativeDriver: true,
           }).start(() => setNotification(null));
+          console.log("hello6")
         }, 2000);
+        setAppliedJobs((prevState) => ({
+          ...prevState,
+          [jobpostId]: false, // Revert to "not applied"
+        }));
+        console.log("hello5")
 
         return
       }
@@ -166,7 +172,7 @@ const HomePage = () => {
       setLoadingJobPost((prevState) => ({ ...prevState, [jobpostId]: false }));
     }
   };
-  
+
   console.log(recruitersDataState)
   if (!isDataLoaded) {
     return (
@@ -290,79 +296,80 @@ const HomePage = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.subscriptionSection}>
-        <CText sx={styles.subscriptionTitle}>Current Subscription: {userSubscriptionData?.length !== 0 ? userSubscriptionData?.subscription_name : "Free"}</CText>
-        <Icon name="star" size={30} color="#FFD700" />
-      </View>
-      {notification ?
+    <>
+      {notification !== null ?
         <Animated.View style={[styles.notificationContainer, { opacity: fadeAnim }]}>
           <CText sx={styles.notificationText}>{notification}</CText>
         </Animated.View>
         : null}
+      <ScrollView style={styles.container}>
+        <View style={styles.subscriptionSection}>
+          <CText sx={styles.subscriptionTitle}>Current Subscription: {userSubscriptionData?.length !== 0 ? userSubscriptionData?.subscription_name : "Free"}</CText>
+          <Icon name="star" size={30} color="#FFD700" />
+        </View>
+        <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
+          <CStatisticsCard label={"RQS"} value={resumeData?.[0]?.resume_score || "N/A"} iconName={"home"} />
+          <CStatisticsCard label={"Applied"} value={userJobs?.length} iconName={"home"} />
+          <CStatisticsCard label={"Accepted"} value={userJobs?.filter(job => job?.application_status === "accepted")?.length} iconName={"home"} />
+          <CStatisticsCard label={"Rejected"} value={userJobs?.filter(job => job?.application_status === "rejected")?.length} iconName={"home"} />
+        </View>
 
-      <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
-        <CStatisticsCard label={"RQS"} value={resumeData?.[0]?.resume_score || "N/A"} iconName={"home"} />
-        <CStatisticsCard label={"Applied"} value={userJobs?.length} iconName={"home"} />
-        <CStatisticsCard label={"Accepted"} value={userJobs?.filter(job => job?.application_status === "accepted")?.length} iconName={"home"} />
-        <CStatisticsCard label={"Rejected"} value={userJobs?.filter(job => job?.application_status === "rejected")?.length} iconName={"home"} />
-      </View>
+        {/* Recruiters Section */}
+        <View style={styles.sectionHeader}>
+          <CText fontWeight={600} sx={styles.sectionTitle}>Companies</CText>
+          <TouchableOpacity onPress={() => navigate.navigate('Companies')}>
+            <CText sx={styles.moreButton}>More</CText>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={companyList}
+          renderItem={renderCompanyItem}
+          keyExtractor={(item) => item.company_id}
+          horizontal
+          snapToInterval={width * 0.75}
+          decelerationRate="fast"
+          snapToAlignment="center"
+          pagingEnabled
+        />
 
-      {/* Recruiters Section */}
-      <View style={styles.sectionHeader}>
-        <CText fontWeight={600} sx={styles.sectionTitle}>Companies</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Companies')}>
-          <CText sx={styles.moreButton}>More</CText>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        data={companyList}
-        renderItem={renderCompanyItem}
-        keyExtractor={(item) => item.company_id}
-        horizontal
-        snapToInterval={width * 0.75}
-        decelerationRate="fast"
-        snapToAlignment="center"
-        pagingEnabled
-      />
+        {/* Job Applications Section */}
+        <View style={styles.sectionHeader}>
+          <CText fontWeight={600} sx={styles.sectionTitle}>Job Posts</CText>
+          <TouchableOpacity onPress={() => navigate.navigate('Jobs', { screen: "Job Post List" })}>
+            <CText sx={styles.moreButton}>More</CText>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={jobApplicationsDataState}
+          renderItem={renderJobApplicationItem}
+          keyExtractor={(item) => item.job_post_id}
+          horizontal
+          snapToInterval={width * 0.9}
+          decelerationRate="fast"
+          snapToAlignment="center"
+          pagingEnabled
+        />
 
-      {/* Job Applications Section */}
-      <View style={styles.sectionHeader}>
-        <CText fontWeight={600} sx={styles.sectionTitle}>Job Posts</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Jobs', { screen: "Job Post List" })}>
-          <CText sx={styles.moreButton}>More</CText>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        data={jobApplicationsDataState}
-        renderItem={renderJobApplicationItem}
-        keyExtractor={(item) => item.job_post_id}
-        horizontal
-        snapToInterval={width * 0.9}
-        decelerationRate="fast"
-        snapToAlignment="center"
-        pagingEnabled
-      />
-
-      {/* Blogs Section */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Latest Blogs</Text>
-        <TouchableOpacity onPress={() => navigate.navigate('Blog List')}>
-          <Text style={styles.moreButton}>More</Text>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        data={blogsDataState}
-        renderItem={renderBlogItem}
-        keyExtractor={(item) => item.blog_id}
-        horizontal
-        snapToInterval={width * 0.75}
-        decelerationRate="fast"
-        snapToAlignment="center"
-        pagingEnabled
-      />
-      <View style={{ marginBottom: 120 }}></View>
-    </ScrollView>
+        {/* Blogs Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Latest Blogs</Text>
+          <TouchableOpacity onPress={() => navigate.navigate('Blog List')}>
+            <CText sx={styles.moreButton}>More</CText>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={blogsDataState}
+          renderItem={renderBlogItem}
+          keyExtractor={(item) => item.blog_id}
+          horizontal
+          snapToInterval={width * 0.75}
+          decelerationRate="fast"
+          snapToAlignment="center"
+          pagingEnabled
+        />
+        <View style={{ marginBottom: 120 }}></View>
+      </ScrollView>
+    </>
   );
 };
 

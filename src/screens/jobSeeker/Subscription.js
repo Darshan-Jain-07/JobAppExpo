@@ -46,7 +46,7 @@ const Subscription = () => {
       contentInsetAdjustmentBehavior="automatic" // Ensures the card is properly aligned when snapping
     >
       {subscriptionData?.map((subscription, index) => (
-        <CSubscriptionCard key={index} name={subscription.subscription_name} price={subscription.subscription_price} timeSpan={subscription.subscription_application_count} description={subscription.subscription_details} id={subscription.subscription_id} applicantId={userData?.applicant_id} buttonText={alreadySubscribed ? "Already Subscribed" : "Subscribe"} runFunc={alreadySubscribed ? false : true} />
+        <CSubscriptionCard key={index} name={subscription.subscription_name} price={subscription.subscription_price} timeSpan={subscription.subscription_application_count} description={subscription.subscription_details} id={subscription.subscription_id} applicantId={userData?.applicant_id} buttonText={alreadySubscribed ? "Already Subscribed" : "Subscribe"} runFunc={alreadySubscribed ? false : true} userData={userData} />
       ))}
     </ScrollView>
   )
