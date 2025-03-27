@@ -11,12 +11,14 @@ const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     card: {
-        width: width * 0.85,
+        width: width * 0.83,
         height: height * 0.7,
         padding: 20,
-        backgroundColor: '#000000',
+        backgroundColor: '#fff',
         borderRadius: 10,
         marginRight: 15,
+        marginLeft: 15,
+        marginTop: 35,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
@@ -24,14 +26,16 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     subscriptionName: {
-        color: "#ffffff",
+        textAlign: 'center',
+        fontSize: 24,
+        color: "#000",
     },
     header: {
         flexDirection: 'row',
     },
     price: {
-        color: '#fff',
-        marginBottom: 16,
+        color: '#000',
+        marginBottom: 10,
         marginTop: 20,
         textAlign: 'left',
     },
@@ -39,19 +43,27 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         marginTop: 20,
     },
+    descriptionItemTitle: {
+        textAlign: 'center',
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 30,
+    },
     descriptionItem: {
         fontSize: 16,
-        color: '#cfd0d4',
-        marginBottom: 6,
+        color: '#000',
+        marginBottom: 20,
     },
+
     button: {
-        backgroundColor: '#2e2f30',
+        backgroundColor: '#053766',
         paddingVertical: 12,
         position: "absolute",
         borderRadius: 6,
         bottom: 20,
         width: width * 0.7,
-        right: width * 0.08,
+        right: width * 0.06,
         marginHorizontal: "auto",
         alignItems: 'center',
     },
@@ -166,15 +178,15 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id,
             <CText sx={styles.subscriptionName} fontWeight={800} fontSize={30}>{name}</CText>
 
             <View style={styles.header}>
-                <CText sx={styles.price} fontSize={50}>{price}</CText>
+                <CText sx={styles.price} fontSize={32}>₹ {price}/month</CText>
             </View>
-            <CText sx={{ color: "#797b82" }} fontSize={25} fontWeight={900}>{timeSpan}</CText>
+            <CText sx={{ color: "#797b82", textDecorationLine: 'line-through' }} fontSize={25} fontWeight={900}>₹ {price}</CText>
 
             <View style={styles.descriptionContainer}>
-                <CText fontSize={18} sx={styles.descriptionItem}>Benefits:-</CText>
+                <CText fontSize={18} sx={styles.descriptionItemTitle}>Benefits :-</CText>
                 {description?.map((point, index) => (
                     <CText key={index} fontSize={18} sx={styles.descriptionItem}>
-                        <FontAwesomeIcon size={20} name="check-circle" /> {point}
+                        <FontAwesomeIcon size={18} name="check-circle" /> {point}
                     </CText>
                 ))}
             </View>
