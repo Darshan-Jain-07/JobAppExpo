@@ -14,7 +14,8 @@ const { width } = Dimensions.get('window');
 
 const JobPostList = ({route}) => {
   const navigate = useNavigation();
-  const mine = route?.params?.mine || false;
+  console.log(route?.params, "route?.params?.mine")
+  let mine = route?.params?.mine;
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState([]);
   const [userData, setUserData] = useState({});
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -52,7 +53,7 @@ const JobPostList = ({route}) => {
     try {
       let resp = await applyJobPost(data);
       console.log(resp);
-      if (resp?.message === "Could not apply as subscription limit is over") {
+      if (resp?.message === "Could not apply as subscription limit is over" || resp?.message === "No subscription_mapping found for applicant") {
         setNotification("Please subscribe to apply for job")
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -96,7 +97,7 @@ const JobPostList = ({route}) => {
       if (userData.applicant_id) {
         fetchAppliedJobsStatus(userData.applicant_id, jobApplicationsDataState);
       }
-    }, [userData, jobApplicationsDataState])
+    }, [userData, jobApplicationsDataState, mine])
   );
 
   useEffect(() => {

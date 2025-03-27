@@ -109,8 +109,8 @@ const JobDescription = ({ route }) => {
   const handleReviewSubmit = async (values, { resetForm }) => {
     const newReview = { id: Date.now().toString(), name: applicantData?.applicant_name, text: values.reviewText };
     console.log('Submitting review:', newReview);
-    setJobDetails({ ...jobDetails, job_post_review: [newReview, ...jobDetails?.job_post_review] });
-    await updateJobPost({ id: jobDetails?.job_post_id, job_post_review: [newReview, ...jobDetails?.job_post_review] })
+    setJobDetails({ ...jobDetails, job_post_review: [newReview, ...jobDetails?.job_post_review || []] });
+    await updateJobPost({ id: jobDetails?.job_post_id, job_post_review: [newReview, ...jobDetails?.job_post_review || []] })
     // resetForm();
   };
 
@@ -139,7 +139,7 @@ const JobDescription = ({ route }) => {
     try {
       // Apply for the job
       let resp = await applyJobPost(data);
-      if (resp?.message === "Could not apply as subscription limit is over") {
+      if (resp?.message === "Could not apply as subscription limit is over" || resp?.message === "No subscription_mapping found for applicant") {
         setNotification("Please subscribe to apply for job")
         Animated.timing(fadeAnim, {
           toValue: 1,
