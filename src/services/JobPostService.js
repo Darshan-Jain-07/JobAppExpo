@@ -22,7 +22,7 @@ export const createJobPost = async (data) => {
 
 export const getJobPost = async (companyId, userId, limit, jobpostId) => {
     const url = API_BASE_URL;
-    console.log(companyId)
+    // console.log(companyId)
     let endPoint = companyId ? `/data/job_post?company_id=${companyId}` : userId ? `/data/job_post?recruiter_id=${userId}` : limit ? `/data/job_post?limit=3` : jobpostId ? `/data/job_post?job_post_id=${jobpostId}` : `/data/job_post`;
     console.log(endPoint)
     try {
@@ -31,6 +31,23 @@ export const getJobPost = async (companyId, userId, limit, jobpostId) => {
                 'Content-Type': 'application/json',
             }
         });
+        console.log('Response:', response.data);
+        return response.data
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
+export const updateJobPost = async (data) => {
+    const url = API_BASE_URL;
+    try {
+        const response = await axios.put(url + "/data/job_post", data, {
+            headers: {
+                'Content-Type': 'application/json',
+                // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
+            }
+        });
+        // console.log(data.id)
         console.log('Response:', response.data);
         return response.data
     } catch (error) {

@@ -16,7 +16,8 @@ export const applyJobPost = async (data) => {
         console.log('Response:', response.data);
         return response.data
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error:', error?.message);
+        return error
     }
 };
 
