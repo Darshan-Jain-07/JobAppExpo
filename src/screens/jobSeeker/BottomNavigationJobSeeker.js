@@ -148,6 +148,7 @@ function RecruitersStack() {
             <Stack.Screen
                 name="Job Post List"
                 component={JobPostList}
+                initialParams={{ mine: false }}
                 // options={{ headerShown: false }} 
                 options={{
                     headerShown: true,
