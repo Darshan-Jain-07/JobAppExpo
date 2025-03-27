@@ -14,31 +14,11 @@ import { appliedJob, applyJobPost } from '../../services/ApplicationService';
 import { getResume } from '../../services/ResumeService';
 import { Animated } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
+import { getSubscription, getSubscriptionMapping } from '../../services/SubscriptionService';
 
 
 
 const { width } = Dimensions.get('window'); // Get screen width for responsive design
-
-// Sample data for recruiters and applications
-const recruitersData = [
-  { id: '1', name: 'Alex', jobApplications: 120, hired: 80 },
-  { id: '2', name: 'Sarah', jobApplications: 200, hired: 140 },
-  { id: '3', name: 'Chris', jobApplications: 160, hired: 100 },
-];
-
-// Sample data for job applications
-const jobApplicationsData = [
-  { id: '1', jobTitle: 'Software Developer', status: 'Open', location: 'New York', applicants: 30 },
-  { id: '2', jobTitle: 'Data Scientist', status: 'Closed', location: 'San Francisco', applicants: 25 },
-  { id: '3', jobTitle: 'UI/UX Designer', status: 'Open', location: 'Los Angeles', applicants: 10 },
-];
-
-// Sample data for blogs
-const blogsData = [
-  { id: '1', title: 'React Native for Beginners', description: 'Learn the basics of React Native...', readTime: '5 mins', reads: 1200 },
-  { id: '2', title: 'Building a Backend with Node.js', description: 'Step-by-step guide to build backend...', readTime: '8 mins', reads: 800 },
-  { id: '3', title: 'Understanding Redux', description: 'A deep dive into Redux for state management...', readTime: '7 mins', reads: 1500 },
-];
 
 const calculateReadingTime = (content) => {
   const wordsPerMinute = 30; // Average reading speed (words per minute)
@@ -49,9 +29,9 @@ const calculateReadingTime = (content) => {
 
 const HomePage = () => {
   const navigate = useNavigation();
-  const [recruitersDataState, setRecruitersDataState] = useState(recruitersData);
+  const [recruitersDataState, setRecruitersDataState] = useState([]);
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState([]);
-  const [blogsDataState, setBlogsDataState] = useState(blogsData);
+  const [blogsDataState, setBlogsDataState] = useState([]);
   const [companyData, setCompanyData] = useState(null)
   const [isDataLoaded, setIsDataLoaded] = useState(false)
   const [companyList, setCompanyList] = useState(null)
@@ -60,6 +40,8 @@ const HomePage = () => {
   const [resumeData, setResumeData] = useState(null);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [notification, setNotification] = useState("");
+  const [userSubscriptionData, setUserSubscriptionData] = useState("");
+  const [userJobs, setUserJobs] = useState("");
   const isFocused = useIsFocused();
 
 
@@ -89,6 +71,17 @@ const HomePage = () => {
         }
         
         setAppliedJobs(appliedJobsStatus);
+        
+        const uJobs = await appliedJob(data?.applicant_id, null);
+        setUserJobs(uJobs)
+
+        let subscriptionData = await getSubscriptionMapping(data?.applicant_id, "0");
+        
+        if(subscriptionData.length) {
+          let subscription = await getSubscription(null, null, subscriptionData?.[0]?.subscription_id);
+          console.log(subscription)
+          setUserSubscriptionData({...subscriptionData?.[0], ...subscription?.[0]})
+        }
         
         const blogData = await getBlog(null, null, 3)
         setBlogsDataState(blogData)
@@ -141,7 +134,7 @@ const HomePage = () => {
     try {
       // Apply for the job
       let resp = await applyJobPost(data);
-      console.log(resp);
+      console.log(resp, "dhfgg");
       if (resp?.message === "Could not apply as subscription limit is over") {
         setNotification("Please subscribe to apply for job")
         Animated.timing(fadeAnim, {
@@ -189,7 +182,6 @@ const HomePage = () => {
     const isLoading = loadingJobPost[item.job_post_id];
     return (
       <TouchableOpacity style={styles.jobCard} onPress={() => navigate.navigate('Home', { screen: 'ApplicationDetail', params: { applicationId: item.job_post_id } })}>
-        {console.log("hello20")}
         <View style={styles.jobContent}>
           {/* Left side (Job details) */}
           <View style={styles.jobDetails}>
@@ -300,7 +292,7 @@ const HomePage = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.subscriptionSection}>
-        <CText sx={styles.subscriptionTitle}>Current Subscription: Premium</CText>
+        <CText sx={styles.subscriptionTitle}>Current Subscription: {userSubscriptionData?.length !== 0 ? userSubscriptionData?.subscription_name : "Free"}</CText>
         <Icon name="star" size={30} color="#FFD700" />
       </View>
       {notification ?
@@ -310,16 +302,16 @@ const HomePage = () => {
         : null}
 
       <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+        <CStatisticsCard label={"RQS"} value={resumeData?.[0]?.resume_score || "N/A"} iconName={"home"} />
+        <CStatisticsCard label={"Applied"} value={userJobs?.length} iconName={"home"} />
+        <CStatisticsCard label={"Accepted"} value={userJobs?.filter(job => job?.application_status === "accepted")?.length} iconName={"home"} />
+        <CStatisticsCard label={"Rejected"} value={userJobs?.filter(job => job?.application_status === "rejected")?.length} iconName={"home"} />
       </View>
 
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>
         <CText fontWeight={600} sx={styles.sectionTitle}>Companies</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: "MyRecruiter" })}>
+        <TouchableOpacity onPress={() => navigate.navigate('Companies')}>
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>

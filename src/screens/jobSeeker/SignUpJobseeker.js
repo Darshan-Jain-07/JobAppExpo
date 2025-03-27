@@ -111,16 +111,13 @@ const SignUpJobSeeker = () => {
         }
         try {
             delete values["id"];
-            console.log("check")
             console.log(values)
             let verified = await verifyOtp({ email: values?.applicant_email, otp: emailOtp });
             console.log(verified)
             if (verified?.message === "OTP verified successfully!") {
-                console.log("Sahi hai")
                 setLoading(true);
                 console.log(values)
                 let data = await createApplicant(values);
-                console.log("resp")
                 console.log(data);
                 if (data?.message === "Data inserted successfully") {
                     Alert.alert('Success', 'Job Seeker Registration Successful!');

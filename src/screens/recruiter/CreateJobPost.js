@@ -287,7 +287,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         marginTop: 6,
         backgroundColor: 'white',
-        color: 'black',
     },
     error: {
         color: 'red',
