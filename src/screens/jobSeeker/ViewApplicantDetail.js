@@ -55,29 +55,29 @@ const ApplicantProfile = () => {
                 <Card.Content>
                     <View style={styles.profileSection}>
                         <Image source={{ uri: applicant?.resume_applicant_image_url }} style={styles.profileImage} />
-                        <CText fontWeight={600} sx={styles.name}>{applicant.resume_name}</CText>
+                        <CText fontWeight={600} sx={styles.name}>{applicant?.resume_name}</CText>
                         <View style={styles.personalDetails}>
                             <View style={styles.detailRow}>
                                 <MaterialIcon name="location-on" size={20} color="#888" />
-                                <CText style={styles.personalDetailText}>{applicant.resume_address}</CText>
+                                <CText style={styles.personalDetailText}>{applicant?.resume_address}</CText>
                             </View>
                             <View style={styles.detailRow}>
                                 <Icon name="envelope" size={20} color="#888" />
-                                <CText style={styles.personalDetailText}>{applicant.resume_email}</CText>
+                                <CText style={styles.personalDetailText}>{applicant?.resume_email}</CText>
                             </View>
                             <View style={styles.detailRow}>
                                 <Icon name="phone" size={20} color="#888" />
-                                <CText style={styles.personalDetailText}>{applicant.resume_phone}</CText>
+                                <CText style={styles.personalDetailText}>{applicant?.resume_phone}</CText>
                             </View>
                             <View style={styles.detailRow}>
                                 <Icon name="linkedin" size={20} color="#888" />
                                 <TouchableOpacity onPress={() => alert('Open LinkedIn')}>
-                                    <CText style={styles.linkedin}>{applicant.resume_linkedin}</CText>
+                                    <CText style={styles.linkedin}>{applicant?.resume_linkedin}</CText>
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.detailRow}>
                                 <MaterialIcon name="calendar-today" size={20} color="#888" />
-                                <CText style={styles.personalDetailText}>{formatDate(applicant.resume_dob)}</CText>
+                                <CText style={styles.personalDetailText}>{formatDate(applicant?.resume_dob)}</CText>
                             </View>
                         </View>
                     </View>
@@ -85,7 +85,7 @@ const ApplicantProfile = () => {
             </Card>
 
             {/* PDF Preview Section (Using WebView) */}
-            {applicant.resume_pdf_url && (
+            {applicant?.resume_pdf_url && (
                 <Card style={styles.card}>
                     <Card.Content>
                         <Title>Resume Preview</Title>
@@ -99,7 +99,7 @@ const ApplicantProfile = () => {
                 <Card.Content>
                     <CText fontWeight={600} fontSize={24} textAlign='center'>Skills</CText>
                     <View style={styles.skillsContainer}>
-                        {applicant.resume_skills.map((skill, index) => (
+                        {applicant?.resume_skills.map((skill, index) => (
                             <Chip key={index} style={[styles.skillChip]} // Set background color here
                             textStyle={{ color: '#000' }}>
                                 <CText fontWeight={600}>{skill}</CText>
@@ -113,7 +113,7 @@ const ApplicantProfile = () => {
             <Card style={styles.card}>
                 <Card.Content>
                     <CText fontWeight={600} fontSize={24} textAlign='center'>Experience</CText>
-                    {applicant.resume_experience.map((exp, index) => (
+                    {applicant?.resume_experience.map((exp, index) => (
                         <Card key={index} style={styles.card}>
                             <Card.Content>
                                 <CText fontSize={18} fontWeight={500}>{exp.role}</CText>
@@ -129,7 +129,7 @@ const ApplicantProfile = () => {
             <Card style={styles.card}>
                 <Card.Content>
                     <CText fontWeight={600} fontSize={24} textAlign='center'>Education</CText>
-                    {applicant.resume_education.map((edu, index) => (
+                    {applicant?.resume_education.map((edu, index) => (
                         <Card key={index} style={styles.card}>
                             <Card.Content>
                                 <CText fontSize={20} fontWeight={500}>{edu.marks}</CText>
@@ -147,7 +147,7 @@ const ApplicantProfile = () => {
                 <Card.Content>
                     <CText fontWeight={600} fontSize={24} textAlign='center'>Projects</CText>
                     <ScrollView horizontal showsHorizontalScrollIndicator={true} contentContainerStyle={styles.projectsScroll}>
-                        {applicant.resume_project.map((project, index) => (
+                        {applicant?.resume_project.map((project, index) => (
                             <Card key={index} style={styles.projectCard}>
                                 <Card.Content>
                                     <CText fontSize={15} fontWeight={500}>{project.name}</CText>
@@ -160,12 +160,12 @@ const ApplicantProfile = () => {
             </Card>
 
             {/* Hobby Section */}
-            {applicant.resume_hobby.length > 0 && (
+            {applicant?.resume_hobby?.length > 0 && (
                 <Card style={styles.card}>
                     <Card.Content>
                         <CText fontWeight={600} fontSize={24} textAlign='center'>Hobbies</CText>
                         <View style={styles.skillsContainer}>
-                            {applicant.resume_hobby.map((hobby, index) => (
+                            {applicant?.resume_hobby.map((hobby, index) => (
                                 <Chip key={index} style={styles.skillChip}>
                                     <CText fontWeight={600}>{hobby}</CText>
                                 </Chip>
@@ -176,12 +176,12 @@ const ApplicantProfile = () => {
             )}
 
             {/* Languages Section */}
-            {applicant.resume_language.length > 0 && (
+            {applicant?.resume_language.length > 0 && (
                 <Card style={styles.card}>
                     <Card.Content>
                         <CText fontWeight={600} fontSize={24} textAlign='center'>Languages</CText>
                         <View style={styles.skillsContainer}>
-                            {applicant.resume_language.map((language, index) => (
+                            {applicant?.resume_language.map((language, index) => (
                                 <Chip key={index} style={styles.skillChip}>
                                     <CText fontWeight={600}>{language}</CText>
                                 </Chip>
@@ -192,12 +192,12 @@ const ApplicantProfile = () => {
             )}
 
             {/* Additional Details Section */}
-            {applicant.resume_additional_details.length > 0 && (applicant.resume_additional_details.length === 1 && applicant.resume_additional_details?.[0] !== "") && (
+            {applicant?.resume_additional_details.length > 0 && (applicant?.resume_additional_details.length === 1 && applicant?.resume_additional_details?.[0] !== "") && (
                 <Card style={styles.card}>
                     <Card.Content>
                         <CText fontWeight={600} fontSize={24} textAlign='center'>Additional Details</CText>
                         <View style={styles.skillsContainer}>
-                            {applicant.resume_additional_details.map((detail, index) => (
+                            {applicant?.resume_additional_details.map((detail, index) => (
                                 <Chip key={index} style={styles.skillChip}>
                                     {detail}
                                 </Chip>

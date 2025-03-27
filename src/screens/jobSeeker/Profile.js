@@ -18,7 +18,7 @@ const ProfilePage = ({ navigation }) => {
       try {
         const data = await getUserData();
         setUserDate(data)
-        console.log(data);
+        console.log(userData?.applicant_id);
         setIsDataLoaded(true);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -43,7 +43,7 @@ const ProfilePage = ({ navigation }) => {
       title: 'Recruiter Details',
       data: [
         { key: 'view', text: 'View Your Details', icon: 'eye', onPress:()=>{navigation.navigate("View Applicant Detail")} },
-        { key: 'edit', text: 'Edit Login Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Applicant") },
+        // { key: 'edit', text: 'Edit Login Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Applicant") },
         { key: 'edit', text: 'Edit Resume Details', icon: 'edit', onPress:() => navigation.navigate("Resume Form") },
       ],
     },
@@ -59,14 +59,14 @@ const ProfilePage = ({ navigation }) => {
       title: 'Subscription',
       data: [
         { key: 'mySubscription', text: 'My Subscription', icon: 'gift' },
-        { key: 'viewSubscription', text: 'View All Subscription', icon: 'list' },
-        { key: 'paymentHistory', text: 'Payment History', icon: 'credit-card' },
+        { key: 'viewSubscription', text: 'View All Subscription', icon: 'list', onPress:() => navigation.navigate("Subscription") },
+        { key: 'paymentHistory', text: 'Payment History', icon: 'credit-card', onPress:() => navigation.navigate("Payment History") },
       ],
     },
     {
       title: 'Job Application',
       data: [
-        { key: 'myJobApplication', text: 'My Job Application', icon: 'briefcase' },
+        { key: 'myJobApplication', text: 'My Job Application', icon: 'briefcase', onPress:() => navigation.navigate("Jobs", {screen:"Job Post List", params: {mine: true}}) },
       ],
     },
     {

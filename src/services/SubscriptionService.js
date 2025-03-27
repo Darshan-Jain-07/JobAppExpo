@@ -4,10 +4,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // const API_BASE_URL = 'http://192.168.185.35:3000';
 
-export const getSubscription = async (user_role, is_deleted) => {
+export const getSubscription = async (user_role, is_deleted, subscription_id) => {
     const url = API_BASE_URL;
     // console.log(companyId)
-    let endPoint = `/data/subscription?${user_role ? `subscription_user_role=${user_role}&` : ``}${is_deleted ? `is_deleted=${is_deleted}&` : ``}`;
+    let endPoint = `/data/subscription?${user_role ? `subscription_user_role=${user_role}&` : ``}${is_deleted ? `is_deleted=${is_deleted}&` : ``}${subscription_id ? `subscription_id=${subscription_id}&` : ``}`;
     console.log(endPoint)
     try {
         const response = await axios.get(url + endPoint, {

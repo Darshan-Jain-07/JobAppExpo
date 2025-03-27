@@ -12,8 +12,9 @@ import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
-const JobPostList = () => {
+const JobPostList = ({route}) => {
   const navigate = useNavigation();
+  const mine = route?.params?.mine || false;
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState([]);
   const [userData, setUserData] = useState({});
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -127,7 +128,7 @@ const JobPostList = () => {
     };
 
     fetchData();
-  }, [isFocused]);
+  }, [isFocused, mine]);
 
   if (!isDataLoaded) {
     return (
@@ -142,6 +143,10 @@ const JobPostList = () => {
     const isApplied = appliedJobs[item.job_post_id]; // Check if the job has been applied
     const isLoading = loadingJobPost[item.job_post_id]; // Check if the job is being applied for
     console.log(isApplied, "isApplied")
+    if(mine && !isApplied){
+      return null
+      
+    }
     return (
       <TouchableOpacity style={styles.jobCard} onPress={() => navigate.navigate('Home', { screen: 'ApplicationDetail', params: { applicationId: item.job_post_id } })}>
         <View style={styles.jobContent}>

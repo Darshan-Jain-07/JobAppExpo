@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import CChip from '../../components/CChip';
 import CText from '../../components/CText';
 import { useNavigation } from '@react-navigation/native';
-import { getJobPost } from '../../services/JobPostService';
+import { getJobPost, updateJobPost } from '../../services/JobPostService';
 import { getCompanyData } from '../../services/ProfileService';
 import { getRecruiter } from '../../services/RecruiterService';
 import { ActivityIndicator } from 'react-native-paper';
@@ -59,7 +59,7 @@ const JobDescription = ({ route }) => {
   const [companyData, setCompanyData] = useState(null);
   const [recruiterData, setRecruiterData] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const [reviews, setReviews] = useState(jobDetails?.reviews);
+  const [reviews, setReviews] = useState(jobDetails?.job_reviews);
   const [applicantData, setApplicantData] = useState({})
   const [applicants, setApplicants] = useState(jobDetails?.applicants);
   const [isApplied, setIsApplied] = useState();
@@ -106,10 +106,12 @@ const JobDescription = ({ route }) => {
     )
   }
 
-  const handleReviewSubmit = (values, { resetForm }) => {
-    const newReview = { id: Date.now().toString(), name: 'New User', text: values.reviewText, rating: 4 };
-    setReviews([newReview, ...reviews]);
-    resetForm();
+  const handleReviewSubmit = async (values, { resetForm }) => {
+    const newReview = { id: Date.now().toString(), name: applicantData?.applicant_name, text: values.reviewText };
+    console.log('Submitting review:', newReview);
+    setJobDetails({ ...jobDetails, job_post_review: [newReview, ...jobDetails?.job_post_review] });
+    await updateJobPost({ id: jobDetails?.job_post_id, job_post_review: [newReview, ...jobDetails?.job_post_review] })
+    // resetForm();
   };
 
   const handleDeleteReview = (reviewId) => {
@@ -269,8 +271,9 @@ const JobDescription = ({ route }) => {
       {/* Reviews Section */}
       <View style={styles.card}>
         <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Reviews</CText>
+        {console.log(jobDetails?.job_post_review)}
         <FlatList
-          data={reviews}
+          data={jobDetails?.job_post_review}
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item, index) => index.toString()}
@@ -284,15 +287,6 @@ const JobDescription = ({ route }) => {
                 <CText sx={styles.reviewName} fontSize={16} fontWeight={600}>{item.name}</CText>
               </View>
               <CText sx={styles.reviewText}>{item.text}</CText>
-              <View style={styles.reviewRating}>
-                {[...Array(5)].map((_, index) => (
-                  <Icon key={index} name="star" size={18} color={index < Math.floor(item.rating) ? '#FFD700' : '#ccc'} />
-                ))}
-                <Text style={styles.reviewRatingText}>{item.rating}/5</Text>
-              </View>
-              <TouchableOpacity onPress={() => handleDeleteReview(item.id)} style={styles.deleteButton}>
-                <CText style={styles.deleteButtonText} fontWeight={600} color={"#fff"}>Delete</CText>
-              </TouchableOpacity>
             </View>
           )}
         />
@@ -452,7 +446,7 @@ const styles = StyleSheet.create({
   reviewCard: {
     backgroundColor: '#eee',
     marginRight: 16,
-    width: 320,
+    width: 250,
     borderRadius: 10,
     padding: 15,
     alignItems: 'center',

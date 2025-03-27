@@ -25,6 +25,7 @@ import JobPostList from './JobPostList';
 import CompaniesList from './CompaniesList';
 import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import PaymentHistoryScreen from './PaymentHistory';
 // import JobDescription from '../company/JobDescription';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
@@ -69,6 +70,14 @@ function HomeStack() {
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Home" chat={true} />,
+                }}
+            />
+            <Stack.Screen
+                name="Payment History"
+                component={PaymentHistoryScreen}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Payment Hostory" chat={true} />,
                 }}
             />
             <Stack.Screen
