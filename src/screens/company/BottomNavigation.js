@@ -11,6 +11,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import RecruiterDetail from "./RecruiterDetail";
 import { StyleSheet, View, Text } from "react-native";
 import ApplicationDetail from "./JobDescription";
+import ViewApplicantDetail from "../jobSeeker/ViewApplicantDetail";
 import ApplicantDetails from "./ApplicationDetail";
 import CustomHeader from "./Header";
 import BlogPage from "./BlogDetail";
@@ -42,6 +43,14 @@ function ApplicationsStack() {
           headerShown: true,
           header: () => <CustomHeader title="Applicants List" />,
         }}
+      />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          header: () => <CustomHeader title={"Resume Details"} />,
+        }}
+        name="View Applicant Detail"
+        component={ViewApplicantDetail}
       />
       <Stack.Screen
         name="ApplicationDetail"

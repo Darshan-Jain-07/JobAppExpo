@@ -113,9 +113,9 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id,
             amount: parseInt(amount) * 100,
             name: "9 to 5",
             prefill: {
-                email: userData?.applicant_email, // Dynamically fetch user email
-                contact: userData?.applicant_phone, // Dynamically fetch user contact
-                name: userData?.applicant_name // Dynamically fetch user name
+                email: userData?.applicant_email || userData?.company_email, // Dynamically fetch user email
+                contact: userData?.applicant_phone || userData?.company_phone, // Dynamically fetch user contact
+                name: userData?.applicant_name || userData?.company_name // Dynamically fetch user name
             },
             theme: { color: "#eaeaea" },
         };
@@ -142,8 +142,8 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id,
                 card_id: paymentResponse.card_id || null,
                 bank: paymentResponse.bank || null,
                 wallet: paymentResponse.wallet || null,
-                email: userData?.applicant_email,
-                contact: userData?.applicant_phone,
+                email: userData?.applicant_email || userData?.company_email,
+                contact: userData?.applicant_phone || userData?.company_phone,
                 created_at: new Date().toISOString()
             };
             // This payment data will be stored in payment_history table and from there I will use this data to show in Payment History Screen

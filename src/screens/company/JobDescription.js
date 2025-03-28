@@ -6,12 +6,13 @@ import * as Yup from 'yup';
 import CChip from '../../components/CChip';
 import CText from '../../components/CText';
 import { useNavigation } from '@react-navigation/native';
-import { getJobPost } from '../../services/JobPostService';
+import { getJobPost, updateJobPost } from '../../services/JobPostService';
 import { getCompanyData } from '../../services/ProfileService';
 import { getRecruiter } from '../../services/RecruiterService';
 import { ActivityIndicator } from 'react-native-paper';
-import { getApplication } from '../../services/ApplicationService';
+import { getApplication, updateApplication } from '../../services/ApplicationService';
 import { getUserInfo } from '../../services/AuthService';
+import { getUserData } from '../../services/UserDataService';
 
 // Job details object
 // const jobDetails = {
@@ -51,7 +52,12 @@ import { getUserInfo } from '../../services/AuthService';
 const ApplicantItem = ({ item }) => {
   const navigation = useNavigation();
   const handleApplicantCardPress = (id) => {
-    navigation.navigate('ApplicantDetail', { applicationId: id });
+    // console.log(id)
+    if(item?.application_status === "rejected" || item?.application_status === "accepted" || item?.application_status === "in_review"){
+    }else{
+      updateApplication({id: item?.application_id, application_status: "in_review"})
+    }
+    navigation.navigate('View Applicant Detail', { applicationId: id });
   }
   const [userData, setUserData] = useState(null);
 
@@ -67,7 +73,7 @@ const ApplicantItem = ({ item }) => {
   }
 
   return (
-    <TouchableOpacity onPress={() => handleApplicantCardPress(item.application_id)} style={styles.applicantCard}>
+    <TouchableOpacity onPress={() => handleApplicantCardPress(userData?.applicant_id)} style={styles.applicantCard}>
       <View style={styles.applicantInfo}>
         <Image source={{ uri: userData?.applicant_profile_url }} style={styles.profilePhoto} />
         <View>
@@ -75,7 +81,7 @@ const ApplicantItem = ({ item }) => {
           {/* <CText sx={styles.applicantPosition}>{item.position}</CText> */}
         </View>
       </View>
-      <CText color={"#0017ff"} sx={{ marginTop: 8 }}>View</CText>
+      <CText color={"#0017ff"} sx={{ paddingTop: 15 }}>View</CText>
     </TouchableOpacity>
   );
 };
@@ -90,9 +96,13 @@ const JobDescription = ({ route }) => {
   const [reviews, setReviews] = useState(jobDetails?.reviews);
   const [applicants, setApplicants] = useState([]);
   const [noOfApplicants, setNoOfApplicants] = useState(0);
+  const [userData, setUserData] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
+      let companyData = await getUserData();
+      setUserData(companyData)
+
       const application_details = await getJobPost(null, null, null, applicationId);
       setJobDetails(application_details?.[0])
 
@@ -121,14 +131,11 @@ const JobDescription = ({ route }) => {
     )
   }
 
-  const handleReviewSubmit = (values, { resetForm }) => {
-    const newReview = { id: Date.now().toString(), name: 'New User', text: values.reviewText, rating: 4 };
-    setReviews([newReview, ...reviews]);
-    resetForm();
-  };
-
-  const handleDeleteReview = (reviewId) => {
-    setReviews(reviews.filter(review => review.id !== reviewId));
+  const handleReviewSubmit = async (values, { resetForm }) => {
+    const newReview = { id: Date.now().toString(), name: userData?.company_name, text: values.reviewText };
+        console.log('Submitting review:', newReview);
+        setJobDetails({ ...jobDetails, job_post_review: [newReview, ...jobDetails?.job_post_review || []] });
+        await updateJobPost({ id: jobDetails?.job_post_id, job_post_review: [newReview, ...jobDetails?.job_post_review || []] })
   };
 
   const handleApplicantCardPress = (applicantId) => {
@@ -212,13 +219,13 @@ const JobDescription = ({ route }) => {
       <View style={styles.card}>
         <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Reviews</CText>
         <FlatList
-          data={reviews}
+          data={jobDetails?.job_post_review}
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item, index) => index.toString()}
           snapToAlignment="center"
           decelerationRate="fast"
-          snapToInterval={320}
+          snapToInterval={285}
           renderItem={({ item }) => (
             <View style={styles.reviewCard}>
               <View style={styles.reviewHeader}>
@@ -226,22 +233,16 @@ const JobDescription = ({ route }) => {
                 <CText sx={styles.reviewName} fontSize={16} fontWeight={600}>{item.name}</CText>
               </View>
               <CText sx={styles.reviewText}>{item.text}</CText>
-              <View style={styles.reviewRating}>
-                {[...Array(5)].map((_, index) => (
-                  <Icon key={index} name="star" size={18} color={index < Math.floor(item.rating) ? '#FFD700' : '#ccc'} />
-                ))}
-                <Text style={styles.reviewRatingText}>{item.rating}/5</Text>
-              </View>
-              <TouchableOpacity onPress={() => handleDeleteReview(item.id)} style={styles.deleteButton}>
+              {/* <TouchableOpacity onPress={() => handleDeleteReview(item.id)} style={styles.deleteButton}>
                 <CText style={styles.deleteButtonText} fontWeight={600} color={"#fff"}>Delete</CText>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           )}
         />
       </View>
 
       {/* Review Form */}
-      {/* <View style={styles.card}>
+      <View style={styles.card}>
         <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Write a Review</CText>
         <Formik
           initialValues={{ reviewText: '' }}
@@ -267,13 +268,13 @@ const JobDescription = ({ route }) => {
             </View>
           )}
         </Formik>
-      </View> */}
+      </View>
 
       {/* Applicants Section */}
       <View style={styles.card}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '97%' }}>
           <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Applicants</CText>
-          <TouchableOpacity onPress={() => navigation.navigate('Bottom Navigation Recruiter', { screen: "Recruiters", params: { screen: "ApplicantsList", params:{applicationId} } })} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.navigate('Bottom Navigation App', { screen: "Applications", params: { screen: "ApplicantsList", params:{applicationId} } })} style={{ flexDirection: 'row', alignItems: 'center' }}>
             <CText fontSize={15} fontWeight={600} color={"#0084D1"}>View All ({noOfApplicants})</CText>
           </TouchableOpacity>
         </View>
@@ -396,7 +397,7 @@ const styles = StyleSheet.create({
   reviewCard: {
     backgroundColor: '#eee',
     marginRight: 16,
-    width: 320,
+    width: 272,
     borderRadius: 10,
     padding: 15,
     alignItems: 'center',

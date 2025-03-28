@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, Modal, Alert, TextInput } from 'react-native';
 import { getUserInfo } from '../services/AuthService';
 import { useNavigation } from '@react-navigation/native';
+import CText from './CText';
+import { sendEmail } from '../services/EmailOtpService';
+import { updateApplication } from '../services/ApplicationService';
 
-const CApplicantItem = ({ item }) => {
+const CApplicantItem = ({ item, func }) => {
     const navigation = useNavigation();
     const [userData, setUserData] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
-    // const [email, setEmail] = useState(applicant_email);
+    const [email, setEmail] = useState("");
     const [subject, setSubject] = useState("Congratulations! You’ve been Accepted");
     const [message, setMessage] = useState("Dear Applicant,\n\nWe are pleased to inform you that you have been accepted for the next phase. Please check your email for further details.\n\nBest Regards,\nTeam");
 
@@ -15,6 +18,7 @@ const CApplicantItem = ({ item }) => {
         const fetchUserData = async () => {
             const data = await getUserInfo(item.applicant_id);
             setUserData(data?.[0]);
+            setEmail(data?.[0]?.applicant_email)
         };
         fetchUserData();
     }, [item.applicant_id]);
@@ -31,63 +35,81 @@ const CApplicantItem = ({ item }) => {
         setModalVisible(true);
     };
 
-    const handleSendEmail = () => {
-        Alert.alert("Email Sent", `Email sent successfully.`);
+    const handleSendEmail = async () => {
+        let send = sendEmail({ email, subject, content: message })
+        let setApprove = updateApplication({ id: item.application_id, application_status: "accepted" })
         setModalVisible(false);
+        func()
+        Alert.alert("Email Sent", `Email sent successfully.`);
+
     };
 
     return (
-        <View style={styles.itemContainer}>
-    <View style={styles.leftBorder} />
-    <View style={styles.contentContainer}>
-        <Image source={{ uri: userData.applicant_profile_url }} style={styles.avatar} />
-        <View style={styles.textContainer}>
-            <Text style={styles.name}>{userData.applicant_name}</Text>
-            <Text style={styles.email}>{userData.applicant_email}</Text>
-        </View>
+        <TouchableOpacity onPress={() => { navigation.navigate('View Applicant Detail', { applicationId: item?.applicant_id }); if(item?.application_status === "rejected" || item?.application_status === "accepted" || item?.application_status === "in_review"){
+            } else{updateApplication({id: item?.application_id, application_status: "in_review"})} }}>
 
-        <View style={styles.buttonContainer}>
-            <TouchableOpacity style={[styles.optionButton, styles.acceptButton]} onPress={() => handleAccept(item.applicant_id)}>
-                <Text style={styles.buttonText}>Accept</Text>
-            </TouchableOpacity>
+            <View style={styles.itemContainer}>
+                <View style={styles.leftBorder} />
+                <View style={styles.contentContainer}>
+                    <Image source={{ uri: userData.applicant_profile_url }} style={styles.avatar} />
+                    <View style={styles.textContainer}>
+                        <CText sx={styles.name} fontWeight={600}>{userData.applicant_name}</CText>
+                        <CText sx={styles.email}>{userData.applicant_email}</CText>
+                    </View>
 
-            <TouchableOpacity style={[styles.optionButton, styles.rejectButton]} onPress={() => Alert.alert("Rejected", "Applicant rejected.")}>
-                <Text style={styles.buttonText}>Reject</Text>
-            </TouchableOpacity>
-        </View>
-    </View>
+                    {(item?.application_status === "pending" || item?.application_status === "in_review") && <View style={styles.buttonContainer}>
+                        <TouchableOpacity style={[styles.optionButton, styles.acceptButton]} onPress={() => handleAccept(item.applicant_id)}>
+                            <CText sx={styles.buttonText}>Accept</CText>
+                        </TouchableOpacity>
 
-        {/* Modal for Sending Email */}
-        <Modal visible={modalVisible} animationType="slide" transparent>
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Send Acceptance Email</Text>
-                        <Text style={styles.modalInputTitle}>Email :-</Text>
-                        <TextInput style={styles.input} value={userData.applicant_email}  placeholder="Email ID" />
-                        <Text style={styles.modalInputTitle}>Subject :-</Text>
-                        <TextInput style={styles.input} value={subject} onChangeText={setSubject} placeholder="Subject" />
-                        <Text style={styles.modalInputTitle}>Description :-</Text>
-                        <TextInput
-                            style={[styles.input, styles.textArea]}
-                            value={message}
-                            onChangeText={setMessage}
-                            placeholder="Description"
-                            multiline
-                        />
+                        <TouchableOpacity style={[styles.optionButton, styles.rejectButton]} onPress={() => { setModalVisible(false); let setRejected = updateApplication({ id: item.application_id, application_status: "rejected" }); func(); Alert.alert("Rejected", "Applicant rejected.") }}>
+                            <CText sx={styles.buttonText}>Reject</CText>
+                        </TouchableOpacity>
+                    </View>}
+                    {item?.application_status === "accepted" && <View style={styles.buttonContainer}>
+                        <TouchableOpacity style={[styles.optionButton, styles.acceptButton]}>
+                            <CText sx={styles.buttonText}>Accepted</CText>
+                        </TouchableOpacity>
+                    </View>}
+                    {item?.application_status === "rejected" && <View style={styles.buttonContainer}>
+                        <TouchableOpacity style={[styles.optionButton, styles.rejectButton]}>
+                            <CText sx={styles.buttonText}>Rejected</CText>
+                        </TouchableOpacity>
+                    </View>}
+                </View>
 
-                        <View style={styles.modalButtons}>
-                            <TouchableOpacity style={[styles.button, styles.sendButton]} onPress={handleSendEmail}>
-                                <Text style={styles.buttonText}>Send</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setModalVisible(false)}>
-                                <Text style={styles.buttonText}>Cancel</Text>
-                            </TouchableOpacity>
+                {/* Modal for Sending Email */}
+                <Modal visible={modalVisible} animationType="slide" transparent>
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            <CText sx={styles.modalTitle} fontWeight={600}>Send Acceptance Email</CText>
+                            <CText sx={styles.modalInputTitle}>Email :-</CText>
+                            <TextInput style={styles.input} value={email} placeholder="Email ID" />
+                            <CText sx={styles.modalInputTitle}>Subject :-</CText>
+                            <TextInput style={styles.input} value={subject} onChangeText={setSubject} placeholder="Subject" />
+                            <CText sx={styles.modalInputTitle}>Description :-</CText>
+                            <TextInput
+                                style={[styles.input, styles.textArea]}
+                                value={message}
+                                onChangeText={setMessage}
+                                placeholder="Description"
+                                multiline
+                            />
+
+                            <View style={styles.modalButtons}>
+                                <TouchableOpacity style={[styles.button, styles.sendButton]} onPress={handleSendEmail}>
+                                    <CText sx={styles.buttonText}>Send</CText>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => { setModalVisible(false); }}>
+                                    <CText sx={styles.buttonText}>Cancel</CText>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
-                </View>
-            </Modal>
+                </Modal>
 
-</View>
+            </View>
+        </TouchableOpacity>
 
     );
 };
@@ -104,7 +126,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 2,
     },
-    
+
     leftBorder: {
         width: 5,
         height: '100%',
@@ -128,7 +150,7 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     email: {
-        fontSize: 14,
+        fontSize: 10,
         color: '#666',
         marginTop: 2,
     },
@@ -155,7 +177,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 10,
     },
-    
+
     optionButton: {
         paddingVertical: 8,
         paddingHorizontal: 16,
@@ -170,16 +192,15 @@ const styles = StyleSheet.create({
     rejectButton: {
         backgroundColor: '#E53935', // Red for Reject
     },
-    
+
     textContainer: {
         flex: 1,
     },
     name: {
         color: '#333',
         fontSize: 18,
-        fontWeight: 'bold',
     },
-    
+
 
     // Modal Styles
     modalContainer: {
@@ -197,7 +218,6 @@ const styles = StyleSheet.create({
     modalTitle: {
         color: '#fff',
         fontSize: 20,
-        fontWeight: 'bold',
         marginBottom: 15,
         textAlign: 'center',
     },

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 // import Icon from "react-native-vector-icons/FontAwesome";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import CStatisticsCard from "../../components/CIconStatisticsCard";
 import CText from "../../components/CText";
 import { getUserData } from "../../services/UserDataService";
@@ -21,6 +21,8 @@ import { ActivityIndicator } from "react-native-paper";
 import { getJobPost } from "../../services/JobPostService";
 import { getBlog } from "../../services/BlogService";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { getSubscription, getSubscriptionMapping } from "../../services/SubscriptionService";
+import { appliedJob } from "../../services/ApplicationService";
 
 const { width } = Dimensions.get("window"); // Get screen width for responsive design
 
@@ -106,18 +108,23 @@ const blogsData = [
 
 const calculateReadingTime = (content) => {
   const wordsPerMinute = 30; // Average reading speed (words per minute)
-  const wordCount = content.split(" ")?.length;
+  const wordCount = content?.split(" ")?.length;
   const minutes = Math.ceil(wordCount / wordsPerMinute);
   return minutes;
 };
 const HomePage = () => {
   const navigate = useNavigation();
-  const [recruitersDataState, setRecruitersDataState] =
-    useState(recruitersData);
+  const isFocus = useIsFocused();
+  const [recruitersDataState, setRecruitersDataState] = useState(recruitersData);
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState([]);
-  const [blogsDataState, setBlogsDataState] = useState(blogsData);
+  const [blogsDataState, setBlogsDataState] = useState([]);
   const [companyData, setCompanyData] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [currentSubscription, setCurrentSubscription] = useState(false);
+  const [applicants, setApplicants] = useState([]);
+  const [hired, setHired] = useState(0);
+  const [recruiterHired, setRecruiterHired] = useState(0);
+  const [jobApplicationCount, setJobApplicationCount] = useState([]);
 
   const notifications = [
     {
@@ -221,15 +228,57 @@ const HomePage = () => {
         setCompanyData(data);
         console.log(data);
 
-        const recruiterData = await getRecruiter(data?.company_email, 3);
+        const recruiterData = await getRecruiter(data?.company_email, null);
         console.log(recruiterData);
-        setRecruitersDataState(recruiterData);
+        setRecruitersDataState({dataLength: recruiterData?.length, recruiterData});
 
-        const jobPostData = await getJobPost(data?.company_email, undefined, 3);
-        console.log(jobPostData);
-        setJobApplicationsDataState(jobPostData);
+        const recruiterJobPostData = await Promise.all(
+          recruiterData?.map(async (rec) => {
+            const jobPosts = await getJobPost(null, rec?.recruiter_id, null);
+  
+            // Fetch applicants for each job post
+            const hiredCount = await Promise.all(
+              jobPosts.map(async (job) => {
+                const applicants = await appliedJob(null, job?.job_post_id);
+                return applicants.filter((a) => a?.application_status === "accepted").length;
+              })
+            );
+  
+            // Sum up hired applicants for this recruiter
+            const totalHired = hiredCount.reduce((acc, count) => acc + count, 0);
+  
+            return { recruiter_id: rec?.recruiter_id, hired_count: totalHired };
+          })
+        );
+
+        setRecruiterHired(recruiterJobPostData)
+        
+        const jobPostData = await getJobPost(data?.company_email, undefined, null);
+        setJobApplicationsDataState({dataLength: jobPostData?.length, jobPostData});
+        
+        let jobApplicantCount = [];
+        const applicantsList = await Promise.all(
+          jobPostData?.map(async (job) => {
+            const applicantsForEachJob = await appliedJob(null, job?.job_post_id);
+            let temp = { job_post_id: job?.job_post_id, applicant_count: applicantsForEachJob.length }
+            jobApplicantCount.push(temp);
+            return applicantsForEachJob;
+          })
+        );
+        console.log(jobApplicantCount, "jobApplicantCount");
+        setJobApplicationCount(jobApplicantCount);
+      
+        // Flatten the array and update state
+        setApplicants(applicantsList.flat());
+        setHired(applicantsList.flat().filter(a=>a?.application_status === "accepted")?.length);
+
+        const currentSub = await getSubscriptionMapping(data?.company_id, "0");
+        console.log(currentSub, "currentSub");
+        const subDet = await getSubscription(null, null, currentSub[0]?.subscription_id);
+        setCurrentSubscription({...currentSub[0], ...subDet[0]});
 
         const blogData = await getBlog(null, null, 3);
+        console.log(blogData)
         setBlogsDataState(blogData);
 
         setIsDataLoaded(true);
@@ -241,7 +290,7 @@ const HomePage = () => {
 
     // Call the async function
     fetchData();
-  }, []);
+  }, [isFocus]);
 
   console.log(recruitersDataState);
   if (!isDataLoaded) {
@@ -271,7 +320,7 @@ const HomePage = () => {
         <Icon name="map-marker" size={16} color="#5B5B5B" />{" "}
         {item.job_post_location}
       </CText>
-      <CText>Applicants: {item.applicants}</CText>
+      <CText>Applicants: {jobApplicationCount?.filter((d)=>d?.job_post_id === item?.job_post_id)?.[0]?.applicant_count || 0}</CText>
       <TouchableOpacity
         onPress={() =>
           navigate.navigate("Applications", {
@@ -306,7 +355,7 @@ const HomePage = () => {
         </CText>
         <CText sx={styles.blogDescription}>{truncatedDescription}</CText>
         <View style={styles.readTimeContainer}>
-          <Icon name="clock-o" size={18} color="#000" />
+          <Icon name="clock" size={18} color="#000" />
           <CText sx={styles.readTime}>
             Time to read: {calculateReadingTime(item.blog_description)}
           </CText>
@@ -330,12 +379,12 @@ const HomePage = () => {
   const renderRecruiterItem = ({ item }) => (
     <View style={styles.recruiterCard}>
       {console.log(item)}
-      <Icon name="user" size={24} color="#5B5B5B" />
+      <Icon name="account" size={24} color="#5B5B5B" />
       <CText fontWeight={600} fontSize={18}>
         {item.recruiter_name}
       </CText>
-      <CText>Applications Created: {item.jobApplications}</CText>
-      <CText>Hired: {item.hired}</CText>
+      {/* <CText>Applications Created: {item.jobApplications}</CText> */}
+      <CText>Hired: {recruiterHired?.filter(recHi=>recHi?.recruiter_id === item?.recruiter_id)?.[0]?.hired_count}</CText>
       <TouchableOpacity
         onPress={() =>
           navigate.navigate("Recruiters", {
@@ -355,15 +404,15 @@ const HomePage = () => {
       {/* Overlay to darken background */}
       <View style={styles.subscriptionSection}>
         <CText sx={styles.subscriptionTitle} fontWeight={600}>
-          Current Subscription: Premium
+          Current Subscription: {currentSubscription?.subscription_name || "Free Plan"} 
         </CText>
         <Icon name="star" size={30} color="#FFD700" />
       </View>
       <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+        <CStatisticsCard label={"Recruiters"} value={recruitersDataState?.dataLength || 0} iconName={"home"} />
+        <CStatisticsCard label={"Job Posts"} value={jobApplicationsDataState?.dataLength || 0} iconName={"home"} />
+        <CStatisticsCard label={"Application"} value={applicants?.length || 0} iconName={"home"} />
+        <CStatisticsCard label={"Hired"} value={hired} iconName={"home"} />
       </View>
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>
@@ -379,9 +428,9 @@ const HomePage = () => {
         </TouchableOpacity>
       </View>
       <FlatList
-        data={recruitersDataState}
+        data={recruitersDataState?.recruiterData?.slice(0, 3)}
         renderItem={renderRecruiterItem}
-        keyExtractor={(item) => item.recruiter_id}
+        keyExtractor={(item) => item?.recruiter_id}
         horizontal
         snapToInterval={width * 0.75}
         decelerationRate="fast"
@@ -420,15 +469,15 @@ const HomePage = () => {
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
-      {jobApplicationsDataState.length === 0 ? (
+      {jobApplicationsDataState?.jobPostData?.length === 0 ? (
         <View style={styles.noResultsContainer}>
           <CText style={styles.noResultsText}>No Job Post Present</CText>
         </View>
       ) : (
         <FlatList
-          data={jobApplicationsDataState}
+          data={jobApplicationsDataState?.jobPostData?.slice(0, 3)}
           renderItem={renderJobApplicationItem}
-          keyExtractor={(item) => item.job_post_id}
+          keyExtractor={(item) => item?.job_post_id}
           horizontal
           snapToInterval={width * 0.75}
           decelerationRate="fast"
