@@ -12,6 +12,7 @@ import { getRecruiter } from '../../services/RecruiterService';
 import { getJobPost } from '../../services/JobPostService';
 import dayjs from 'dayjs';
 import { ActivityIndicator } from 'react-native-paper';
+import { appliedJob } from '../../services/ApplicationService';
 
 const { width } = Dimensions.get('window');
 
@@ -20,8 +21,10 @@ const RecruiterDetailPage = ({ route }) => {
     const { recruiterId } = route.params;
     console.log(recruiterId)
     const [recruiter, setRecruiter] = useState({})
+    const [recruiterStats, setRecruiterStats] = useState([])
     const [recruiterJobPosts, setRecruiterJobPosts] = useState([])
-    const [isDataLoaded, setIsDataLoaded] = useState(true)
+    const [isDataLoaded, setIsDataLoaded] = useState(false)
+    const [jobApplicationCount, setJobApplicationCount] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -31,6 +34,35 @@ const RecruiterDetailPage = ({ route }) => {
             let recruiterJobPostData = await getJobPost(null, recruiterId);
             setRecruiterJobPosts(recruiterJobPostData)
             
+            console.log(jobApplicantCount, "jobApplicantCount");
+            const jobPostData = await getJobPost(null, recruiterId, null);
+            // setJobApplicationsDataState({ dataLength: jobPostData?.length, jobPostData });
+            
+            console.log(jobApplicantCount, "jobApplicantCount");
+            let jobApplicantCount = [];
+            const applicantsList = await Promise.all(
+                jobPostData?.map(async (job) => {
+                    const applicantsForEachJob = await appliedJob(null, job?.job_post_id);
+                    let temp = { job_post_id: job?.job_post_id, applicant_count: applicantsForEachJob.length }
+                    jobApplicantCount.push(temp);
+                    return applicantsForEachJob;
+                })
+            );
+            setJobApplicationCount(jobApplicantCount);
+            console.log(applicantsList?.flat()?.length);
+            setRecruiterStats([
+                {
+                    label: "Job Post",
+                    value: recruiterJobPostData?.length,
+                    icons: "briefcase"
+                },
+                {
+                    label: "Hired",
+                    value: applicantsList?.flat()?.filter((a)=>a.application_status === "accepted")?.length,
+                    icons: "user-plus"
+                },
+            ]);
+
             setIsDataLoaded(true)
         }
 
@@ -48,18 +80,7 @@ const RecruiterDetailPage = ({ route }) => {
     // Combine recruiter details and job posts into one data array for the FlatList
     const data = [
         { type: 'recruiter', content: recruiter },
-        { type: 'recruiterStats', content: [
-            {
-                label: "Job Post",
-                value: "55",
-                icons: "briefcase"
-            },
-            {
-                label: "Hired",
-                value: "11000",
-                icons: "user-plus"
-            },
-        ], },  // Moved stats to come after recruiter
+        { type: 'recruiterStats', content: recruiterStats },  // Moved stats to come after recruiter
         { type: 'jobPost', content: recruiter.jobPosts },  // Moved job posts to come last
     ];
 
@@ -84,8 +105,8 @@ const RecruiterDetailPage = ({ route }) => {
                 <View style={styles.headerContainer}>
                     <Image source={{ uri: recruiter.recruiter_image }} style={styles.recruiterImage} />
                     <View style={styles.recruiterDetails}>
-                        { recruiter?.recruiter_name && <CText style={styles.recruiterName} fontSize={23} fontWeight={700}>{recruiter?.recruiter_name}</CText> }
-                        { recruiter?.recruiter_description && <CText style={styles.recruiterDescription} fontSize={16}>{recruiter?.recruiter_description}</CText> }
+                        {recruiter?.recruiter_name && <CText style={styles.recruiterName} fontSize={23} fontWeight={700}>{recruiter?.recruiter_name}</CText>}
+                        {recruiter?.recruiter_description && <CText style={styles.recruiterDescription} fontSize={16}>{recruiter?.recruiter_description}</CText>}
                     </View>
                 </View>
             );
@@ -113,7 +134,8 @@ const RecruiterDetailPage = ({ route }) => {
                         keyExtractor={job => job.job_post_id}
                         renderItem={({ item }) => (
                             <>
-                            {recruiterJobPosts.length > 0 && <CJobPostCard onPress={() => { handleViewJobDetail(item.job_post_id) }} date={dayjs(item?.created_at).format("DD-MM-YYYY")} hires={"5"} description={truncateDecs(item?.job_post_description)} location={item?.job_post_location} title={item?.job_post_name} />}
+                                {console.log(jobApplicationCount?.filter((d)=>d.job_post_id === item?.job_post_id), "sdfskkjbfsjf")}
+                                {recruiterJobPosts.length > 0 && <CJobPostCard onPress={() => { handleViewJobDetail(item.job_post_id) }} date={dayjs(item?.created_at).format("DD-MM-YYYY")} hires={jobApplicationCount?.filter((d)=>d.job_post_id === item?.job_post_id)?.[0]?.applicant_count} description={truncateDecs(item?.job_post_description)} location={item?.job_post_location} title={item?.job_post_name} />}
                             </>
                         )}
                     />

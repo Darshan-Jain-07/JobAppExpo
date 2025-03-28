@@ -1,70 +1,53 @@
 import { View, Text, Dimensions, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import CText from '../../components/CText';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import MyRecruiter from './MyRecruiter';
 // import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CSubscriptionCard from '../../components/CSubscriptionCard';
+import { getUserData } from '../../services/UserDataService';
+import { getSubscription, getSubscriptionMapping } from '../../services/SubscriptionService';
 // import { ScrollView } from 'react-native-gesture-handler';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 const Subscription = () => {
-  const navigation = useNavigation();
-  function handleRecruiter() {
-    navigation.navigate('Bottom Navigation App', { screen: "Recruiters" });
-  }
-  function handleApplication() {
-    navigation.navigate('Bottom Navigation App', { screen: "Applications" });
-  }
-  const subscriptionData = [
-    {
-      name: 'Premium Plan',
-      price: '₹9.99',
-      timeSpan: "/month",
-      description: [
-        'Access to all premium features',
-        'Ad-free experience',
-        'Priority customer support',
-      ],
-    },
-    {
-      name: 'Basic Plan',
-      price: '₹4.99',
-      timeSpan: "/month",
-      description: [
-        'Access to basic features',
-        'Limited ads',
-        'Standard customer support',
-      ],
-    },
-    {
-      name: 'Ultimate Plan',
-      price: '₹19.99',
-      timeSpan: "/month",
-      description: [
-        'Unlimited access to all features',
-        'Ad-free experience',
-        '24/7 customer support',
-      ],
-    },
-    // Add more plans here
-  ];
+  const [subscriptionData, setSubscriptionData] = useState([])
+    const [userData, setUserData] = useState(null)
+    const [alreadySubscribed, setAlreadySubscribed] = useState(null)
+    const isFocused = useIsFocused();
+    useEffect(()=>{
+      const fetchData = async() => {
+        let ud = await getUserData();
+        setUserData(ud);
+  
+        let subData = await getSubscription("company", "0");
+        console.log(subData)
+        setSubscriptionData(subData);
+  
+        let currentSub = await getSubscriptionMapping(ud?.company_id, "0")
+        console.log(currentSub.length,"------------->")
+        setAlreadySubscribed(currentSub?.length ? true : false)
+      } 
+      fetchData();
+    },[isFocused])
+
   return (
     <ScrollView
       style={styles.container}
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollContainer}
-      snapToInterval={width * 0.85 + 15}  // Width of the card + margin
+      snapToInterval={width * 0.90 + 15}  // Width of the card + margin
       snapToAlignment="center"  // Ensures the card snaps to the center of the screen
       decelerationRate="fast"  // Makes the scroll stop more abruptly after you swipe
       contentInsetAdjustmentBehavior="automatic" // Ensures the card is properly aligned when snapping
     >
-      {subscriptionData.map((subscription, index) => (
-        <CSubscriptionCard key={index} name={subscription.name} price={subscription.price} timeSpan={subscription.timeSpan} description={subscription.description} buttonText={"Subscribe"} />
+      {subscriptionData?.map((subscription, index) => (
+        <CSubscriptionCard key={index} name={subscription.subscription_name} price={subscription.subscription_price} timeSpan={subscription.subscription_application_count} description={subscription.subscription_details} id={subscription.subscription_id} applicantId={userData?.company_id} buttonText={alreadySubscribed ? "Already Subscribed" : "Subscribe"} runFunc={alreadySubscribed ? false : true} userData={userData} />
       ))}
+      <View style={{width:20}}></View>
     </ScrollView>
   )
 }

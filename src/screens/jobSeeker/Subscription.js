@@ -14,7 +14,6 @@ import { useIsFocused } from '@react-navigation/native';
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 const Subscription = () => {
-  const navigation = useNavigation();
   const [subscriptionData, setSubscriptionData] = useState([])
   const [userData, setUserData] = useState(null)
   const [alreadySubscribed, setAlreadySubscribed] = useState(null)

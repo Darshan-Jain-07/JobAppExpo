@@ -6,8 +6,11 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons'; // Importing
 import CText from '../../components/CText';
 import { getResume } from '../../services/ResumeService';
 import { getUserData } from '../../services/UserDataService';
+import { getUserInfo } from '../../services/AuthService';
 
-const ApplicantProfile = () => {
+const ApplicantProfile = ({route}) => {
+    const applicantId = route.params.applicationId || null;
+    console.log(applicantId)
     const [applicant, setApplicant] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isDataLoaded, setIsDataLoaded] = useState(null);
@@ -16,9 +19,16 @@ const ApplicantProfile = () => {
         // Define an async function inside the useEffect
         const fetchData = async () => {
           try {
-            const data = await getUserData();
+            let data;
+            if(applicantId !== null){
+                let arr = await getUserInfo(applicantId)
+                data = arr?.[0]
+            }else{
+                data = await getUserData();
+            }
+
             setUserData(data);
-            console.log(data);
+            console.log(data, "data");
             
             let resData = await getResume(data?.applicant_id)
             console.log(resData)
@@ -33,7 +43,7 @@ const ApplicantProfile = () => {
       
         // Call the async function
         fetchData();
-      }, [])
+      }, [applicantId])
 
       if (!isDataLoaded) {
         return (
@@ -47,14 +57,14 @@ const ApplicantProfile = () => {
         const date = new Date(dateString);
         return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
     };
-    const source = { uri: 'https://www.antennahouse.com/hubfs/xsl-fo-sample/pdf/basic-link-1.pdf', cache: true };
+    // const source = { uri: 'https://www.antennahouse.com/hubfs/xsl-fo-sample/pdf/basic-link-1.pdf', cache: true };
     return (
         <ScrollView style={styles.container}>
             {/* Profile Section */}
             <Card style={styles.card}>
                 <Card.Content>
                     <View style={styles.profileSection}>
-                        <Image source={{ uri: applicant?.resume_applicant_image_url }} style={styles.profileImage} />
+                        <Image source={{ uri: userData?.applicant_profile_url }} style={styles.profileImage} />
                         <CText fontWeight={600} sx={styles.name}>{applicant?.resume_name}</CText>
                         <View style={styles.personalDetails}>
                             <View style={styles.detailRow}>
