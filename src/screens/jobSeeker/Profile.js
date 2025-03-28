@@ -1,27 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, SectionList, TouchableOpacity } from 'react-native';
-import { ActivityIndicator, Avatar } from 'react-native-paper';
-import Icon from 'react-native-vector-icons/FontAwesome'; // You can choose any icon set
-import { getCompanyData } from '../../services/ProfileService';
-import { clearUserData, getUserData } from '../../services/UserDataService';
-import { useNavigation } from '@react-navigation/native';
-import CText from '../../components/CText';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  SectionList,
+  TouchableOpacity,
+  Modal,
+  Button,
+} from "react-native";
+import { ActivityIndicator, Avatar } from "react-native-paper";
+import Icon from "react-native-vector-icons/FontAwesome"; // You can choose any icon set
+import { getCompanyData } from "../../services/ProfileService";
+import { clearUserData, getUserData } from "../../services/UserDataService";
+import { useNavigation } from "@react-navigation/native";
+import CText from "../../components/CText";
 
 const ProfilePage = ({ navigation }) => {
   const [userData, setUserDate] = useState();
   const navigate = useNavigation();
-  const [isDataLoaded, setIsDataLoaded] = useState(false)
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     // Define an async function inside the useEffect
     const fetchData = async () => {
       try {
         const data = await getUserData();
-        setUserDate(data)
+        setUserDate(data);
         console.log(userData?.applicant_id);
         setIsDataLoaded(true);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setIsDataLoaded(true);
       }
     };
@@ -29,50 +39,114 @@ const ProfilePage = ({ navigation }) => {
     // Call the async function
     fetchData();
   }, []);
-  
+
   if (!isDataLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+      <View
+        style={{ flex: 1, justifyContent: "center", alignContent: "center" }}
+      >
         <ActivityIndicator animating={true} color={"#000"} size={"large"} />
       </View>
-    )
+    );
   }
   // Define the sections with their respective options and icons
   const sections = [
     {
-      title: 'Recruiter Details',
+      title: "Recruiter Details",
       data: [
-        { key: 'view', text: 'View Your Details', icon: 'eye', onPress:()=>{navigation.navigate("View Applicant Detail")} },
+        {
+          key: "view",
+          text: "View Your Details",
+          icon: "eye",
+          onPress: () => {
+            navigation.navigate("View Applicant Detail");
+          },
+        },
         // { key: 'edit', text: 'Edit Login Details', icon: 'edit', onPress:() => navigation.navigate("Sign Up Applicant") },
-        { key: 'edit', text: 'Edit Resume Details', icon: 'edit', onPress:() => navigation.navigate("Resume Form") },
+        {
+          key: "edit",
+          text: "Edit Resume Details",
+          icon: "edit",
+          onPress: () => navigation.navigate("Resume Form"),
+        },
       ],
     },
     {
-      title: 'Blog',
+      title: "Blog",
       data: [
-        { key: 'Create Blog', text: 'Write Blog', icon: 'pencil', onPress:() => navigation.navigate("Create Blog Applicant") },
-        { key: 'viewBlog', text: 'View Blog', icon: 'file-text', onPress:() => navigation.navigate("Blog List") },
-        { key: 'myBlog', text: 'My Blog', icon: 'file-text', onPress:() => navigation.navigate("Blog List", {userId: userData?.applicant_id}) },
+        {
+          key: "Create Blog",
+          text: "Write Blog",
+          icon: "pencil",
+          onPress: () => navigation.navigate("Create Blog Applicant"),
+        },
+        {
+          key: "viewBlog",
+          text: "View Blog",
+          icon: "file-text",
+          onPress: () => navigation.navigate("Blog List"),
+        },
+        {
+          key: "myBlog",
+          text: "My Blog",
+          icon: "file-text",
+          onPress: () =>
+            navigation.navigate("Blog List", {
+              userId: userData?.applicant_id,
+            }),
+        },
       ],
     },
     {
-      title: 'Subscription',
+      title: "Subscription",
       data: [
-        { key: 'mySubscription', text: 'My Subscription', icon: 'gift' },
-        { key: 'viewSubscription', text: 'View All Subscription', icon: 'list', onPress:() => navigation.navigate("Subscription") },
-        { key: 'paymentHistory', text: 'Payment History', icon: 'credit-card', onPress:() => navigation.navigate("Payment History") },
+        {
+          key: "mySubscription",
+          text: "My Subscription",
+          icon: "gift",
+          onPress: () => setModalVisible(true),
+        },
+        {
+          key: "viewSubscription",
+          text: "View All Subscription",
+          icon: "list",
+          onPress: () => navigation.navigate("Subscription"),
+        },
+        {
+          key: "paymentHistory",
+          text: "Payment History",
+          icon: "credit-card",
+          onPress: () => navigation.navigate("Payment History"),
+        },
       ],
     },
     {
-      title: 'Job Application',
+      title: "Job Application",
       data: [
-        { key: 'myJobApplication', text: 'My Job Application', icon: 'briefcase', onPress:() => navigation.navigate("Jobs", {screen:"Job Post List", params: {mine: true}}) },
+        {
+          key: "myJobApplication",
+          text: "My Job Application",
+          icon: "briefcase",
+          onPress: () =>
+            navigation.navigate("Jobs", {
+              screen: "Job Post List",
+              params: { mine: true },
+            }),
+        },
       ],
     },
     {
-      title: 'Other',
+      title: "Other",
       data: [
-        { key: 'logout', text: 'Logout', icon: 'sign-out', onPress:()=>{clearUserData(); navigate.navigate("Splash")} },
+        {
+          key: "logout",
+          text: "Logout",
+          icon: "sign-out",
+          onPress: () => {
+            clearUserData();
+            navigate.navigate("Splash");
+          },
+        },
       ],
     },
   ];
@@ -80,7 +154,9 @@ const ProfilePage = ({ navigation }) => {
   // Render each section header and item
   const renderSectionHeader = ({ section }) => (
     <View style={styles.sectionHeader}>
-      <CText fontWeight={600} sx={styles.sectionHeaderText}>{section.title}</CText>
+      <CText fontWeight={600} sx={styles.sectionHeaderText}>
+        {section.title}
+      </CText>
     </View>
   );
 
@@ -105,7 +181,9 @@ const ProfilePage = ({ navigation }) => {
           size={80}
         /> */}
         <View style={styles.companyInfo}>
-          <CText fontWeight={600} sx={styles.companyName}>{userData?.applicant_name}</CText>
+          <CText fontWeight={600} sx={styles.companyName}>
+            {userData?.applicant_name}
+          </CText>
           <CText sx={styles.companyEmail}>{userData?.applicant_email}</CText>
         </View>
       </View>
@@ -118,6 +196,37 @@ const ProfilePage = ({ navigation }) => {
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
+
+      {/* Modal for My Subscription */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>My Subscription Details</Text>
+            <Text style={styles.modalText}>
+              <Text style={styles.bold}>Subscription Plan:</Text> Premium Plan
+            </Text>
+            <Text style={styles.modalText}>
+              <Text style={styles.bold}>Start Date:</Text> 01 March 2025
+            </Text>
+            <Text style={styles.modalText}>
+              <Text style={styles.bold}>Renewal Date:</Text> 01 March 2026
+            </Text>
+            <Text style={styles.modalText}>
+              <Text style={styles.bold}>Cost:</Text> $99.99/year
+            </Text>
+            <Text style={styles.modalText}>
+              <Text style={styles.bold}>Subscriber Name:</Text> John Doe
+            </Text>
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -125,17 +234,17 @@ const ProfilePage = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     // marginBottom:100
   },
   headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 24,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -146,47 +255,92 @@ const styles = StyleSheet.create({
   },
   companyName: {
     fontSize: 22,
-    color: '#333',
+    color: "#333",
   },
   companyEmail: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
   },
   sectionHeader: {
-    backgroundColor: '#f1f1f1',
+    backgroundColor: "#f1f1f1",
     padding: 10,
     borderTopWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   sectionHeaderText: {
     fontSize: 18,
-    color: '#333',
+    color: "#333",
   },
   optionButton: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingVertical: 16,
     paddingHorizontal: 20,
     marginBottom: 8,
     marginHorizontal: 10,
     borderRadius: 8,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
   optionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   optionText: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     marginLeft: 10,
   },
   separator: {
     height: 1,
-    backgroundColor: '#ddd',
+    backgroundColor: "#ddd",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+    color: "#2c3e50",
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: "#34495e",
+  },
+  bold: {
+    fontWeight: "bold",
+    color: "#2c3e50",
+  },
+  closeButton: {
+    marginTop: 15,
+    backgroundColor: "#e74c3c",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 
