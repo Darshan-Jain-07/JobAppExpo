@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';  // Using FontAwesome for icons
+import { getUserData } from '../../services/UserDataService';
+import { getPayment } from '../../services/PaymentService';
+import dayjs from 'dayjs';
+import { getSubscription } from '../../services/SubscriptionService';
+import CText from '../../components/CText';
 
 // Sample data for payment history
 const paymentHistory = [
@@ -39,24 +44,49 @@ const paymentHistory = [
 const PaymentHistoryScreen = () => {
   // State to track which item is expanded
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const [userData, setUserData] = useState({});
+  const [payments, setPayments] = useState([]);
+  const [subscription, setSubscription] = useState([]);
 
   // Function to toggle the accordion
   const toggleAccordion = (index) => {
     setExpandedIndex(expandedIndex === index ? null : index);  // Toggle open/close
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      let data = await getUserData();
+      setUserData(data);
+
+      let payment = await getPayment(data?.applicant_id || data?.recruiter_id || data?.company_id)
+      setPayments(payment)
+
+      let subData = await Promise.all(
+        payment?.map(async (d) => {
+          let subscription = await getSubscription(null, null, d?.subscription_id);
+          return subscription?.[0]
+        })
+      )
+
+      setSubscription(subData);
+      console.log(subData, "dgkjdfgl");
+      console.log(subData, "dgkjdfgl")
+    }
+
+    fetchData();
+  }, [])
   // Function to render each payment history item
   const renderPaymentItem = ({ item, index }) => {
     // Render icons based on the payment method
     let paymentIcon;
-    switch (item.method) {
+    switch (item?.payment_method) {
       case 'credit-card':
         paymentIcon = 'credit-card';
         break;
-      case 'paypal':
+      case 'wallet':
         paymentIcon = 'paypal';
         break;
-      case 'bank':
+      case 'netbanking':
         paymentIcon = 'university';
         break;
       default:
@@ -67,19 +97,20 @@ const PaymentHistoryScreen = () => {
     // Animated height for the accordion
     const expandHeight = expandedIndex === index ? 'auto' : 0;
 
+
     return (
       <View style={styles.paymentItemContainer}>
         <TouchableOpacity
           style={styles.paymentItem}
           onPress={() => toggleAccordion(index)} // Toggle expansion
         >
-          <Image source={{ uri: item.image }} style={styles.paymentImage} />
+          {/* <Image source={{ uri: item.image }} style={styles.paymentImage} /> */}
           <View style={styles.paymentDetails}>
-            <Text style={styles.paymentAmount}>{item.amount}</Text>
-            <Text style={styles.paymentDate}>{item.date}</Text>
-            <Text style={[styles.paymentStatus, item.status === 'Completed' ? styles.completed : styles.pending]}>
-              {item.status}
-            </Text>
+            <CText sx={styles.paymentAmount} fontWeight={600}>₹ {item.payment_amount}</CText>
+            <CText sx={styles.paymentDate}>{dayjs(item.created_at).format("DD/MM/YYYY")}</CText>
+            <CText sx={[styles.paymentStatus, item.payment_status === 'success' ? styles.completed : styles.pending]} fontWeight={600}>
+              {item.payment_status}
+            </CText>
           </View>
           <Icon name={paymentIcon} size={30} color="#333" style={styles.paymentIcon} />
         </TouchableOpacity>
@@ -87,8 +118,8 @@ const PaymentHistoryScreen = () => {
         {/* Accordion Expandable Section */}
         <Animated.View style={[styles.expandedSection, { height: expandHeight }]}>
           <View style={styles.expandedContent}>
-            <Text style={styles.subscriptionName}>Subscription: {item.subscriptionName}</Text>
-            <Text style={styles.bankDetails}>Bank Details: {item.bankDetails}</Text>
+            <CText sx={styles.subscriptionName}>Subscription: {subscription?.[index]?.subscription_name || "Custom Plan"}</CText>
+            <CText sx={styles.bankDetails}>Bank Details: {item.bank || item.wallet || item.card_id}</CText>
           </View>
         </Animated.View>
       </View>
@@ -97,12 +128,14 @@ const PaymentHistoryScreen = () => {
 
   return (
     <View style={styles.container}>
+      {payments?.length ? 
       <FlatList
-        data={paymentHistory}
+        data={payments}
         renderItem={renderPaymentItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => index}
         showsVerticalScrollIndicator={false}
-      />
+      /> : <CText fontSize={18} textAlign='center' color={"red"} fontWeight={600}>No payments yet! Start your journey by making a transaction.</CText>}
+      <View style={{height:80}}></View>
     </View>
   );
 };
@@ -146,7 +179,6 @@ const styles = StyleSheet.create({
   },
   paymentAmount: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#333',
   },
   paymentDate: {
@@ -156,7 +188,6 @@ const styles = StyleSheet.create({
   },
   paymentStatus: {
     fontSize: 14,
-    fontWeight: 'bold',
     marginTop: 5,
   },
   completed: {

@@ -20,6 +20,7 @@ import CreateBlogScreen from "./CreateBlog";
 import BlogListScreen from "./BlogList";
 import ApplicantsList from "../recruiter/ApplicantsList";
 import FAQ from "./Help";
+import PaymentHistoryScreen from "../jobSeeker/PaymentHistory";
 
 const Tab = createBottomTabNavigator();
 
@@ -101,6 +102,14 @@ function HomeStack() {
         }}
       />
       <Stack.Screen
+        name="Payment History"
+        component={PaymentHistoryScreen}
+        options={{
+          headerShown: true,
+          header: () => <CustomHeader title="Payment History" />,
+        }}
+      />
+      <Stack.Screen
         name="Blog Detail"
         component={BlogPage}
         options={{
@@ -173,6 +182,14 @@ export default function BottomNavigationApp() {
           ),
           headerShown: false,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("Home", {
+              screen: "Home Page",
+            });
+          }
+        })}
       />
       <Tab.Screen
         name="Recruiters"
@@ -184,6 +201,14 @@ export default function BottomNavigationApp() {
           ),
           headerShown: false,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("Recruiters", {
+              screen: "MyRecruiter",
+            });
+          }
+        })}
       />
       <Tab.Screen
         name="Applications"
@@ -195,6 +220,14 @@ export default function BottomNavigationApp() {
           ),
           headerShown: false,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("Applications", {
+              screen: "MyJobApplication",
+            });
+          }
+        })}
       />
       <Tab.Screen
         name="Subscription"

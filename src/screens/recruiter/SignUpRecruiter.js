@@ -143,6 +143,18 @@ const SignUpRecruiter = () => {
                     Alert.alert('Failed', 'Company email id and/or Company Password is wrong!');
                     return
                 }
+                if (response === "Company not found. Please ensure the company exists before adding a recruiter.") {
+                    setFieldValue("company_email_id", "")
+                    setFieldValue("company_password", "")
+                    Alert.alert('Failed', 'Company Subscription limit react');
+                    return
+                }
+                if (response === "Recruiter limit reached. Please upgrade your subscription.") {
+                    setFieldValue("company_email_id", "")
+                    setFieldValue("company_password", "")
+                    Alert.alert('Failed', 'Company Subscription limit reach');
+                    return
+                }
                 Alert.alert('Success', 'Recruiter Registration Successful!');
                 navigation.navigate('Bottom Navigation Recruiter');
                 console.log(response);

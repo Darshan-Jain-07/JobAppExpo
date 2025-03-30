@@ -13,12 +13,13 @@ import CText from "../../components/CText";
 import { getUserData } from "../../services/UserDataService";
 import { getJobPost } from "../../services/JobPostService";
 import { getRecruiter } from "../../services/RecruiterService";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { ActivityIndicator, Provider, RadioButton } from "react-native-paper";
 
 const JobPostsScreen = ({ route }) => {
-  const { valueParam } = route?.params || "first";
+  const valueParam = route?.params?.valueParam || "first";
   console.log(valueParam);
+  const isFocus = useIsFocused();
   const [searchText, setSearchText] = useState("");
   const [jobPosts, setJobPosts] = useState([]);
   const [recruiters, setRecruiters] = useState({});
@@ -32,11 +33,11 @@ const JobPostsScreen = ({ route }) => {
     const fetchData = async () => {
       setIsDataLoaded(false);
       let jobPost;
-      console.log(value);
+      console.log(userData?.company_email, value, "userInfosdfsd");
       if (value === "first") {
         jobPost = await getJobPost(null, userData?.recruiter_id);
       } else {
-        jobPost = await getJobPost(userData?.company_email);
+        userData?.company_email_id ? jobPost = await getJobPost(userData?.company_email_id) : jobPost = [];
         console.log(jobPost);
         const recruiterData = {};
         for (let job of jobPost) {
@@ -54,7 +55,7 @@ const JobPostsScreen = ({ route }) => {
     };
 
     fetchData();
-  }, [value]);
+  }, [value, isFocus]);
 
   useEffect(() => {
     setValue(valueParam);
@@ -67,10 +68,11 @@ const JobPostsScreen = ({ route }) => {
       setUserData(userInfo);
 
       let jobPost;
-      if (value === "first") {
-        jobPost = await getJobPost(null, userData?.recruiter_id);
+      console.log(userInfo?.company_email, "sdfsdfsdf")
+      if (valueParam === "first") {
+        jobPost = await getJobPost(null, userInfo?.recruiter_id);
       } else {
-        jobPost = await getJobPost(userData?.company_email);
+        jobPost = await getJobPost(userInfo?.company_email);
       }
       setJobPosts(jobPost);
 
@@ -191,7 +193,7 @@ const JobPostsScreen = ({ route }) => {
               Your's Job Post
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {userData?.company_email_id && <TouchableOpacity
             style={[
               styles.tabButton,
               selectedTab === "second" && styles.activeTab,
@@ -209,7 +211,7 @@ const JobPostsScreen = ({ route }) => {
             >
               Company's Job Post
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity>}
         </View>
         {/* Job Posts List */}
         {filteredJobPosts.length > 0 ? (

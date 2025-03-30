@@ -4,8 +4,8 @@ import CText from './CText';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import RazorpayCheckout from 'react-native-razorpay';
 import { RAZORPAY_API } from '@env';
-import { addSubscription } from '../services/SubscriptionService';
-import { getRazorpayPaymentDetails } from '../services/PaymentService';
+import { addSubscription, getSubscriptionMapping, updateSubscription } from '../services/SubscriptionService';
+import { addPayment, getRazorpayPaymentDetails } from '../services/PaymentService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id, applicantId, runFunc, userData }) => {
+const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id, applicantId, runFunc, userData, recruiterCount, refreshFunc }) => {
 
     // const handlePayment = (id, amount) => {
 
@@ -104,6 +104,31 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id,
     //         });
     // }
 
+    function calculateSubscriptionDates(durationString) {
+        // Extract the number from the string (e.g., "6 month" → 6)
+        let subscriptionMonths = parseInt(durationString);
+
+        if (isNaN(subscriptionMonths)) {
+            console.error("Invalid subscription duration:", durationString);
+            return null;
+        }
+
+        let startDate = new Date(); // Subscription starts today
+        let endDate = new Date(startDate); // Copy start date
+
+        endDate.setMonth(endDate.getMonth() + subscriptionMonths); // Add months
+
+        // Format date to "DD MMM YYYY"
+        function toMySQLDateTime(date) {
+            return date.toISOString().slice(0, 19).replace("T", " ");
+        }
+
+        return {
+            startDate: toMySQLDateTime(startDate),
+            endDate: toMySQLDateTime(endDate),
+        };
+    }
+
     const handlePayment = async (id, amount) => {
         const options = {
             description: "Find your job ASAP",
@@ -113,50 +138,74 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id,
             amount: parseInt(amount) * 100,
             name: "9 to 5",
             prefill: {
-                email: userData?.applicant_email || userData?.company_email, // Dynamically fetch user email
-                contact: userData?.applicant_phone || userData?.company_phone, // Dynamically fetch user contact
-                name: userData?.applicant_name || userData?.company_name // Dynamically fetch user name
+                email: userData?.applicant_email || userData?.company_email || userData?.recruiter_email,
+                contact: userData?.applicant_phone || userData?.company_phone || userData?.recruiter_phone,
+                name: userData?.applicant_name || userData?.company_name || userData?.recruiter_name
             },
             theme: { color: "#eaeaea" },
         };
-    
+
         try {
             const paymentResponse = await RazorpayCheckout.open(options);
-    
-            // Log the response from Razorpay
+
             console.log("Payment Response:", paymentResponse);
 
             let razorpayData = await getRazorpayPaymentDetails(paymentResponse?.razorpay_payment_id)
-            console.log(razorpayData)
-    
+            console.log(razorpayData?.payment, "razorpaypaymentdata")
+
             // Prepare data for backend
             const paymentData = {
                 applicant_id: applicantId,
                 subscription_id: id,
-                razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                razorpay_order_id: paymentResponse.razorpay_order_id || null, // Some payments may not have an order ID
-                razorpay_signature: paymentResponse.razorpay_signature,
-                amount: amount,
-                status: "success",
-                payment_method: paymentResponse.method, // Capture payment method
-                card_id: paymentResponse.card_id || null,
-                bank: paymentResponse.bank || null,
-                wallet: paymentResponse.wallet || null,
-                email: userData?.applicant_email || userData?.company_email,
-                contact: userData?.applicant_phone || userData?.company_phone,
-                created_at: new Date().toISOString()
+                razorpay_payment_id: paymentResponse?.razorpay_payment_id,
+                razorpay_order_id: razorpayData?.payment?.order_id || null,
+                razorpay_signature: razorpayData?.razorpay_signature,
+                payment_amount: amount,
+                payment_status: "success",
+                payment_method: razorpayData?.payment?.method,
+                card_id: razorpayData?.payment?.card_id || null,
+                bank: razorpayData?.payment?.bank || null,
+                wallet: razorpayData?.payment?.wallet || null
             };
             // This payment data will be stored in payment_history table and from there I will use this data to show in Payment History Screen
-            console.log(paymentData);
-    
+            console.log(paymentData, "paymentData");
+
+            if (userData?.applicant_id) {
+                let pay = await addPayment(paymentData)
+                let subData = await getSubscriptionMapping(applicantId, "1")
+                if(subData?.length){
+                    updateSubscription({id: subData?.[0]?.subscription_mapping_id, subscription_id: id, subscription_mapping_application_left: timeSpan, is_deleted: 0 }) 
+                }else{
+                    let resp = addSubscription({ applicant_id: applicantId, subscription_id: id, subscription_mapping_application_left: timeSpan, is_deleted: 0 })
+                }
+                refreshFunc()
+            } else if (userData?.recruiter_id) {
+                let pay = await addPayment(paymentData)
+                let subData = await getSubscriptionMapping(applicantId, "1")
+                if(subData?.length){
+                    updateSubscription({id: subData?.[0]?.subscription_mapping_id, subscription_id: id, subscription_mapping_application_left: timeSpan, is_deleted: 0 }) 
+                }else{
+                    let resp = addSubscription({ applicant_id: applicantId, subscription_id: id, subscription_mapping_application_left: timeSpan, is_deleted: 0 })
+                }
+                refreshFunc()
+            } else {
+                let pay = await addPayment(paymentData)
+                let subData = await getSubscriptionMapping(applicantId)
+                if(subData?.length){
+                    updateSubscription({id: subData?.[0]?.subscription_mapping_id, subscription_id: id, subscription_mapping_application_left: parseInt(subData?.[0]?.subscription_mapping_application_left) + parseInt(timeSpan), subscription_mapping_recruiter: parseInt(subData?.[0]?.subscription_mapping_recruiter) + parseInt(recruiterCount), is_deleted: 0 })
+                }else{
+                    let resp = addSubscription({ applicant_id: applicantId, subscription_id: id, subscription_mapping_application_left: timeSpan, subscription_mapping_recruiter: recruiterCount, is_deleted: 0 })
+                }
+                refreshFunc()
+            }
+
             // Send data to backend
             // const resp = await addSubscription(paymentData);
-            let resp = addSubscription({applicant_id: applicantId, subscription_id: id, subscription_mapping_application_left: timeSpan, is_deleted: 0})
             Alert.alert("Subscribed Successfully");
 
         } catch (e) {
             console.log("Payment Error:", e);
-    
+
             // Log failed payment attempt in the database
             const failedPaymentData = {
                 applicant_id: applicantId,
@@ -166,21 +215,21 @@ const CSubscriptionCard = ({ name, price, timeSpan, description, buttonText, id,
                 error_description: e.description || "Unknown error",
                 created_at: new Date().toISOString()
             };
-    
+
             await addSubscription(failedPaymentData);
-    
+
             Alert.alert("Payment Failed", "Something went wrong");
         }
     };
-    
+
     return (
         <View style={styles.card}>
             <CText sx={styles.subscriptionName} fontWeight={800} fontSize={30}>{name}</CText>
 
             <View style={styles.header}>
-                <CText sx={styles.price} fontSize={32}>₹ {price}/month</CText>
+                <CText sx={styles.price} fontSize={32}>₹ {price}</CText>
             </View>
-            <CText sx={{ color: "#797b82", textDecorationLine: 'line-through' }} fontSize={25} fontWeight={900}>₹ {price}</CText>
+            {/* <CText sx={{ color: "#797b82", textDecorationLine: 'line-through' }} fontSize={25} fontWeight={900}>₹ {price}</CText> */}
 
             <View style={styles.descriptionContainer}>
                 <CText fontSize={18} sx={styles.descriptionItemTitle}>Benefits :-</CText>

@@ -408,7 +408,7 @@ const HomePage = () => {
         </CText>
         <Icon name="star" size={30} color="#FFD700" />
       </View>
-      <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
+      <View style={styles.gridContainer}>
         <CStatisticsCard label={"Recruiters"} value={recruitersDataState?.dataLength || 0} iconName={"home"} />
         <CStatisticsCard label={"Job Posts"} value={jobApplicationsDataState?.dataLength || 0} iconName={"home"} />
         <CStatisticsCard label={"Application"} value={applicants?.length || 0} iconName={"home"} />
@@ -617,7 +617,15 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 251, 251, 0.5)", // Semi-transparent black overlay
     padding: 16,
   },
-
+  gridContainer: {
+    height: 250,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10, // Space between cards
+    // padding: 10,
+  },
   subscriptionSection: {
     flexDirection: "row",
     alignItems: "center",

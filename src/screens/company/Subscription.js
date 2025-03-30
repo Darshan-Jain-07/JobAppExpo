@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CSubscriptionCard from '../../components/CSubscriptionCard';
 import { getUserData } from '../../services/UserDataService';
 import { getSubscription, getSubscriptionMapping } from '../../services/SubscriptionService';
+import CCustomizeSubscriptionCard from '../../components/CCustomizeSubscriptionCard';
 // import { ScrollView } from 'react-native-gesture-handler';
 
 const width = Dimensions.get('window').width;
@@ -15,6 +16,7 @@ const height = Dimensions.get('window').height;
 const Subscription = () => {
   const [subscriptionData, setSubscriptionData] = useState([])
     const [userData, setUserData] = useState(null)
+    const [refresh, setRefresh] = useState(true)
     const [alreadySubscribed, setAlreadySubscribed] = useState(null)
     const isFocused = useIsFocused();
     useEffect(()=>{
@@ -31,7 +33,7 @@ const Subscription = () => {
         setAlreadySubscribed(currentSub?.length ? true : false)
       } 
       fetchData();
-    },[isFocused])
+    },[isFocused, refresh])
 
   return (
     <ScrollView
@@ -45,8 +47,9 @@ const Subscription = () => {
       contentInsetAdjustmentBehavior="automatic" // Ensures the card is properly aligned when snapping
     >
       {subscriptionData?.map((subscription, index) => (
-        <CSubscriptionCard key={index} name={subscription.subscription_name} price={subscription.subscription_price} timeSpan={subscription.subscription_application_count} description={subscription.subscription_details} id={subscription.subscription_id} applicantId={userData?.company_id} buttonText={alreadySubscribed ? "Already Subscribed" : "Subscribe"} runFunc={alreadySubscribed ? false : true} userData={userData} />
+        <CSubscriptionCard key={index} name={subscription.subscription_name} price={subscription.subscription_price} recruiterCount={subscription?.subscription_description} timeSpan={subscription.subscription_application_count} description={subscription.subscription_details} id={subscription.subscription_id} applicantId={userData?.company_id} buttonText={"Subscribe"} runFunc={true} userData={userData} refreshFunc={()=>setRefresh((prev)=>!prev)} />
       ))}
+      <CCustomizeSubscriptionCard userData={userData} applicantId={userData?.company_id} refreshFunc={()=>setRefresh((prev)=>!prev)} id={"10"} />
       <View style={{width:20}}></View>
     </ScrollView>
   )

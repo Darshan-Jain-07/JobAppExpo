@@ -151,13 +151,28 @@ export const createRecruiter = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response.data);
-        if (response.data?.insertedId) {
+        console.log('Response:', response);
+        if (response?.data?.insertedId) {
             logInIfSignUp("recruiter", "recruiter_id", response?.data?.insertedId)
         }
         return response.data
     } catch (error) {
-        console.error('Error:', error);
+        if (error.response) {
+            // Backend responded with an error status
+            if (error.response.status === 404) {
+                return "Company not found. Please ensure the company exists before adding a recruiter.";
+            } else if (error.response.status === 400) {
+                return "Recruiter limit reached. Please upgrade your subscription.";
+            } else {
+                return "Something went wrong. Please try again later.";
+            }
+        } else {
+            // Network error or server not responding
+            return "Network error. Please check your internet connection.";
+        }
+
+        console.error("❌ Error in recruiter creation:", error);
+        return null; // Return null to indicate failure
     }
 };
 

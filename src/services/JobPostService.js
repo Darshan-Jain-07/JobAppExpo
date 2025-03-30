@@ -22,6 +22,7 @@ export const createJobPost = async (data) => {
 
 export const getJobPost = async (companyId, userId, limit, jobpostId) => {
     const url = API_BASE_URL;
+    console.log(userId)
     let endPoint = `/data/job_post?${companyId ? `company_id=${companyId}&` : ``}${limit ? `limit=${limit}` : ``}${userId ? `recruiter_id=${userId}` : ``}${jobpostId ? `job_post_id=${jobpostId}` : ``}`;
     console.log(endPoint)
     try {

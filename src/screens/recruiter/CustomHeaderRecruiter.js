@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Text } from "react-native-paper";
 import CText from "../../components/CText";
 
-const CustomHeader = ({ title }) => {
+const CustomHeader = ({ title, removeRightIcon }) => {
   const navigation = useNavigation();
 
   return (
@@ -35,11 +35,11 @@ const CustomHeader = ({ title }) => {
       >
         {title}
       </CText>
-      <TouchableOpacity
+      {!removeRightIcon && <TouchableOpacity
         onPress={() => navigation.navigate("Home", { screen: "Profile" })}
       >
         <Icon name="person-circle" size={30} color="white" />
-      </TouchableOpacity>
+      </TouchableOpacity>}
     </View>
   );
 };
