@@ -7,17 +7,22 @@ import {
   SectionList,
   TouchableOpacity,
 } from "react-native";
-import { ActivityIndicator, Avatar } from "react-native-paper";
+import { ActivityIndicator, Avatar, Modal } from "react-native-paper";
 import Icon from "react-native-vector-icons/FontAwesome"; // You can choose any icon set
 import { getCompanyData } from "../../services/ProfileService";
 import { clearUserData, getUserData } from "../../services/UserDataService";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import CText from "../../components/CText";
+import { getSubscription, getSubscriptionMapping } from "../../services/SubscriptionService";
 
 const ProfilePage = ({ navigation }) => {
   const [userData, setUserDate] = useState();
   const navigate = useNavigation();
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentSubscription, setCurrentSubscription] = useState({});
+  const [currentSubscriptionData, setCurrentSubscriptionData] = useState({});
+  const isFocus = useIsFocused();
 
   useEffect(() => {
     // Define an async function inside the useEffect
@@ -26,6 +31,20 @@ const ProfilePage = ({ navigation }) => {
         const data = await getUserData();
         setUserDate(data);
         console.log(data);
+
+        let currentSub = await getSubscriptionMapping(data?.recruiter_id, "0")
+        console.log(currentSub.length, "------------->")
+
+        if (currentSub?.length) {
+          let curSubData = await getSubscription(null, null, currentSub?.[0]?.subscription_id)
+          console.log(curSubData)
+          setCurrentSubscription(currentSub?.[0])
+          setCurrentSubscriptionData(curSubData?.[0])
+        } else {
+          setCurrentSubscription("No Subscription")
+        }
+
+
         setIsDataLoaded(true);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -35,7 +54,7 @@ const ProfilePage = ({ navigation }) => {
 
     // Call the async function
     fetchData();
-  }, []);
+  }, [isFocus]);
 
   if (!isDataLoaded) {
     return (
@@ -99,13 +118,14 @@ const ProfilePage = ({ navigation }) => {
     {
       title: "Subscription",
       data: [
-        { key: "mySubscription", text: "My Subscription", icon: "gift" },
+        { key: "mySubscription", text: "My Subscription", icon: "gift", onPress: () => setModalVisible(true), },
         {
           key: "viewSubscription",
           text: "View All Subscription",
           icon: "list",
+          onPress: () => { navigate.navigate("Subscription") }
         },
-        { key: "paymentHistory", text: "Payment History", icon: "credit-card" },
+        { key: "paymentHistory", text: "Payment History", icon: "credit-card", onPress: () => { navigate.navigate("Home", { screen: "Payment History" }) } },
       ],
     },
     {
@@ -130,6 +150,19 @@ const ProfilePage = ({ navigation }) => {
       ],
     },
     {
+      title: "Help",
+      data: [
+        {
+          key: "HAS",
+          text: "Help & Support",
+          icon: "support",
+          onPress: () => {
+            navigate.navigate("FAQ");
+          },
+        },
+      ],
+    },
+    {
       title: "Other",
       data: [
         {
@@ -139,19 +172,6 @@ const ProfilePage = ({ navigation }) => {
           onPress: () => {
             clearUserData();
             navigate.navigate("Splash");
-          },
-        },
-      ],
-    },
-    {
-      title: "Help",
-      data: [
-        {
-          key: "HAS",
-          text: "Help&Support",
-          icon: "support",
-          onPress: () => {
-            navigate.navigate("FAQ");
           },
         },
       ],
@@ -203,6 +223,51 @@ const ProfilePage = ({ navigation }) => {
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
+
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          {currentSubscription !== "No Subscription" ? <View style={styles.modalContent}>
+            <CText sx={styles.modalTitle} fontWeight={700}>My Subscription Details</CText>
+            <CText sx={styles.modalText}>
+              <CText sx={styles.bold} fontWeight={600}>Subscription:</CText> {currentSubscriptionData?.subscription_name || "Custom Plan"}
+            </CText>
+            {/* <CText sx={styles.modalText}>
+                    <CText sx={styles.bold} fontWeight={600}>Start Date:</CText> {dayjs(currentSubscription?.subscription_mapping_start_date).format("DD/MM/YYYY")}
+                  </CText>
+                  <CText sx={styles.modalText}>
+                    <CText sx={styles.bold} fontWeight={600}>Renewal Date:</CText> {dayjs(currentSubscription?.subscription_mapping_end_date).format("DD/MM/YYYY")}
+                  </CText> */}
+            <CText sx={styles.modalText}>
+              <CText sx={styles.bold} fontWeight={600}>Job Post Creation Left:</CText> {currentSubscription?.subscription_mapping_application_left}
+            </CText>
+            <CText sx={styles.modalText}>
+              <CText sx={styles.bold} fontWeight={600}>Recruiter Left:</CText> {currentSubscription?.subscription_mapping_recruiter}
+            </CText>
+            {/* <CText sx={styles.modalText}>
+              <CText sx={styles.bold} fontWeight={600}>Cost:</CText> {currentSubscriptionData?.subscription_price}
+            </CText> */}
+            <CText sx={{ ...styles.modalText, textAlign: "center", fontSize: 12 }}>
+              For more detail you can check Subscription Detail by clicking on All Subscription
+            </CText>
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <CText sx={styles.closeButtonText}>Close</CText>
+            </TouchableOpacity>
+          </View> : <View style={styles.modalContent}>
+            <CText sx={styles.modalTitle} fontWeight={700}>No Active Subscription</CText>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <CText sx={styles.closeButtonText}>Close</CText>
+            </TouchableOpacity>
+          </View>}
+        </View>
+      </Modal>
+
     </View>
   );
 };
@@ -272,6 +337,48 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: "#ddd",
+  },
+  modalOverlay: {
+    // flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    marginBottom: 15,
+    color: "#2c3e50",
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: "#34495e",
+  },
+  bold: {
+    color: "#2c3e50",
+  },
+  closeButton: {
+    marginTop: 15,
+    backgroundColor: "#e74c3c",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: "white",
+    fontSize: 16,
   },
 });
 

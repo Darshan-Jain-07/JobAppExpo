@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions, Image, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import CStatisticsCard from '../../components/CIconStatisticsCard';
 import CText from '../../components/CText';
 import { getUserData } from '../../services/UserDataService';
@@ -9,6 +9,9 @@ import { getRecruiter } from '../../services/RecruiterService';
 import { ActivityIndicator } from 'react-native-paper';
 import { getJobPost } from '../../services/JobPostService';
 import { getBlog } from '../../services/BlogService';
+import { appliedJob } from '../../services/ApplicationService';
+import { getCompanyData } from '../../services/ProfileService';
+import { getSubscription, getSubscriptionMapping } from '../../services/SubscriptionService';
 
 const { width } = Dimensions.get('window'); // Get screen width for responsive design
 
@@ -42,11 +45,18 @@ const calculateReadingTime = (content) => {
 
 const HomePage = () => {
   const navigate = useNavigation();
+  const isFocus = useIsFocused()
   const [companyJobPost, setCompanyJobPost] = useState(recruitersData);
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState([]);
   const [blogsDataState, setBlogsDataState] = useState(blogsData);
+  const [totalHired, setTotalHired] = useState(0);
+  const [totalRejected, setTotalRejected] = useState(0);
+  const [totalApplication, setTotalApplication] = useState(0);
+  const [applicants, setApplicants] = useState([]);
   const [companyData, setCompanyData] = useState(null)
   const [isDataLoaded, setIsDataLoaded] = useState(false)
+  const [jobApplicantCount, setJobApplicationCount] = useState([])
+  const [currentSubscription, setCurrentSubscription] = useState({})
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,13 +64,74 @@ const HomePage = () => {
         const data = await getUserData();
         setCompanyData(data);
         console.log(data);
-        
-        const jobPostComp = await getJobPost(null, data?.recruiter_id, 3)
+
+        if (data?.company_email_id !== "") {
+          let compData = await getCompanyData("company_email", data?.company_email_id);
+          let subscriptionData = await getSubscriptionMapping(compData?.[0]?.company_id, "0");
+          if (subscriptionData?.length && compData?.length) {
+            let currSub = await getSubscription(null, null, subscriptionData?.[0]?.subscription_id)
+            setCurrentSubscription(currSub?.[0])
+          } else {
+            setCurrentSubscription("Free Plan")
+          }
+        } else {
+          let subscriptionData = await getSubscriptionMapping(data?.recruiter_id, "0");
+          console.log(subscriptionData, "without email");
+          if (subscriptionData?.length) {
+            let currSub = await getSubscription(null, null, subscriptionData?.[0]?.subscription_id)
+            setCurrentSubscription(currSub?.[0])
+          } else {
+            setCurrentSubscription("Free Plan")
+          }
+        }
+
+        const jobPostComp = await getJobPost(null, data?.recruiter_id)
         setCompanyJobPost(jobPostComp)
-        
-        const jobPostData = await getJobPost(data?.company_email, undefined, 3)
+
+        const jobPostData = await getJobPost(data?.company_email_id, null, null)
         setJobApplicationsDataState(jobPostData)
+
+        const jobPosts = await getJobPost(null, data?.recruiter_id, null);
+
+        // Fetch applicants for each job post
+        const jobCounts = await Promise.all(
+          jobPosts.map(async (job) => {
+            const applicants = await appliedJob(null, job?.job_post_id);
         
+            return {
+              totalApplications: applicants.length, // Total applications received for the job
+              hiredCount: applicants.filter((a) => a?.application_status === "accepted").length,
+              rejectedCount: applicants.filter((a) => a?.application_status === "rejected").length,
+            };
+          })
+        );
+        
+        // Extract total counts
+        const totalApplications = jobCounts.reduce((sum, job) => sum + job.totalApplications, 0);
+        const totalHired = jobCounts.reduce((sum, job) => sum + job.hiredCount, 0);
+        const totalRejected = jobCounts.reduce((sum, job) => sum + job.rejectedCount, 0);
+        
+        console.log("Total Applications:", totalApplications);
+        console.log("Total Hired:", totalHired);
+        console.log("Total Rejected:", totalRejected);
+
+        // Sum up hired applicants for this recruiter
+        setTotalHired(totalHired)
+        setTotalRejected(totalRejected)
+        setTotalApplication(totalApplications)
+
+        let jobApplicantCount = [];
+        const applicantsList = await Promise.all(
+          jobPostData?.map(async (job) => {
+            const applicantsForEachJob = await appliedJob(null, job?.job_post_id);
+            let temp = { job_post_id: job?.job_post_id, applicant_count: applicantsForEachJob.length }
+            jobApplicantCount.push(temp);
+            return applicantsForEachJob;
+          })
+        );
+        setJobApplicationCount(jobApplicantCount)
+        setApplicants(applicantsList?.flat())
+
         const blogData = await getBlog(null, null, 3)
         setBlogsDataState(blogData)
 
@@ -72,7 +143,7 @@ const HomePage = () => {
     };
 
     fetchData();
-  }, [])
+  }, [isFocus])
 
   console.log(companyJobPost)
   if (!isDataLoaded) {
@@ -90,7 +161,7 @@ const HomePage = () => {
       <CText fontWeight={600} sx={styles.jobTitle}>{item.job_post_name}</CText>
       <CText>Status: <CText sx={styles.jobStatus}>{item.is_deleted === "False" ? "Open" : "Closed"}</CText></CText>
       <CText><Icon name="map-marker" size={16} color="#5B5B5B" /> {item.job_post_location}</CText>
-      <CText>Applicants: {item.applicants}</CText>
+      <CText>Applicants: {jobApplicantCount?.filter((d) => d?.job_post_id === item?.job_post_id)?.[0]?.applicant_count}</CText>
       <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: 'ApplicationDetail', params: { applicationId: item.job_post_id } })}>
         <CText sx={styles.viewDetailsButton}>View Details</CText>
       </TouchableOpacity>
@@ -142,58 +213,93 @@ const HomePage = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.subscriptionSection}>
-        <CText sx={styles.subscriptionTitle}>Current Subscription: Premium</CText>
+        <CText sx={styles.subscriptionTitle}>Current Subscription: {currentSubscription?.subscription_name ? currentSubscription?.subscription_name : "Free Plan"}</CText>
         <Icon name="star" size={30} color="#FFD700" />
       </View>
 
-      <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
-        <CStatisticsCard label={"Recruiter"} value={"1000"} iconName={"home"} />
+      <View style={styles.gridContainer}>
+        <CStatisticsCard label={"Job Post"} value={companyJobPost?.length} iconName={"briefcase"} />
+        <CStatisticsCard label={"Application"} value={totalApplication} iconName={"home"} />
+        <CStatisticsCard label={"Hired"} value={totalHired} iconName={"check"} />
+        <CStatisticsCard label={"Rejected"} value={totalRejected} iconName={"remove"} />
       </View>
 
       {/* Recruiters Section */}
       <View style={styles.sectionHeader}>
         <CText fontWeight={600} sx={styles.sectionTitle}>My Job Posts</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: "MyRecruiter", params: { valueParam:"first"} })}>
+        <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: "MyRecruiter", params: { valueParam: "first" } })}>
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={companyJobPost}
-        renderItem={renderJobApplicationItem}
-        keyExtractor={(item) => item.job_post_id}
-        horizontal
-        snapToInterval={width * 0.75}
-        decelerationRate="fast"
-        snapToAlignment="center"
-        pagingEnabled
-      />
+      {companyJobPost.length ? (
+        <FlatList
+          data={companyJobPost?.slice(0, 3)}
+          renderItem={renderJobApplicationItem}
+          keyExtractor={(item) => item.job_post_id}
+          horizontal
+          snapToInterval={width * 0.75}
+          decelerationRate="fast"
+          snapToAlignment="center"
+          pagingEnabled
+        />
+      ) : (
+        <View style={{ alignItems: "center", marginTop: 20 }}>
+          <CText fontSize={18} sx={{ textAlign: "center", marginBottom: 10 }}>
+            No job posts available. Start by creating your first job post!
+          </CText>
+          <TouchableOpacity
+            onPress={() => navigate.navigate("Applications")}
+            style={{
+              backgroundColor: "#007bff",
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              borderRadius: 8,
+            }}
+          >
+            <CText sx={{ color: "#fff", fontSize: 16 }}>Create Job Post</CText>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Job Applications Section */}
-      <View style={styles.sectionHeader}>
+      {companyData?.company_email_id && <><View style={styles.sectionHeader}>
         <CText fontWeight={600} sx={styles.sectionTitle}>Company Job Post</CText>
-        <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: "MyRecruiter", params: { valueParam:"second"} })}>
+        <TouchableOpacity onPress={() => navigate.navigate('Recruiters', { screen: "MyRecruiter", params: { valueParam: "second" } })}>
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={jobApplicationsDataState}
-        renderItem={renderJobApplicationItem}
-        keyExtractor={(item) => item.job_post_id}
-        horizontal
-        snapToInterval={width * 0.75}
-        decelerationRate="fast"
-        snapToAlignment="center"
-        pagingEnabled
-      />
+      {jobApplicationsDataState?.length ?
+        <FlatList
+          data={jobApplicationsDataState?.slice(0, 3)}
+          renderItem={renderJobApplicationItem}
+          keyExtractor={(item) => item.job_post_id}
+          horizontal
+          snapToInterval={width * 0.75}
+          decelerationRate="fast"
+          snapToAlignment="center"
+          pagingEnabled
+        /> : <View style={{ alignItems: "center", marginTop: 20 }}>
+        <CText fontSize={18} sx={{ textAlign: "center", marginBottom: 10 }}>
+          No job posts available. Start by creating your first job post!
+        </CText>
+        <TouchableOpacity
+          onPress={() => navigate.navigate("Applications")}
+          style={{
+            backgroundColor: "#007bff",
+            paddingVertical: 10,
+            paddingHorizontal: 20,
+            borderRadius: 8,
+          }}
+        >
+          <CText sx={{ color: "#fff", fontSize: 16 }}>Create Job Post</CText>
+        </TouchableOpacity>
+      </View> } </>}
 
       {/* Blogs Section */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Latest Blogs</Text>
         <TouchableOpacity onPress={() => navigate.navigate('Blog List')}>
-          <Text style={styles.moreButton}>More</Text>
+          <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -215,6 +321,15 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: '#f8f9fa',
+  },
+  gridContainer: {
+    height: 250,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10, // Space between cards
+    // padding: 10,
   },
   subscriptionSection: {
     flexDirection: 'row',

@@ -5,7 +5,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import CChip from '../../components/CChip';
 import CText from '../../components/CText';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { getJobPost, updateJobPost } from '../../services/JobPostService';
 import { getCompanyData } from '../../services/ProfileService';
 import { getRecruiter } from '../../services/RecruiterService';
@@ -51,20 +51,28 @@ import { getUserData } from '../../services/UserDataService';
 
 const ApplicantItem = ({ item }) => {
   const navigation = useNavigation();
-  const handleApplicantCardPress = (id) => {
-    // console.log(id)
-    if(item?.application_status === "rejected" || item?.application_status === "accepted" || item?.application_status === "in_review"){
-    }else{
-      updateApplication({id: item?.application_id, application_status: "in_review"})
-    }
-    navigation.navigate('View Applicant Detail', { applicationId: id });
-  }
   const [userData, setUserData] = useState(null);
+  const [currentUser, setCurrentUser] = useState({});
+
+  const handleApplicantCardPress = (id) => {
+    console.log(item?.application_status === "rejected" || item?.application_status === "accepted" || item?.application_status === "in_review", "item?.applicant_status")
+    if (item?.application_status === "rejected" || item?.application_status === "accepted" || item?.application_status === "in_review") {
+    } else {
+      updateApplication({ id: item?.application_id, application_status: "in_review" })
+    }
+    if (currentUser?.recruiter_id) {
+      navigation.navigate('View Applicant Detail', { applicationId: id });
+    } else {
+      navigation.navigate('View Applicant Detail', { applicationId: id });
+    }
+  }
 
   useEffect(() => {
     const fetchUserData = async () => {
       const data = await getUserInfo(item.applicant_id);
+      const curdata = await getUserData();
       setUserData(data?.[0]);
+      setCurrentUser(curdata)
     };
     fetchUserData();
   }, [item.applicant_id]);
@@ -97,6 +105,7 @@ const JobDescription = ({ route }) => {
   const [applicants, setApplicants] = useState([]);
   const [noOfApplicants, setNoOfApplicants] = useState(0);
   const [userData, setUserData] = useState({});
+  const isFocus = useIsFocused();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,7 +130,7 @@ const JobDescription = ({ route }) => {
     }
 
     fetchData();
-  }, [applicationId])
+  }, [applicationId, isFocus])
 
   if (!isDataLoaded) {
     return (
@@ -133,9 +142,9 @@ const JobDescription = ({ route }) => {
 
   const handleReviewSubmit = async (values, { resetForm }) => {
     const newReview = { id: Date.now().toString(), name: userData?.company_name, text: values.reviewText };
-        console.log('Submitting review:', newReview);
-        setJobDetails({ ...jobDetails, job_post_review: [newReview, ...jobDetails?.job_post_review || []] });
-        await updateJobPost({ id: jobDetails?.job_post_id, job_post_review: [newReview, ...jobDetails?.job_post_review || []] })
+    console.log('Submitting review:', newReview);
+    setJobDetails({ ...jobDetails, job_post_review: [newReview, ...jobDetails?.job_post_review || []] });
+    await updateJobPost({ id: jobDetails?.job_post_id, job_post_review: [newReview, ...jobDetails?.job_post_review || []] })
   };
 
   const handleApplicantCardPress = (applicantId) => {
@@ -147,9 +156,10 @@ const JobDescription = ({ route }) => {
     <View style={styles.headerContainer}>
       {/* Job Info */}
       <View style={styles.card}>
-        <Image style={styles.companyLogo} source={{ uri: companyData?.company_logo }} />
+        {console.log(jobDetails, "sdfsdfsdf")}
+        <Image style={styles.companyLogo} source={{ uri: jobDetails?.company_id ? companyData?.company_logo : recruiterData?.recruiter_image }} />
         <CText sx={styles.jobTitle} fontSize={24} fontWeight={600}>{jobDetails?.job_post_name}</CText>
-        <CText sx={styles.companyName}>{companyData?.company_name}</CText>
+        {jobDetails?.company_id && <CText sx={styles.companyName}>{companyData?.company_name}</CText>}
         <View style={styles.locationContainer}>
           <Icon name="map-marker" size={18} color="#888" />
           <Text style={styles.location}>{jobDetails?.job_post_location}</Text>
@@ -213,6 +223,15 @@ const JobDescription = ({ route }) => {
     </View>
   );
 
+  const handleViewAll = () => {
+    if (userData?.recruiter_id) {
+      navigation.navigate('Bottom Navigation Recruiter', { screen: "Recruiters", params: { screen: "ApplicantsList", params: { applicationId } } })
+    }
+    else {
+      navigation.navigate('Bottom Navigation App', { screen: "Applications", params: { screen: "ApplicantsList", params: { applicationId } } })
+    }
+  }
+
   const renderFooter = () => (
     <View style={styles.footerContainer}>
       {/* Reviews Section */}
@@ -274,7 +293,7 @@ const JobDescription = ({ route }) => {
       <View style={styles.card}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '97%' }}>
           <CText sx={styles.sectionTitle} fontSize={20} fontWeight={600}>Applicants</CText>
-          <TouchableOpacity onPress={() => navigation.navigate('Bottom Navigation App', { screen: "Applications", params: { screen: "ApplicantsList", params:{applicationId} } })} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={handleViewAll} style={{ flexDirection: 'row', alignItems: 'center' }}>
             <CText fontSize={15} fontWeight={600} color={"#0084D1"}>View All ({noOfApplicants})</CText>
           </TouchableOpacity>
         </View>

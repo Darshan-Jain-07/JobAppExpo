@@ -18,6 +18,8 @@ const Subscription = () => {
   const [userData, setUserData] = useState(null)
   const [alreadySubscribed, setAlreadySubscribed] = useState(null)
   const isFocused = useIsFocused();
+  const [refresh, setRefresh] = useState(true)
+  
   useEffect(()=>{
     const fetchData = async() => {
       let ud = await getUserData();
@@ -32,7 +34,7 @@ const Subscription = () => {
       setAlreadySubscribed(currentSub?.length ? true : false)
     } 
     fetchData();
-  },[isFocused])
+  },[isFocused ,refresh])
   return (
     <ScrollView
       style={styles.container}
@@ -45,7 +47,8 @@ const Subscription = () => {
       contentInsetAdjustmentBehavior="automatic" // Ensures the card is properly aligned when snapping
     >
       {subscriptionData?.map((subscription, index) => (
-        <CSubscriptionCard key={index} name={subscription.subscription_name} price={subscription.subscription_price} timeSpan={subscription.subscription_application_count} description={subscription.subscription_details} id={subscription.subscription_id} applicantId={userData?.applicant_id} buttonText={alreadySubscribed ? "Already Subscribed" : "Subscribe"} runFunc={alreadySubscribed ? false : true} userData={userData} />
+        <CSubscriptionCard key={index} name={subscription.subscription_name} price={subscription.subscription_price} timeSpan={subscription.subscription_application_count} description={subscription.subscription_details} id={subscription.subscription_id} applicantId={userData?.applicant_id} buttonText={alreadySubscribed ? "Already Subscribed" : "Subscribe"} runFunc={alreadySubscribed ? false : true} userData={userData} 
+        refreshFunc={()=>setRefresh((prev)=>!prev)} />
       ))}
     </ScrollView>
   )

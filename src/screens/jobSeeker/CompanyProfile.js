@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,10 @@ import {
 } from "react-native";
 import CText from "../../components/CText";
 import { useNavigation } from "@react-navigation/native";
+import { getUserInfo } from "../../services/AuthService";
+import { ActivityIndicator } from "react-native-paper";
+import { getRecruiter } from "../../services/RecruiterService";
+import { getJobPost } from "../../services/JobPostService";
 
 // Dummy data
 const companyData = {
@@ -46,22 +50,54 @@ const jobPosts = [
 ];
 
 // Main component for the company profile screen
-const CompanyProfileScreen = () => {
+const CompanyProfileScreen = ({ route }) => {
   const navigation = useNavigation();
+  const { companyId } = route?.params;
+  const [companyData, setCompanyData] = useState({});
+  const [recruiterData, setRecruiterData] = useState([]);
+  const [jobPostData, setJobPostData] = useState([]);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  console.log(companyId, "sdfgdg")
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      let compData = await getUserInfo(companyId);
+      setCompanyData(compData?.[0])
+
+      let recData = await getRecruiter(compData?.[0]?.company_email)
+      setRecruiterData(recData)
+
+      let jobPost = await getJobPost(compData?.[0]?.company_email)
+      setJobPostData(jobPost)
+
+      setIsDataLoaded(true);
+    }
+    fetchData();
+  }, [companyId])
   // Function to render recruiter
+  if (!isDataLoaded) {
+    return (
+      <View
+        style={{ flex: 1, justifyContent: "center", alignContent: "center" }}
+      >
+        <ActivityIndicator animating={true} color={"#000"} size={"large"} />
+      </View>
+    );
+  }
   const renderRecruiter = ({ item }) => (
-    <View style={styles.recruiterCard} key={item.id}>
+    <View style={styles.recruiterCard} key={item?.recruiter_id}>
       {/* Add unique key prop */}
       <Image
-        source={{ uri: "https://www.example.com/recruiter-placeholder.png" }}
+        source={{ uri: item?.recruiter_image }}
         style={styles.recruiterImage}
       />
       <CText fontWeight={600} sx={styles.recruiterName}>
-        {String(item.name || "No Name")}
+        {String(item.recruiter_name || "No Name")}
       </CText>
-      <CText sx={styles.recruiterPosition}>
+      {/* <CText sx={styles.recruiterPosition}>
         {String(item.position || "No Position")}
-      </CText>
+      </CText> */}
       <TouchableOpacity
         onPress={() => navigation.navigate("ChatReact")}
         style={styles.viewProfileButton}
@@ -73,19 +109,24 @@ const CompanyProfileScreen = () => {
 
   // Function to render job post
   const renderJobPost = ({ item }) => (
-    <View style={styles.jobPostCard} key={item.id}>
+    <View style={styles.jobPostCard} key={item?.job_post_id}>
       {/* Add unique key prop */}
       <CText fontWeight={600} sx={styles.jobPostTitle}>
-        {String(item.title || "No Title")}
+        {String(item?.job_post_name || "No Title")}
       </CText>
       <CText sx={styles.jobPostDepartment}>
-        {String(item.department || "No Department")}
+        {String(item?.job_post_employment_type || "No Department")} {String(item?.job_post_experience_level || "No Department")}
       </CText>
       <CText sx={styles.jobPostLocation}>
-        {String(item.location || "No Location")}
+        {String(item?.job_post_location || "No Location")}
       </CText>
-      <TouchableOpacity style={styles.applyButton}>
-        <CText sx={styles.buttonText}>Apply Now</CText>
+      <TouchableOpacity style={styles.applyButton} onPress={() =>
+          navigation.navigate("Home", {
+            screen: "ApplicationDetail",
+            params: { applicationId: item.job_post_id },
+          })
+        }>
+        <CText sx={styles.buttonText}>View Detail</CText>
       </TouchableOpacity>
     </View>
   );
@@ -93,15 +134,15 @@ const CompanyProfileScreen = () => {
   // Render function for company info (to be used as ListHeaderComponent)
   const renderCompanyInfo = () => (
     <View style={styles.companyInfoContainer}>
-      <Image source={{ uri: companyData.logo }} style={styles.companyLogo} />
+      <Image source={{ uri: companyData?.company_logo }} style={styles.companyLogo} />
       <CText sx={styles.companyName} fontWeight={600}>
-        {companyData.name}
+        {companyData?.company_name}
       </CText>
-      <CText sx={styles.companyDescription}>{companyData.description}</CText>
-      <CText sx={styles.companyLocation}>{companyData.location}</CText>
-      <TouchableOpacity onPress={() => Linking.openURL(companyData.website)}>
+      <CText sx={styles.companyDescription}>{companyData?.company_description}</CText>
+      {/* <CText sx={styles.companyLocation}>{companyData.location}</CText> */}
+      {/* <TouchableOpacity onPress={() => Linking.openURL(companyData.website)}>
         <CText sx={styles.companyWebsiteText}>{companyData.website}</CText>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 
@@ -119,8 +160,9 @@ const CompanyProfileScreen = () => {
     } else if (item.type === "recruiter") {
       return (
         <View>
+          {recruiterData?.length && <CText fontSize={16} fontWeight={600}>Recruiters</CText>}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {item.content.map((recruiter) => (
+            {recruiterData?.map((recruiter) => (
               <View key={recruiter.id}>
                 {renderRecruiter({ item: recruiter })}
               </View> // Ensure key is assigned here as well
@@ -131,11 +173,14 @@ const CompanyProfileScreen = () => {
       );
     } else if (item.type === "jobPost") {
       return (
-        <FlatList
-          data={item.content}
-          renderItem={renderJobPost}
-          keyExtractor={(job) => job.id}
-        />
+        <>
+          {jobPostData?.lenght && <CText fontWeight={600} fontSize={15}>Job Posts</CText>}
+          <FlatList
+            data={jobPostData}
+            renderItem={renderJobPost}
+            keyExtractor={(job) => job?.job_post_id}
+          />
+        </>
       );
     }
     return null;

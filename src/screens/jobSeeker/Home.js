@@ -376,7 +376,7 @@ const HomePage = () => {
         {/* View Details Button */}
         <TouchableOpacity
           onPress={() =>
-            navigate.navigate("Home", { screen: "Company Profile" })
+            navigate.navigate("Home", { screen: "Company Profile", params: {companyId: item?.company_id} })
           }
           // onPress={() => console.log("hello")}
           style={styles.viewDetailsButton}
@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
   },
   applyNowButton: {
     backgroundColor: "#007bff", // Attractive blue color for the button
-    paddingVertical: 20,
+    paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 25, // Rounded corners for the button
     alignItems: "center", // Center the text inside the button

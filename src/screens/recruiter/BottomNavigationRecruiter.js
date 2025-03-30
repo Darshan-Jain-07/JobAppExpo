@@ -13,6 +13,7 @@ import { StyleSheet, View, Text } from "react-native";
 import CustomHeader from "./CustomHeaderRecruiter";
 import ProfilePage from "./Profile";
 import JobPostForm from "./CreateJobPost";
+import ViewApplicantDetail from "../jobSeeker/ViewApplicantDetail";
 import Subscription from "./Subscription";
 import JobPostsScreen from "./MyJobApplication";
 import JobDescription from "../company/JobDescription";
@@ -22,6 +23,7 @@ import BlogListScreen from "../company/BlogList";
 import BlogPage from "../company/BlogDetail";
 import ApplicantDetails from "../company/ApplicationDetail";
 import ApplicantsList from "./ApplicantsList";
+import PaymentHistoryScreen from "../jobSeeker/PaymentHistory";
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
 // import CustomHeader from './Header';
@@ -88,7 +90,15 @@ function HomeStack() {
         component={ProfilePage}
         options={{
           headerShown: true,
-          header: () => <CustomHeader title="Profile" />,
+          header: () => <CustomHeader title="Profile" removeRightIcon={true} />,
+        }}
+      />
+      <Stack.Screen
+        name="Payment History"
+        component={PaymentHistoryScreen}
+        options={{
+          headerShown: true,
+          header: () => <CustomHeader title="Payment History" />,
         }}
       />
     </Stack.Navigator>
@@ -134,6 +144,14 @@ function RecruitersStack() {
           header: () => <CustomHeader title="My Job Applications" />,
         }}
       />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          header: () => <CustomHeader title={"Resume Details"} />,
+        }}
+        name="View Applicant Detail"
+        component={ViewApplicantDetail}
+      />
     </Stack.Navigator>
   );
 }
@@ -158,6 +176,14 @@ export default function BottomNavigationRecruiter() {
           ),
           headerShown: false,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("Home", {
+              screen: "Home Page",
+            });
+          }
+        })}
       />
       <Tab.Screen
         name="Recruiters"
@@ -169,6 +195,14 @@ export default function BottomNavigationRecruiter() {
           ),
           headerShown: false,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("Recruiters", {
+              screen: "MyRecruiter",
+            });
+          }
+        })}
       />
       <Tab.Screen
         name="Applications"
@@ -180,6 +214,14 @@ export default function BottomNavigationRecruiter() {
           ),
           headerShown: false,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("Applications", {
+              screen: "MyRecruiter",
+            });
+          }
+        })}
       />
       <Tab.Screen
         name="Subscription"
@@ -213,7 +255,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 5,
-    
+
   },
   tabBarItemStyle: {
     paddingVertical: 10,

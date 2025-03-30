@@ -105,13 +105,19 @@ const JobPostForm = () => {
     );
   }
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, { resetForm }) => {
     setLoading(true);
     try {
       let data = await createJobPost(values);
       // Handle form submission here (e.g., send the data to an API)
       console.log("Form Data:", values);
-      Alert.alert("Success", "Job Post Created Successfully!");
+      if (data.success) {
+        console.log("Form Data:", values);
+        Alert.alert("Success", "Job Post Created Successfully!");
+      } else {
+        // Handle API response errors
+        Alert.alert("Error", data.message || "Failed to create job post.");
+      }
       navigation.goBack();
     } catch (error) {
       Alert.alert(
@@ -119,6 +125,7 @@ const JobPostForm = () => {
         "There was an issue submitting the form. Please try again."
       );
     } finally {
+      // resetForm()
       setLoading(false);
     }
   };

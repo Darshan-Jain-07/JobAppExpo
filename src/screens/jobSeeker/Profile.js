@@ -13,14 +13,18 @@ import { ActivityIndicator, Avatar } from "react-native-paper";
 import Icon from "react-native-vector-icons/FontAwesome"; // You can choose any icon set
 import { getCompanyData } from "../../services/ProfileService";
 import { clearUserData, getUserData } from "../../services/UserDataService";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import CText from "../../components/CText";
+import { getSubscription, getSubscriptionMapping } from "../../services/SubscriptionService";
 
 const ProfilePage = ({ navigation }) => {
   const [userData, setUserDate] = useState();
   const navigate = useNavigation();
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [currentSubscriptionData, setCurrentSubscriptionData] = useState({});
+  const [subscriptionData, setSubscriptionData] = useState({});
+  const isFocus = useIsFocused();
 
   useEffect(() => {
     // Define an async function inside the useEffect
@@ -29,6 +33,15 @@ const ProfilePage = ({ navigation }) => {
         const data = await getUserData();
         setUserDate(data);
         console.log(userData?.applicant_id);
+
+        let subData = await getSubscriptionMapping(data?.applicant_id, "0")
+        if (subData?.length) {
+          let curSubData = await getSubscription(null, null, subData?.[0]?.subscription_id)
+          setSubscriptionData(subData?.[0])
+          setCurrentSubscriptionData(curSubData?.[0])
+        } else {
+          setSubscriptionData("No Subscription")
+        }
         setIsDataLoaded(true);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -38,7 +51,7 @@ const ProfilePage = ({ navigation }) => {
 
     // Call the async function
     fetchData();
-  }, []);
+  }, [isFocus]);
 
   if (!isDataLoaded) {
     return (
@@ -200,22 +213,22 @@ const ProfilePage = ({ navigation }) => {
       {/* Modal for My Subscription */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          {subscriptionData !== "No Subscription" ? <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>My Subscription Details</Text>
             <Text style={styles.modalText}>
-              <Text style={styles.bold}>Subscription Plan:</Text> Premium Plan
+              <Text style={styles.bold}>Subscription Plan:</Text> {currentSubscriptionData?.subscription_name}
             </Text>
             <Text style={styles.modalText}>
-              <Text style={styles.bold}>Start Date:</Text> 01 March 2025
+              <Text style={styles.bold}>Job Apply Left:</Text> {subscriptionData?.subscription_mapping_application_left}
             </Text>
-            <Text style={styles.modalText}>
+            {/* <Text style={styles.modalText}>
               <Text style={styles.bold}>Renewal Date:</Text> 01 March 2026
+            </Text> */}
+            <Text style={styles.modalText}>
+              <Text style={styles.bold}>Cost:</Text> {currentSubscriptionData?.subscription_price}
             </Text>
             <Text style={styles.modalText}>
-              <Text style={styles.bold}>Cost:</Text> $99.99/year
-            </Text>
-            <Text style={styles.modalText}>
-              <Text style={styles.bold}>Subscriber Name:</Text> John Doe
+              <Text style={styles.bold}>Subscriber Name:</Text> {userData?.applicant_name}
             </Text>
 
             <TouchableOpacity
@@ -224,7 +237,15 @@ const ProfilePage = ({ navigation }) => {
             >
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableOpacity>
-          </View>
+          </View> : <View style={styles.modalContent}>
+            <Text style={{...styles.modalTitle, color:"red"}}>No Active Subscription</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>}
         </View>
       </Modal>
     </View>

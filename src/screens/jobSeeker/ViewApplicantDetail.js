@@ -9,8 +9,8 @@ import { getUserData } from '../../services/UserDataService';
 import { getUserInfo } from '../../services/AuthService';
 
 const ApplicantProfile = ({route}) => {
-    const applicantId = route.params.applicationId || null;
-    console.log(applicantId)
+    const applicantId = route?.params?.applicationId || null;
+    // console.log(applicantId)
     const [applicant, setApplicant] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isDataLoaded, setIsDataLoaded] = useState(null);
@@ -216,7 +216,7 @@ const ApplicantProfile = ({route}) => {
                     </Card.Content>
                 </Card>
             )}
-            <View style={{height:50}}></View>
+            <View style={{height:100}}></View>
         </ScrollView>
     );
 };

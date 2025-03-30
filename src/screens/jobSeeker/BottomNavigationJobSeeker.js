@@ -24,8 +24,10 @@ import JobDescription from './JobPostDetail';
 import JobPostList from './JobPostList';
 import CompaniesList from './CompaniesList';
 import { FAB } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useFocusEffect, useNavigation } from '@react-navigation/native';
 import PaymentHistoryScreen from './PaymentHistory';
+import ApplicantProfile from './ViewApplicantDetail';
+import ResumeForm from './ResumeForm';
 // import JobDescription from '../company/JobDescription';
 // import ApplicationDetail from './JobDescription';
 // import ApplicantDetails from './ApplicationDetail';
@@ -57,11 +59,20 @@ function ApplicationsStack() {
                     header: () => <CustomHeader title="Companies" />,
                 }}
             />
+            <Stack.Screen
+                name="Companies Profile"
+                component={CompanyProfileScreen}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Companies" />,
+                }}
+            />
         </Stack.Navigator>
     );
 }
 
 function HomeStack() {
+
     return (
         <Stack.Navigator>
             <Stack.Screen
@@ -77,7 +88,15 @@ function HomeStack() {
                 component={PaymentHistoryScreen}
                 options={{
                     headerShown: true,
-                    header: () => <CustomHeader title="Payment Hostory" chat={true} />,
+                    header: () => <CustomHeader title="Payment History" />,
+                }}
+            />
+            <Stack.Screen
+                name="View Applicant Detail"
+                component={ApplicantProfile}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Resume Details" />,
                 }}
             />
             <Stack.Screen
@@ -119,6 +138,14 @@ function HomeStack() {
                 options={{
                     headerShown: true,
                     header: () => <CustomHeader title="Company Profile" />,
+                }}
+            />
+            <Stack.Screen
+                name="Resume Form"
+                component={ResumeForm}
+                options={{
+                    headerShown: true,
+                    header: () => <CustomHeader title="Edit Resume" />,
                 }}
             />
             <Stack.Screen
@@ -191,6 +218,14 @@ export default function BottomNavigationJobSeeker() {
                         ),
                         headerShown: false
                     }}
+                    listeners={({ navigation }) => ({
+                        tabPress: (e) => {
+                            e.preventDefault(); // Prevent default tab navigation
+                            navigation.navigate("Home", {
+                                screen: "Home Page", // Ensure we navigate inside HomeStack
+                            });
+                        }
+                    })}
                 />
                 <Tab.Screen
                     name="Jobs"
@@ -201,6 +236,14 @@ export default function BottomNavigationJobSeeker() {
                         ),
                         headerShown: false
                     }}
+                    listeners={({ navigation }) => ({
+                        tabPress: (e) => {
+                            e.preventDefault(); // Prevent default tab navigation
+                            navigation.navigate("Jobs", {
+                                screen: "Job Post List", // Ensure we navigate inside HomeStack
+                            });
+                        }
+                    })}
                 />
                 <Tab.Screen
                     name="Companies"
@@ -211,6 +254,14 @@ export default function BottomNavigationJobSeeker() {
                         ),
                         headerShown: false
                     }}
+                    listeners={({ navigation }) => ({
+                        tabPress: (e) => {
+                            e.preventDefault(); // Prevent default tab navigation
+                            navigation.navigate("Companies", {
+                                screen: "Companies List", // Ensure we navigate inside HomeStack
+                            });
+                        }
+                    })}
                 />
                 <Tab.Screen
                     name="Subscription"

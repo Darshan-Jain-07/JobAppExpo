@@ -178,9 +178,9 @@ const JobDescription = ({ route }) => {
       <View style={styles.headerContainer}>
         {/* Job Info */}
         <View style={styles.card}>
-          <Image style={styles.companyLogo} source={{ uri: companyData?.company_logo }} />
+          <Image style={styles.companyLogo} source={{ uri: jobDetails?.company_id ? companyData?.company_logo : recruiterData?.recruiter_image || "" }} />
           <CText sx={styles.jobTitle} fontSize={24} fontWeight={600}>{jobDetails?.job_post_name}</CText>
-          <CText sx={styles.companyName}>{companyData?.company_name}</CText>
+          {jobDetails?.company_id && <CText sx={styles.companyName}>{companyData?.company_name}</CText>}
           <View style={styles.locationContainer}>
             <Icon name="map-marker" size={18} color="#888" />
             <Text style={styles.location}>{jobDetails?.job_post_location}</Text>

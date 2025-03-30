@@ -4,10 +4,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // const API_BASE_URL = 'http://192.168.185.35:3000';
 
-export const createJobPost = async (data) => {
+export const addPayment = async (data) => {
     const url = API_BASE_URL;
     try {
-        const response = await axios.post(url + "/data/job_post", data, {
+        const response = await axios.post(url + "/data/payment_history", data, {
             headers: {
                 'Content-Type': 'application/json',
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
@@ -20,10 +20,10 @@ export const createJobPost = async (data) => {
     }
 };
 
-export const getJobPost = async (companyId, userId, limit, jobpostId) => {
+export const getPayment = async (userId) => {
     const url = API_BASE_URL;
     // console.log(companyId)
-    let endPoint = companyId ? `/data/job_post?company_id=${companyId}` : userId ? `/data/job_post?recruiter_id=${userId}` : limit ? `/data/job_post?limit=3` : jobpostId ? `/data/job_post?job_post_id=${jobpostId}` : `/data/job_post`;
+    let endPoint = `/data/payment_history?${userId ? `applicant_id=${userId}` : ``}`;
     console.log(endPoint)
     try {
         const response = await axios.get(url + endPoint, {

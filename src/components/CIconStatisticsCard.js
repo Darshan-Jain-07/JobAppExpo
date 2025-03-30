@@ -16,8 +16,14 @@ const CStatisticsCard = ({ label, value, iconName, onPress = () => {} }) => {
     switch (label) {
       case "RQS":
         return { icon: "#b55e12", text: "#b55e12" }; // Gold
+      case "Job Post":
+        return { icon: "#b55e12", text: "#b55e12" }; // Gold
       case "Applied":
         return { icon: "#154782", text: "#154782" }; // Green
+      case "Application":
+        return { icon: "#154782", text: "#154782" }; // Green
+      case "Hired":
+        return { icon: "#105710", text: "#105710" }; // Blue
       case "Accepted":
         return { icon: "#105710", text: "#105710" }; // Blue
       case "Rejected":
