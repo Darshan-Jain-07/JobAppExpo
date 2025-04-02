@@ -14,6 +14,7 @@ import { getUserData } from '../../services/UserDataService';
 import { appliedJob, applyJobPost, getApplication } from '../../services/ApplicationService';
 import { Animated } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
+import { getResume } from '../../services/ResumeService';
 
 
 
@@ -62,6 +63,7 @@ const JobDescription = ({ route }) => {
   const [reviews, setReviews] = useState(jobDetails?.job_reviews);
   const [applicantData, setApplicantData] = useState({})
   const [applicants, setApplicants] = useState(jobDetails?.applicants);
+  const [resumeData, setResumeData] = useState({});
   const [isApplied, setIsApplied] = useState();
   const [loadingJobPost, setLoadingJobPost] = useState({});
   const [noOfApplicants, setNoOfApplicants] = useState(0);
@@ -74,6 +76,9 @@ const JobDescription = ({ route }) => {
     const fetchData = async () => {
       const data = await getUserData();
       setApplicantData(data);
+
+      const resData = await getResume(data?.applicant_id);
+      setResumeData(resData);
 
       const job_post_details = await getJobPost(null, null, null, applicationId);
       setJobDetails(job_post_details?.[0])
@@ -220,7 +225,7 @@ const JobDescription = ({ route }) => {
           ) : isLoading ? (
             <ActivityIndicator animating={true} color="#fff" size="small" />
           ) : (
-            <TouchableOpacity style={styles.applyNowButton} onPress={() => applyJobForApplicant(jobDetails.job_post_id)}>
+            <TouchableOpacity style={[styles.applyNowButton, resumeData?.data && styles.disabledButton]} disabled={resumeData?.applicant_id ? true : false} onPress={() => applyJobForApplicant(jobDetails.job_post_id)}>
               <CText fontWeight={600} sx={styles.applyNowText}>
                 Apply Now
               </CText>
@@ -373,6 +378,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5, // For Android shadow
+  },
+  disabledButton: {
+    backgroundColor: '#ccc', // Disabled color
   },
   companyLogo: {
     width: 120,

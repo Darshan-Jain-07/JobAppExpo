@@ -9,12 +9,12 @@ import { ActivityIndicator } from 'react-native-paper';
 import { appliedJob, applyJobPost } from '../../services/ApplicationService';
 import { Animated } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
+import { getResume } from '../../services/ResumeService';
 
 const { width } = Dimensions.get('window');
 
 const JobPostList = ({route}) => {
   const navigate = useNavigation();
-  console.log(route?.params, "route?.params?.mine")
   let mine = route?.params?.mine;
   const [jobApplicationsDataState, setJobApplicationsDataState] = useState([]);
   const [userData, setUserData] = useState({});
@@ -25,7 +25,7 @@ const JobPostList = ({route}) => {
   const [notification, setNotification] = useState("");
   const isFocused = useIsFocused();
 
-  // const [resumeData, setResumeData] = useState([]);
+  const [resumeData, setResumeData] = useState(null);
 
   const fetchAppliedJobsStatus = async (userId, jobPostData) => {
     const appliedJobsStatus = {};
@@ -50,9 +50,10 @@ const JobPostList = ({route}) => {
       is_deleted: "false",
     };
 
+    let jobPostData = await getJobPost(null, null, null, jobpostId)
+
     try {
-      let resp = await applyJobPost(data);
-      console.log(resp);
+      let resp = await applyJobPost(data, resumeData, jobPostData);
       if (resp?.message === "Could not apply as subscription limit is over" || resp?.message === "No subscription_mapping found for applicant") {
         setNotification("Please subscribe to apply for job")
         Animated.timing(fadeAnim, {
@@ -107,9 +108,9 @@ const JobPostList = ({route}) => {
         const user = await getUserData();
         setUserData(user);
 
-        // const resumeData = await getResume(data.applicant_id);
-        // console.log(resumeData, "resume");
-        // setResumeData(resumeData);
+        const resumeData = await getResume(user?.applicant_id);
+        console.log(resumeData, "resume");
+        setResumeData(resumeData);
 
         const jobPostData = await getJobPost();
         setJobApplicationsDataState(jobPostData);
@@ -143,7 +144,6 @@ const JobPostList = ({route}) => {
   const renderJobApplicationItem = ({ item }) => {
     const isApplied = appliedJobs[item.job_post_id]; // Check if the job has been applied
     const isLoading = loadingJobPost[item.job_post_id]; // Check if the job is being applied for
-    console.log(isApplied, "isApplied")
     if(mine && !isApplied){
       return null
       
@@ -167,7 +167,7 @@ const JobPostList = ({route}) => {
             ) : isLoading ? (
               <ActivityIndicator animating={true} color="#fff" size="small" />
             ) : (
-              <TouchableOpacity style={styles.applyNowButton} onPress={() => applyJobForApplicant(item.job_post_id)}>
+              <TouchableOpacity style={[styles.applyNowButton, resumeData.applicant_id && styles.disabledButton]} disabled={resumeData.applicant_id} onPress={() => applyJobForApplicant(item.job_post_id)}>
                 <CText fontWeight={600} sx={styles.applyNowText}>
                   Apply Now
                 </CText>
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: '#f8f9fa',
-    paddingBottom: 140
+    paddingBottom: 50
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -265,6 +265,9 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
     marginTop: 10,
+  },
+  disabledButton: {
+    backgroundColor: '#ccc', // Disabled color
   },
   applyNowText: {
     color: '#fff',

@@ -32,7 +32,7 @@ const ProfilePage = ({ navigation }) => {
         setUserDate(data);
         console.log(data);
 
-        let currentSub = await getSubscriptionMapping(data?.recruiter_id, "0")
+        let currentSub = await getSubscriptionMapping(data?.company_id, "0")
         console.log(currentSub.length, "------------->")
 
         if (currentSub?.length) {

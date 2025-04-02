@@ -274,8 +274,12 @@ const HomePage = () => {
 
         const currentSub = await getSubscriptionMapping(data?.company_id, "0");
         console.log(currentSub, "currentSub");
-        const subDet = await getSubscription(null, null, currentSub[0]?.subscription_id);
-        setCurrentSubscription({...currentSub[0], ...subDet[0]});
+        if(currentSub.length){
+          const subDet = await getSubscription(null, null, currentSub[0]?.subscription_id);
+          setCurrentSubscription({...currentSub?.[0], ...subDet?.[0]});
+        } else{
+          setCurrentSubscription(null)
+        }
 
         const blogData = await getBlog(null, null, 3);
         console.log(blogData)
@@ -427,6 +431,11 @@ const HomePage = () => {
           <CText sx={styles.moreButton}>More</CText>
         </TouchableOpacity>
       </View>
+      {recruitersDataState?.recruiterData?.length === 0 ? (
+        <View style={styles.noResultsContainer}>
+          <CText style={styles.noResultsText}>No Recruiters Added</CText>
+        </View>
+      ) : (
       <FlatList
         data={recruitersDataState?.recruiterData?.slice(0, 3)}
         renderItem={renderRecruiterItem}
@@ -436,7 +445,7 @@ const HomePage = () => {
         decelerationRate="fast"
         snapToAlignment="center"
         pagingEnabled
-      />
+      />)}
       {/* notification */}
       <View style={styles.sectionHeader}>
         <CText fontWeight={600} fontSize={22}>
