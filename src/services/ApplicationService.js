@@ -1,12 +1,36 @@
 import axios from 'axios';
-import { API_BASE_URL } from '@env';
+import { API_BASE_URL, API_BASE_URL_ATS } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // const API_BASE_URL = 'http://192.168.185.35:3000';
 
-export const applyJobPost = async (data) => {
+export const applyJobPost = async (data, resumeData, jobPostData) => {
     const url = API_BASE_URL;
+    // console.log(API_BASE_URL_ATS)
     try {
+        // const analyzeResponse = await axios.post(API_BASE_URL_ATS + "/analyze", {
+        //     resume: resumeData,
+        //     jobDescription: jobPostData
+        // });
+
+        // if (!analyzeResponse.data.success) {
+        //     console.error("Analysis failed:", analyzeResponse.data.error);
+        //     return { error: "ATS analysis failed" };
+        // }
+
+        // const analysisResult = analyzeResponse.data.analysis; // Get ATS feedback
+
+        // // 🔹 Step 2: Attach ATS Analysis Result to `data`
+        // const updatedData = {
+        //     ...data,
+        //     atsScore: analysisResult.ATS_Score || "N/A",
+        //     missingSkills: analysisResult.Missing_Skills || [],
+        //     formattingIssues: analysisResult.Formatting_Issues || [],
+        //     improvementSuggestions: analysisResult.Improvements || []
+        // };
+
+        // console.log(updatedData, "updatedData")
+
         const response = await axios.post(url + "/data/application", data, {
             headers: {
                 'Content-Type': 'application/json',

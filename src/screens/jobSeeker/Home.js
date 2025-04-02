@@ -262,7 +262,7 @@ const HomePage = () => {
                 style={
                   Boolean(resumeData.length)
                     ? { ...styles.applyNowButton }
-                    : { backgroundColor: "#000" }
+                    : { ...styles.applyNowButton, backgroundColor: "#ccc" }
                 }
                 disabled={!Boolean(resumeData.length)}
                 onPress={() => applyJobForApplicant(item.job_post_id)}

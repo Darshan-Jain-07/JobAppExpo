@@ -18,6 +18,8 @@ const CStatisticsCard = ({ label, value, iconName, onPress = () => {} }) => {
         return { icon: "#b55e12", text: "#b55e12" }; // Gold
       case "Job Post":
         return { icon: "#b55e12", text: "#b55e12" }; // Gold
+      case "Recruiters":
+        return { icon: "#b55e12", text: "#b55e12" }; // Gold
       case "Applied":
         return { icon: "#154782", text: "#154782" }; // Green
       case "Application":
@@ -27,6 +29,8 @@ const CStatisticsCard = ({ label, value, iconName, onPress = () => {} }) => {
       case "Accepted":
         return { icon: "#105710", text: "#105710" }; // Blue
       case "Rejected":
+        return { icon: "#8a0f1c", text: "#8a0f1c" }; // Red
+      case "Job Posts":
         return { icon: "#8a0f1c", text: "#8a0f1c" }; // Red
       default:
         return { icon: "#000", text: "#000" }; // Default Black

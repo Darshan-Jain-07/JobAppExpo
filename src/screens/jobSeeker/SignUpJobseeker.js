@@ -16,34 +16,7 @@ const validationSchema = Yup.object().shape({
     applicant_email: Yup.string().matches(
         /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/, // Updated to match lowercase letters only
         'Invalid Email'
-    )
-        // .test('only-one-dot', 'Invalid Email', (value) => {
-        //     // Ensure there is exactly one dot after the '@'
-        //     const dotCount = (value.match(/\./g) || []).length;
-        //     const atSymbolIndex = value.indexOf('@');
-        //     const substringAfterAt = value.substring(atSymbolIndex); // Get the substring after '@'
-
-        //     return dotCount === 1 && substringAfterAt.indexOf('.') !== -1; // Ensure one dot after '@'
-        // })
-        .required('Email is required.'),
-    // applicant_email: Yup.string()
-    // .email('Invalid email address') // Standard email format validation
-    // .required('Email is required') // Email field must be filled
-    // .test('single-dot-after-at', 'There must be exactly one dot after "@"', (value) => {
-    //   if (value) {
-    //     // Split the string at '@'
-    //     const parts = value.split('@');
-
-    //     if (parts.length !== 2) return false; // Ensure exactly one '@'
-
-    //     // Check if there's exactly one dot after the '@'
-    //     const domain = parts[1]; // Get the domain part (after '@')
-    //     const dotCount = domain.split('.').length - 1; // Count the dots in the domain
-
-    //     return dotCount === 1; // Return true if exactly one dot after '@'
-    //   }
-    //   return false;
-    // }),
+    ).required('Email is required.'),
     applicant_phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^[6-9][0-9]{9}$/, "Phone number is not valid"),
@@ -278,31 +251,6 @@ const SignUpJobSeeker = () => {
                                 {emailOtpSent && (
                                     <Text style={styles.otpSentText}>OTP Sent to your email</Text>
                                 )}
-
-                                {/* <Button
-                                    mode="outlined"
-                                    onPress={() => handleSendPhoneOtp(values.applicant_phone)}
-                                    style={styles.otpButton}
-                                    disabled={phoneOtpSent || otpLoading}
-                                >
-                                    <Text style={styles.otpButtonText}>
-                                        {phoneOtpSent ? "Resend Phone OTP" : "Send Phone OTP"}
-                                    </Text>
-                                </Button> */}
-
-                                {/* {phoneOtpSent && (
-                                    <TextInput
-                                        label="Enter Phone OTP"
-                                        style={styles.input}
-                                        value={phoneOtp}
-                                        onChangeText={setPhoneOtp}
-                                        keyboardType="number-pad"
-                                    />
-                                )}
-
-                                {phoneOtpSent && (
-                                    <Text style={styles.otpSentText}>OTP Sent to your phone</Text>
-                                )} */}
 
                                 {/* Submit Button */}
                                 <Button mode="contained" style={styles.submitButton} onPress={handleSubmit}>

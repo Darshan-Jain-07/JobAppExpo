@@ -186,6 +186,9 @@ export const logIn = async (table, email, password) => {
             }
         });
         console.log('Response:', response.data);
+        if(response?.data?.length === 0){
+            return response.data
+        }
         try {
             const colName = `${table}_id`;
             console.log('colName:', response?.data?.[0]?.[colName]);
