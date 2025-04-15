@@ -268,7 +268,7 @@ const HomePage = () => {
                 onPress={() => applyJobForApplicant(item.job_post_id)}
               >
                 <CText fontWeight={600} sx={styles.applyNowText}>
-                  Apply Now
+                  {!Boolean(resumeData.length) ? "Add Resume" : "Apply Now"}
                 </CText>
               </TouchableOpacity>
             )}

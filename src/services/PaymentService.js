@@ -13,7 +13,6 @@ export const addPayment = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -22,16 +21,13 @@ export const addPayment = async (data) => {
 
 export const getPayment = async (userId) => {
     const url = API_BASE_URL;
-    // console.log(companyId)
     let endPoint = `/data/payment_history?${userId ? `applicant_id=${userId}` : ``}`;
-    console.log(endPoint)
     try {
         const response = await axios.get(url + endPoint, {
             headers: {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -40,7 +36,6 @@ export const getPayment = async (userId) => {
 
 export const getRazorpayPaymentDetails = async (razorpay_id) => {
     const url = API_BASE_URL;
-    // console.log(companyId)
     let endPoint = `/payment/${razorpay_id}`;
     try {
         const response = await axios.get(url + endPoint, {
@@ -48,7 +43,6 @@ export const getRazorpayPaymentDetails = async (razorpay_id) => {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -64,8 +58,6 @@ export const updateJobPost = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        // console.log(data.id)
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);

@@ -53,7 +53,7 @@ const CompaniesList = () => {
     return (
       <TouchableOpacity 
         style={styles.companyCard} 
-        onPress={() => navigate.navigate('Home', { screen: 'Company Profile', params: { companyId: item.id } })}
+        onPress={() => navigate.navigate('Home', { screen: 'Company Profile', params: { companyId: item.company_id } })}
       >
         <View style={styles.companyContent}>
           {/* Left side (Company details) */}

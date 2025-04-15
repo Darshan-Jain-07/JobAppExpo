@@ -12,7 +12,6 @@ export const sendOtp = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -28,7 +27,6 @@ export const sendEmail = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -37,7 +35,6 @@ export const sendEmail = async (data) => {
 
 export const verifyOtp = async (data) => {
     const url = API_BASE_URL;
-    console.log(data)
     try {
         const response = await axios.post(url + "/verify-otp-email", data, {
             headers: {
@@ -45,7 +42,6 @@ export const verifyOtp = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);

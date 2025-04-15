@@ -13,7 +13,6 @@ export const addResume = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -23,14 +22,12 @@ export const addResume = async (data) => {
 export const getResume = async (applicant_id) => {
     const url = API_BASE_URL;
     let endPoint = applicant_id ? `/data/resume?applicant_id=${applicant_id}` : `/data/resume`;
-    console.log(endPoint)
     try {
         const response = await axios.get(url + endPoint, {
             headers: {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -46,8 +43,6 @@ export const updateResume = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        // console.log(data.id)
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);

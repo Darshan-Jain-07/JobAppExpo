@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import FoundationIcon from "react-native-vector-icons/Foundation";
 import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
 import FontistoIcon from "react-native-vector-icons/Fontisto";
+import Ionicons from "react-native-vector-icons/Ionicons";
 // import Home from './Home';
 // import MyRecruiter from './MyRecruiter';
 // import MyJobApplication from './MyJobApplication';
@@ -163,6 +164,7 @@ export default function BottomNavigationRecruiter() {
         tabBarStyle: styles.tabBarStyle,
         tabBarItemStyle: styles.tabBarItemStyle,
         // tabBarActiveBackgroundColor: "#ffffff",
+        tabBarShowLabel: false,
         tabBarActiveTintColor: "#fff",
         // tabBarInactiveTintColor: "#ffffff",
       })}
@@ -172,7 +174,7 @@ export default function BottomNavigationRecruiter() {
         component={HomeStack}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontistoIcon name="home" color={color} size={size} />
+            <Ionicons name="home" color={color} size={size} />
           ),
           headerShown: false,
         }}
@@ -191,7 +193,7 @@ export default function BottomNavigationRecruiter() {
         // component={Recruiter}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontistoIcon name="person" color={color} size={size} />
+            <Ionicons name="briefcase-outline" color={color} size={size} />
           ),
           headerShown: false,
         }}
@@ -210,7 +212,7 @@ export default function BottomNavigationRecruiter() {
         component={ApplicationsStack} // Use the stack navigator here
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FoundationIcon name="page-edit" color={color} size={size} />
+            <Ionicons name="document-text-outline" color={color} size={size} />
           ),
           headerShown: false,
         }}

@@ -98,7 +98,7 @@ function HomeStack() {
         component={CompanyProfilePage}
         options={{
           headerShown: true,
-          header: () => <CustomHeader title="Profile" />,
+          header: () => <CustomHeader title="Profile" profileIcon={false} />,
         }}
       />
       <Stack.Screen
