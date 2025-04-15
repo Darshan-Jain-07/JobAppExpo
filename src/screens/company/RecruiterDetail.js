@@ -19,7 +19,6 @@ const { width } = Dimensions.get('window');
 const RecruiterDetailPage = ({ route }) => {
     const navigation = useNavigation();
     const { recruiterId } = route.params;
-    console.log(recruiterId)
     const [recruiter, setRecruiter] = useState({})
     const [recruiterStats, setRecruiterStats] = useState([])
     const [recruiterJobPosts, setRecruiterJobPosts] = useState([])
@@ -34,11 +33,9 @@ const RecruiterDetailPage = ({ route }) => {
             let recruiterJobPostData = await getJobPost(null, recruiterId);
             setRecruiterJobPosts(recruiterJobPostData)
             
-            console.log(jobApplicantCount, "jobApplicantCount");
             const jobPostData = await getJobPost(null, recruiterId, null);
             // setJobApplicationsDataState({ dataLength: jobPostData?.length, jobPostData });
             
-            console.log(jobApplicantCount, "jobApplicantCount");
             let jobApplicantCount = [];
             const applicantsList = await Promise.all(
                 jobPostData?.map(async (job) => {
@@ -49,7 +46,6 @@ const RecruiterDetailPage = ({ route }) => {
                 })
             );
             setJobApplicationCount(jobApplicantCount);
-            console.log(applicantsList?.flat()?.length);
             setRecruiterStats([
                 {
                     label: "Job Post",
@@ -94,12 +90,7 @@ const RecruiterDetailPage = ({ route }) => {
     }
 
     const renderItem = ({ item }) => {
-        console.log(item.type); // Debugging to see the order being rendered
-        console.log("item.type"); // Debugging to see the order being rendered
-
         if (item.type === 'recruiter') {
-            console.log(recruiter.recruiter_image)
-            console.log("recruiter.recruiter_image")
             // Render recruiter details
             return (
                 <View style={styles.headerContainer}>
@@ -134,7 +125,6 @@ const RecruiterDetailPage = ({ route }) => {
                         keyExtractor={job => job.job_post_id}
                         renderItem={({ item }) => (
                             <>
-                                {console.log(jobApplicationCount?.filter((d)=>d.job_post_id === item?.job_post_id), "sdfskkjbfsjf")}
                                 {recruiterJobPosts.length > 0 && <CJobPostCard onPress={() => { handleViewJobDetail(item.job_post_id) }} date={dayjs(item?.created_at).format("DD-MM-YYYY")} hires={jobApplicationCount?.filter((d)=>d.job_post_id === item?.job_post_id)?.[0]?.applicant_count} description={truncateDecs(item?.job_post_description)} location={item?.job_post_location} title={item?.job_post_name} />}
                             </>
                         )}

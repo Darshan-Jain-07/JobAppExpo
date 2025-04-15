@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FoundationIcon from 'react-native-vector-icons/Foundation';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FontistoIcon from 'react-native-vector-icons/Fontisto';
 // import Home from './Home';
@@ -129,7 +130,7 @@ function HomeStack() {
                 component={ProfilePage}
                 options={{
                     headerShown: true,
-                    header: () => <CustomHeader title="Profile" />,
+                    header: () => <CustomHeader title="Profile" profileIcon={false} />,
                 }}
             />
             <Stack.Screen
@@ -232,7 +233,7 @@ export default function BottomNavigationJobSeeker() {
                     component={RecruitersStack}
                     options={{
                         tabBarIcon: ({ color, size }) => (
-                            <FontistoIcon name="person" color={color} size={size} />
+                            <Ionicons name="briefcase-outline" color={color} size={size} />
                         ),
                         headerShown: false
                     }}
@@ -250,7 +251,7 @@ export default function BottomNavigationJobSeeker() {
                     component={ApplicationsStack}
                     options={{
                         tabBarIcon: ({ color, size }) => (
-                            <FoundationIcon name="page-edit" color={color} size={size} />
+                            <Ionicons name="business-outline" color={color} size={size} />
                         ),
                         headerShown: false
                     }}

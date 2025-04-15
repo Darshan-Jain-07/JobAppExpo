@@ -7,14 +7,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const getCompany = async (id, limit) => {
     const url = API_BASE_URL;
     let endPoint = `/data/company?${id ? `company_id=${id}&` : ``}${limit ? `limit=${limit}` : ``}`;
-    console.log(endPoint)
     try {
         const response = await axios.get(url + endPoint, {
             headers: {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);

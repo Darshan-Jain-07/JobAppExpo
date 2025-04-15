@@ -30,14 +30,11 @@ const ProfilePage = ({ navigation }) => {
       try {
         const data = await getUserData();
         setUserDate(data);
-        console.log(data);
 
         let currentSub = await getSubscriptionMapping(data?.company_id, "0")
-        console.log(currentSub.length, "------------->")
 
         if (currentSub?.length) {
           let curSubData = await getSubscription(null, null, currentSub?.[0]?.subscription_id)
-          console.log(curSubData)
           setCurrentSubscription(currentSub?.[0])
           setCurrentSubscriptionData(curSubData?.[0])
         } else {

@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const applyJobPost = async (data, resumeData, jobPostData) => {
     const url = API_BASE_URL;
-    // console.log(API_BASE_URL_ATS)
     try {
         // const analyzeResponse = await axios.post(API_BASE_URL_ATS + "/analyze", {
         //     resume: resumeData,
@@ -37,7 +36,6 @@ export const applyJobPost = async (data, resumeData, jobPostData) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         if (error.response) {
@@ -57,16 +55,13 @@ export const applyJobPost = async (data, resumeData, jobPostData) => {
 
 export const appliedJob = async (applicantId, jobpostId) => {
     const url = API_BASE_URL;
-    // console.log(companyId)
     let endPoint = `/data/application?${applicantId ? `applicant_id=${applicantId}&` : ``}${jobpostId ? `job_post_id=${jobpostId}` : ``}`;
-    console.log(endPoint)
     try {
         const response = await axios.get(url + endPoint, {
             headers: {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -75,16 +70,13 @@ export const appliedJob = async (applicantId, jobpostId) => {
 
 export const getApplication = async (application_id, job_post_id, limit) => {
     const url = API_BASE_URL;
-    // console.log(companyId)
     let endPoint = `/data/application?${application_id ? `application_id=${application_id}&` : ``}${job_post_id ? `job_post_id=${job_post_id}&` : ``}${limit ? `limit=${limit}&` : ``}`;
-    console.log(endPoint)
     try {
         const response = await axios.get(url + endPoint, {
             headers: {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -100,8 +92,6 @@ export const updateApplication = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        // console.log(data.id)
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);

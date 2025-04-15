@@ -6,7 +6,7 @@ import { Text } from "react-native-paper";
 import CText from "../../components/CText";
 import { StatusBar } from "expo-status-bar";
 
-const CustomHeader = ({ title, chat }) => {
+const CustomHeader = ({ title, chat, profileIcon=true }) => {
   const navigation = useNavigation();
 
   return (
@@ -43,11 +43,11 @@ const CustomHeader = ({ title, chat }) => {
         >
           {title}
         </CText>
-        <TouchableOpacity
+        {profileIcon ? <TouchableOpacity
           onPress={() => navigation.navigate("Home", { screen: "Profile" })}
         >
-          <Icon name="person-circle" size={30} color="#fff" />
-        </TouchableOpacity>
+          <Icon name="person-circle" size={30} color="white" />
+        </TouchableOpacity> : <View style={{ width: 30, height: 30 }} />}
       </View>
     </>
   );

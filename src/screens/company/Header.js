@@ -5,7 +5,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { Text } from "react-native-paper";
 import CText from "../../components/CText";
 
-const CustomHeader = ({ title }) => {
+const CustomHeader = ({ title, profileIcon=true }) => {
   const navigation = useNavigation();
 
   return (
@@ -34,11 +34,11 @@ const CustomHeader = ({ title }) => {
       >
         {title}
       </CText>
-      <TouchableOpacity
+      {profileIcon ? <TouchableOpacity
         onPress={() => navigation.navigate("Home", { screen: "Profile" })}
       >
         <Icon name="person-circle" size={30} color="white" />
-      </TouchableOpacity>
+      </TouchableOpacity> : <View style={{ width: 30, height: 30 }} />}
     </View>
   );
 };

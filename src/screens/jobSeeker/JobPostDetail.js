@@ -78,7 +78,8 @@ const JobDescription = ({ route }) => {
       setApplicantData(data);
 
       const resData = await getResume(data?.applicant_id);
-      setResumeData(resData);
+      console.log(resData)
+      resData?.length ? setResumeData(resData?.[0]) : setResumeData(null);
 
       const job_post_details = await getJobPost(null, null, null, applicationId);
       setJobDetails(job_post_details?.[0])
@@ -225,9 +226,9 @@ const JobDescription = ({ route }) => {
           ) : isLoading ? (
             <ActivityIndicator animating={true} color="#fff" size="small" />
           ) : (
-            <TouchableOpacity style={[styles.applyNowButton, resumeData?.data && styles.disabledButton]} disabled={resumeData?.applicant_id ? true : false} onPress={() => applyJobForApplicant(jobDetails.job_post_id)}>
+            <TouchableOpacity style={[styles.applyNowButton, !resumeData?.resume_id && styles.disabledButton]} disabled={!resumeData?.resume_id ? true : false} onPress={() => applyJobForApplicant(jobDetails.job_post_id)}>
               <CText fontWeight={600} sx={styles.applyNowText}>
-                Apply Now
+                {!resumeData?.resume_id ? "Please add you resume details" : "Apply Now"}
               </CText>
             </TouchableOpacity>
           )}

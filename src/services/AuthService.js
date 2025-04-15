@@ -31,7 +31,6 @@ export const createCompany = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response.data);
         if (response.data?.insertedId) {
             logInIfSignUp("company", "company_id", response?.data?.insertedId)
         }
@@ -42,8 +41,6 @@ export const createCompany = async (data) => {
 };
 
 export const updateCompany = async (data) => {
-    console.log(data)
-    console.log(data.id)
     const url = API_BASE_URL;
     try {
         const response = await axios.put(url + "/data/company", data, {
@@ -52,8 +49,6 @@ export const updateCompany = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        // console.log(data.id)
-        console.log('Response:', response.data);
         if (response.data?.message === "Data updated successfully") {
             logInIfSignUp("company", "company_id", data?.id)
         }
@@ -65,8 +60,6 @@ export const updateCompany = async (data) => {
 
 export const createApplicant = async (data) => {
     const url = API_BASE_URL;
-    console.log(data)
-    console.log("data")
     try {
         const response = await axios.post(url + "/data/applicant", data, {
             headers: {
@@ -74,8 +67,6 @@ export const createApplicant = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log("data")
-        console.log('Response:', response.data);
         if (response.data?.insertedId) {
             logInIfSignUp("applicant", "applicant_id", response?.data?.insertedId)
         }
@@ -86,8 +77,6 @@ export const createApplicant = async (data) => {
 };
 
 export const updateApplicant = async (data) => {
-    console.log(data)
-    console.log(data.id)
     const url = API_BASE_URL;
     try {
         const response = await axios.put(url + "/data/applicant", data, {
@@ -96,8 +85,6 @@ export const updateApplicant = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        // console.log(data.id)
-        console.log('Response:', response.data);
         if (response.data?.message === "Data updated successfully") {
             logInIfSignUp("applicant", "applicant_id", data?.id)
         }
@@ -108,8 +95,6 @@ export const updateApplicant = async (data) => {
 };
 
 export const updateRecruiter = async (data) => {
-    console.log(data)
-    console.log(data.id)
     const url = API_BASE_URL;
     try {
         const response = await axios.put(url + "/data/recruiter", data, {
@@ -118,8 +103,6 @@ export const updateRecruiter = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        // console.log(data.id)
-        console.log('Response:', response.data);
         if (response.data?.message === "Data updated successfully") {
             logInIfSignUp("recruiter", "recruiter_id", data?.id)
         }
@@ -131,19 +114,13 @@ export const updateRecruiter = async (data) => {
 
 export const createRecruiter = async (data) => {
     const url = API_BASE_URL;
-    console.log(data, "In crete Recruiter")
     // if (data?.company_email_id !== "") {
     //     let isCorrectUser = await authenticateRecruiter(data?.company_email_id, data?.company_password)
-    //     console.log(isCorrectUser, "authenticateRecruiter")
     //     if (!isCorrectUser.length) {
     //         return "Company email id and/or Company Password is wrong"
     //     }
     // }
-    console.log("data")
     delete data["company_password"];
-    console.log("data")
-    console.log(data)
-    console.log(url)
     try {
         const response = await axios.post(url + "/data/recruiter", data, {
             headers: {
@@ -151,7 +128,6 @@ export const createRecruiter = async (data) => {
                 // TODO: For now I am not adding the JWT Token due to time contraint, but will be doing later
             }
         });
-        console.log('Response:', response);
         if (response?.data?.insertedId) {
             logInIfSignUp("recruiter", "recruiter_id", response?.data?.insertedId)
         }
@@ -178,27 +154,23 @@ export const createRecruiter = async (data) => {
 
 export const logIn = async (table, email, password) => {
     const url = API_BASE_URL;
-    console.log(url, table, email, password);
     try {
         const response = await axios.get(url + `/data/${table}?${table}_email=${email}&${table}_password=${password}`, {
             headers: {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         if(response?.data?.length === 0){
             return response.data
         }
         try {
             const colName = `${table}_id`;
-            console.log('colName:', response?.data?.[0]?.[colName]);
             const userResponse = await axios.get(url + `/data/users?user_id=${response?.data?.[0]?.[colName]}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
             });
             response.data[0]["user_id"] = userResponse?.data?.[0]?.id;
-            // console.log('Response:', response.data);
             return response.data
         } catch (error) {
             console.error('Error:', error);
@@ -218,7 +190,6 @@ export const logInIfSignUp = async (table, col_name, id) => {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         await AsyncStorage.setItem('user', JSON.stringify({ ...response.data?.[0], role: table }));
         return response.data
     } catch (error) {
@@ -236,7 +207,6 @@ export const getUserInfo = async (id) => {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);
@@ -245,15 +215,12 @@ export const getUserInfo = async (id) => {
 
 export const authenticateRecruiter = async (email, password) => {
     const url = API_BASE_URL;
-    console.log(email)
-    console.log(password)
     try {
         const response = await axios.get(url + `/data/company?company_email=${email}&company_recruiter_password=${password}`, {
             headers: {
                 'Content-Type': 'application/json',
             }
         });
-        console.log('Response:', response.data);
         return response.data
     } catch (error) {
         console.error('Error:', error);

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { API_BASE_URL } from '@env'; // Ensure you have the correct path to your .env file
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
@@ -9,19 +10,56 @@ const ChatScreen = () => {
   const flatListRef = useRef(null);
 
   const apiKey = 'AIzaSyC8jTwFY_6kXngGiFuOB0ft6FlAIqAZvAo';
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+  const apiUrl = `${API_BASE_URL}/chatbot`; // Replace with your actual API URL
+
+  const renderFormattedText = (text) => {
+    const lines = text.split('\n');
+    const formatted = [];
+
+    lines.forEach((line, index) => {
+      if (line.trim() === '') {
+        formatted.push(<Text key={`empty-${index}`}>{'\n'}</Text>);
+      } else if (line.trim().startsWith('*')) {
+        const bulletText = line.replace(/^\*\s*/, '');
+        formatted.push(
+          <View key={`bullet-${index}`} style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <Text style={{ color: '#fff' }}>• </Text>
+            {renderBoldChunks(bulletText, index)}
+          </View>
+        );
+      } else {
+        formatted.push(
+          <Text key={`line-${index}`} style={{ color: '#fff', marginBottom: 2 }}>
+            {renderBoldChunks(line, index)}
+          </Text>
+        );
+      }
+    });
+
+    return formatted;
+  };
+
+  const renderBoldChunks = (text, parentKey) => {
+    const chunks = text.split(/(\*\*[^*]+\*\*)/g); // e.g., splits into normal, **bold**, normal
+    return chunks.map((chunk, idx) => {
+      if (chunk.startsWith('**') && chunk.endsWith('**')) {
+        return (
+          <Text key={`${parentKey}-${idx}`} style={{ fontWeight: 'bold', color: '#fff' }}>
+            {chunk.slice(2, -2)}
+          </Text>
+        );
+      }
+      return (
+        <Text key={`${parentKey}-${idx}`} style={{ color: '#fff' }}>
+          {chunk}
+        </Text>
+      );
+    });
+  };
 
   const generateContent = async (query) => {
     const requestData = {
-      contents: [
-        {
-          parts: [
-            {
-              text: query
-            }
-          ]
-        }
-      ]
+      prompt: query
     };
 
     try {
@@ -34,7 +72,8 @@ const ChatScreen = () => {
       });
 
       const data = await response.json();
-      const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      console.log('API Response:', data); // Log the API response for debugging
+      const responseText = data?.response;
       return responseText;
     } catch (error) {
       console.error('Error fetching the API:', error);
@@ -66,7 +105,8 @@ const ChatScreen = () => {
       {item.sender === 'bot' && <Image source={require('../../assets/images/bot-avatar.png')} style={styles.avatar} />}
       <View style={[styles.messageContainer, item.sender === 'user' ? styles.userMessageContainer : styles.botMessageContainer]}>
         <View style={styles.messageContent}>
-          <Text style={styles.messageText}>{item.text}</Text>
+        <View style={styles.messageText}>{item.sender === 'bot' ? renderFormattedText(item.text) : <Text style={{ color: '#fff' }}>{item.text}</Text>}</View>
+
           <Text style={styles.timestamp}>{item.timestamp.toLocaleTimeString()}</Text>
         </View>
       </View>

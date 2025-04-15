@@ -221,21 +221,18 @@ const HomePage = () => {
     { title: "🤝 Partnership with XYZ Corp announced", date: "Jan 2024" },
   ];
   useEffect(() => {
-    // Define an async function inside the useEffect
     const fetchData = async () => {
       try {
         const data = await getUserData();
         setCompanyData(data);
-        console.log(data);
 
         const recruiterData = await getRecruiter(data?.company_email, null);
-        console.log(recruiterData);
-        setRecruitersDataState({dataLength: recruiterData?.length, recruiterData});
+        setRecruitersDataState({ dataLength: recruiterData?.length, recruiterData });
 
         const recruiterJobPostData = await Promise.all(
           recruiterData?.map(async (rec) => {
             const jobPosts = await getJobPost(null, rec?.recruiter_id, null);
-  
+
             // Fetch applicants for each job post
             const hiredCount = await Promise.all(
               jobPosts.map(async (job) => {
@@ -243,19 +240,19 @@ const HomePage = () => {
                 return applicants.filter((a) => a?.application_status === "accepted").length;
               })
             );
-  
+
             // Sum up hired applicants for this recruiter
             const totalHired = hiredCount.reduce((acc, count) => acc + count, 0);
-  
+
             return { recruiter_id: rec?.recruiter_id, hired_count: totalHired };
           })
         );
 
         setRecruiterHired(recruiterJobPostData)
-        
+
         const jobPostData = await getJobPost(data?.company_email, undefined, null);
-        setJobApplicationsDataState({dataLength: jobPostData?.length, jobPostData});
-        
+        setJobApplicationsDataState({ dataLength: jobPostData?.length, jobPostData });
+
         let jobApplicantCount = [];
         const applicantsList = await Promise.all(
           jobPostData?.map(async (job) => {
@@ -265,24 +262,26 @@ const HomePage = () => {
             return applicantsForEachJob;
           })
         );
-        console.log(jobApplicantCount, "jobApplicantCount");
         setJobApplicationCount(jobApplicantCount);
-      
+
         // Flatten the array and update state
         setApplicants(applicantsList.flat());
-        setHired(applicantsList.flat().filter(a=>a?.application_status === "accepted")?.length);
+        setHired(applicantsList.flat().filter(a => a?.application_status === "accepted")?.length);
 
         const currentSub = await getSubscriptionMapping(data?.company_id, "0");
-        console.log(currentSub, "currentSub");
-        if(currentSub.length){
+        if (currentSub.length) {
           const subDet = await getSubscription(null, null, currentSub[0]?.subscription_id);
-          setCurrentSubscription({...currentSub?.[0], ...subDet?.[0]});
-        } else{
+          console.log("Subscription Details: ", currentSub);
+          if (currentSub?.[0]?.subscription_id === "10") {
+            setCurrentSubscription({ subscription_name: "Custom Plan" });
+          } else {
+            setCurrentSubscription({ ...currentSub?.[0], ...subDet?.[0] });
+          }
+        } else {
           setCurrentSubscription(null)
         }
 
         const blogData = await getBlog(null, null, 3);
-        console.log(blogData)
         setBlogsDataState(blogData);
 
         setIsDataLoaded(true);
@@ -296,7 +295,6 @@ const HomePage = () => {
     fetchData();
   }, [isFocus]);
 
-  console.log(recruitersDataState);
   if (!isDataLoaded) {
     return (
       <View
@@ -324,7 +322,7 @@ const HomePage = () => {
         <Icon name="map-marker" size={16} color="#5B5B5B" />{" "}
         {item.job_post_location}
       </CText>
-      <CText>Applicants: {jobApplicationCount?.filter((d)=>d?.job_post_id === item?.job_post_id)?.[0]?.applicant_count || 0}</CText>
+      <CText>Applicants: {jobApplicationCount?.filter((d) => d?.job_post_id === item?.job_post_id)?.[0]?.applicant_count || 0}</CText>
       <TouchableOpacity
         onPress={() =>
           navigate.navigate("Applications", {
@@ -382,13 +380,12 @@ const HomePage = () => {
   // Render function for Recruiter Card
   const renderRecruiterItem = ({ item }) => (
     <View style={styles.recruiterCard}>
-      {console.log(item)}
       <Icon name="account" size={24} color="#5B5B5B" />
       <CText fontWeight={600} fontSize={18}>
         {item.recruiter_name}
       </CText>
       {/* <CText>Applications Created: {item.jobApplications}</CText> */}
-      <CText>Hired: {recruiterHired?.filter(recHi=>recHi?.recruiter_id === item?.recruiter_id)?.[0]?.hired_count}</CText>
+      <CText>Hired: {recruiterHired?.filter(recHi => recHi?.recruiter_id === item?.recruiter_id)?.[0]?.hired_count}</CText>
       <TouchableOpacity
         onPress={() =>
           navigate.navigate("Recruiters", {
@@ -403,106 +400,86 @@ const HomePage = () => {
   );
 
   return (
-    <ScrollView style={styles.container}>
-      {" "}
-      {/* Overlay to darken background */}
-      <View style={styles.subscriptionSection}>
-        <CText sx={styles.subscriptionTitle} fontWeight={600}>
-          Current Subscription: {currentSubscription?.subscription_name || "Free Plan"} 
-        </CText>
-        <Icon name="star" size={30} color="#FFD700" />
-      </View>
-      <View style={styles.gridContainer}>
-        <CStatisticsCard label={"Recruiters"} value={recruitersDataState?.dataLength || 0} iconName={"home"} />
-        <CStatisticsCard label={"Job Posts"} value={jobApplicationsDataState?.dataLength || 0} iconName={"home"} />
-        <CStatisticsCard label={"Application"} value={applicants?.length || 0} iconName={"home"} />
-        <CStatisticsCard label={"Hired"} value={hired} iconName={"home"} />
-      </View>
-      {/* Recruiters Section */}
-      <View style={styles.sectionHeader}>
-        <CText fontWeight={600} fontSize={22}>
-          Recruiters
-        </CText>
-        <TouchableOpacity
-          onPress={() =>
-            navigate.navigate("Recruiters", { screen: "MyRecruiter" })
-          }
-        >
-          <CText sx={styles.moreButton}>More</CText>
+    <FlatList
+      data={notifications} // Notification list shown as main FlatList data
+      keyExtractor={(item) => item.id}
+      style={styles.container}
+      renderItem={({ item }) => (
+        <TouchableOpacity style={styles.notificationCard}>
+          {getIcon(item.type)}
+          <View style={styles.textContainer}>
+            <Text style={styles.message}>{item.message}</Text>
+            <Text style={styles.time}>{item.time}</Text>
+          </View>
         </TouchableOpacity>
-      </View>
-      {recruitersDataState?.recruiterData?.length === 0 ? (
-        <View style={styles.noResultsContainer}>
-          <CText style={styles.noResultsText}>No Recruiters Added</CText>
-        </View>
-      ) : (
-      <FlatList
-        data={recruitersDataState?.recruiterData?.slice(0, 3)}
-        renderItem={renderRecruiterItem}
-        keyExtractor={(item) => item?.recruiter_id}
-        horizontal
-        snapToInterval={width * 0.75}
-        decelerationRate="fast"
-        snapToAlignment="center"
-        pagingEnabled
-      />)}
-      {/* notification */}
-      <View style={styles.sectionHeader}>
-        <CText fontWeight={600} fontSize={22}>
-          Notifications
-        </CText>
-      </View>
-      <FlatList
-        data={notifications}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.notificationCard}>
-            {getIcon(item.type)}
-            <View style={styles.textContainer}>
-              <Text style={styles.message}>{item.message}</Text>
-              <Text style={styles.time}>{item.time}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
-      {/* Job Applications Section */}
-      <View style={styles.sectionHeader}>
-        <CText fontWeight={600} fontSize={22}>
-          Job Posts
-        </CText>
-        <TouchableOpacity
-          onPress={() =>
-            navigate.navigate("Applications", { screen: "MyJobApplication" })
-          }
-        >
-          <CText sx={styles.moreButton}>More</CText>
-        </TouchableOpacity>
-      </View>
-      {jobApplicationsDataState?.jobPostData?.length === 0 ? (
-        <View style={styles.noResultsContainer}>
-          <CText style={styles.noResultsText}>No Job Post Present</CText>
-        </View>
-      ) : (
-        <FlatList
-          data={jobApplicationsDataState?.jobPostData?.slice(0, 3)}
-          renderItem={renderJobApplicationItem}
-          keyExtractor={(item) => item?.job_post_id}
-          horizontal
-          snapToInterval={width * 0.75}
-          decelerationRate="fast"
-          snapToAlignment="center"
-          pagingEnabled
-        />
       )}
-      <View>
-        {/* Recruitment Rate */}
-        {/* <View style={styles.section}>
+      ListHeaderComponent={
+        <>
+          {/* Subscription Section */}
+          <View style={styles.subscriptionSection}>
+            <CText sx={styles.subscriptionTitle} fontWeight={600}>
+              Current Subscription: {currentSubscription?.subscription_name || "Free Plan"}
+            </CText>
+            <Icon name="star" size={30} color="#FFD700" />
+          </View>
+
+          {/* Stats Cards */}
+          <View style={styles.gridContainer}>
+            <CStatisticsCard label="Recruiters" value={recruitersDataState?.dataLength || 0} iconName="home" />
+            <CStatisticsCard label="Job Posts" value={jobApplicationsDataState?.dataLength || 0} iconName="home" />
+            <CStatisticsCard label="Application" value={applicants?.length || 0} iconName="home" />
+            <CStatisticsCard label="Hired" value={hired} iconName="home" />
+          </View>
+
+          {/* Recruiters */}
+          <View style={styles.sectionHeader}>
+            <CText fontWeight={600} fontSize={22}>Recruiters</CText>
+            <TouchableOpacity onPress={() => navigate.navigate("Recruiters", { screen: "MyRecruiter" })}>
+              <CText sx={styles.moreButton}>More</CText>
+            </TouchableOpacity>
+          </View>
+
+          {recruitersDataState?.recruiterData?.length === 0 ? (
+            <View style={styles.noResultsContainer}>
+              <CText style={styles.noResultsText}>No Recruiters Added</CText>
+            </View>
+          ) : (
+            <FlatList
+              data={recruitersDataState?.recruiterData?.slice(0, 3)}
+              renderItem={renderRecruiterItem}
+              keyExtractor={(item) => item?.recruiter_id}
+              horizontal
+              snapToInterval={width * 0.75}
+              decelerationRate="fast"
+              snapToAlignment="center"
+              pagingEnabled
+            />
+          )}
+
+          {/* Notifications Header */}
+          <View style={styles.sectionHeader}>
+            <CText fontWeight={600} fontSize={22}>Notifications</CText>
+          </View>
+        </>
+      }
+      ListFooterComponent={
+        <>
+          {/* Job Posts */}
+          <View style={styles.sectionHeader}>
+            <CText fontWeight={600} fontSize={22}>Job Posts</CText>
+            <TouchableOpacity onPress={() => navigate.navigate("Applications", { screen: "MyJobApplication" })}>
+              <CText sx={styles.moreButton}>More</CText>
+            </TouchableOpacity>
+          </View>
+          <View>
+            {/* Recruitment Rate */}
+            {/* <View style={styles.section}>
           <MaterialIcons name="group" size={24} color="#007bff" />
           <Text style={styles.sectionTitle}>Recruitment Rate</Text>
         </View>
         <Text style={styles.text}>{recruitmentRate}</Text> */}
-        {/* Milestones */}
-        {/* <View style={styles.section}>
+            {/* Milestones */}
+            {/* <View style={styles.section}>
           <FontAwesome name="flag-checkered" size={24} color="#28a745" />
           <Text style={styles.sectionTitle}>Milestones</Text>
         </View>
@@ -511,7 +488,7 @@ const HomePage = () => {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => <Text style={styles.listItem}>{item}</Text>}
         /> */}
-        {/* Awards
+            {/* Awards
         <View style={styles.section}>
           <FontAwesome name="trophy" size={24} color="#ff9800" />
           <Text style={styles.sectionTitle}>Awards</Text>
@@ -525,8 +502,8 @@ const HomePage = () => {
             </Text>
           )}
         /> */}
-        {/* News */}
-        {/* <View style={styles.section}>
+            {/* News */}
+            {/* <View style={styles.section}>
           <MaterialIcons name="article" size={24} color="#e91e63" />
           <Text style={styles.sectionTitle}>Recent News</Text>
         </View>
@@ -539,12 +516,12 @@ const HomePage = () => {
             </Text>
           )}
         /> */}
-      </View>
-      {/* <View style={styles.sectionHeader}>
+          </View>
+          {/* <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Know our Co-Founders</Text>
       </View> */}
-      {/* First Row (Two Co-Founders) */}
-      {/* <View style={styles.row}>
+          {/* First Row (Two Co-Founders) */}
+          {/* <View style={styles.row}>
         {coFounders.slice(0, 2).map((founder, index) => (
           <View key={index} style={styles.card}>
             <Image source={{ uri: founder.image }} style={styles.image} />
@@ -553,16 +530,16 @@ const HomePage = () => {
           </View>
         ))}
       </View> */}
-      {/* Second Row (One Co-Founder) */}
-      {/* <View style={styles.centeredRow}>
+          {/* Second Row (One Co-Founder) */}
+          {/* <View style={styles.centeredRow}>
         <View style={styles.card}>
           <Image source={{ uri: coFounders[2].image }} style={styles.image} />
           <Text style={styles.name}>{coFounders[2].name}</Text>
           <Text style={styles.title}>{coFounders[2].title}</Text>
         </View>
       </View> */}
-      {/* our Partners */}
-      {/* <View style={styles.sectionHeader}>
+          {/* our Partners */}
+          {/* <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Our Partners</Text>
       </View>
       <ScrollView
@@ -578,44 +555,64 @@ const HomePage = () => {
           />
         ))}
       </ScrollView> */}
-      <View style={styles.sectionHeader}>
-        <CText fontWeight={600} fontSize={22}>
-          Features
-        </CText>
-      </View>
-      <FlatList
-        data={features}
-        keyExtractor={(item) => item.id}
-        numColumns={3} // Three items in a row
-        renderItem={({ item }) => (
-          <View style={styles.featureCard}>
-            <Icon name={item.icon} size={30} color="#000" />
-            <Text style={styles.title}>{item.title}</Text>
-            {/* <Text style={styles.description}>{item.description}</Text> */}
+          {jobApplicationsDataState?.jobPostData?.length === 0 ? (
+            <View style={styles.noResultsContainer}>
+              <CText style={styles.noResultsText}>No Job Post Present</CText>
+            </View>
+          ) : (
+            <FlatList
+              data={jobApplicationsDataState?.jobPostData?.slice(0, 3)}
+              renderItem={renderJobApplicationItem}
+              keyExtractor={(item) => item?.job_post_id}
+              horizontal
+              snapToInterval={width * 0.75}
+              decelerationRate="fast"
+              snapToAlignment="center"
+              pagingEnabled
+            />
+          )}
+
+          {/* Features Section */}
+          <View style={styles.sectionHeader}>
+            <CText fontWeight={600} fontSize={22}>Features</CText>
           </View>
-        )}
-      />
-      {/* Blogs Section */}
-      <View style={styles.sectionHeader}>
-        <CText fontWeight={600} fontSize={22}>
-          Latest Blogs
-        </CText>
-        <TouchableOpacity onPress={() => navigate.navigate("Blog List")}>
-          <Text style={styles.moreButton}>More</Text>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        data={blogsDataState}
-        renderItem={renderBlogItem}
-        keyExtractor={(item) => item.blog_id}
-        horizontal
-        snapToInterval={width * 0.75}
-        decelerationRate="fast"
-        snapToAlignment="center"
-        pagingEnabled
-      />
-      <View style={{ marginBottom: 120 }}></View>
-    </ScrollView>
+          <FlatList
+            data={features}
+            keyExtractor={(item) => item.id}
+            numColumns={3}
+            scrollEnabled={false} // prevent inner scroll conflict
+            renderItem={({ item }) => (
+              <View style={styles.featureCard}>
+                <Icon name={item.icon} size={30} color="#000" />
+                <Text style={styles.title}>{item.title}</Text>
+              </View>
+            )}
+          />
+
+          {/* Blogs */}
+          <View style={styles.sectionHeader}>
+            <CText fontWeight={600} fontSize={22}>Latest Blogs</CText>
+            <TouchableOpacity onPress={() => navigate.navigate("Blog List")}>
+              <Text style={styles.moreButton}>More</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={blogsDataState}
+            renderItem={renderBlogItem}
+            keyExtractor={(item) => item.blog_id}
+            horizontal
+            snapToInterval={width * 0.75}
+            decelerationRate="fast"
+            snapToAlignment="center"
+            pagingEnabled
+          />
+
+          {/* Footer margin */}
+          <View style={{ marginBottom: 120 }} />
+        </>
+      }
+    />
+
   );
 };
 
@@ -822,10 +819,15 @@ const styles = StyleSheet.create({
   notificationCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#fff",
+    width: "320",
     padding: 12,
     borderRadius: 6,
     marginVertical: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.05, // Reduced shadow visibility
+    shadowRadius: 3,
+    elevation: 2,
   },
   textContainer: {
     marginLeft: 10,

@@ -14,7 +14,6 @@ export default uploadToCloudinary = async (file) => {
       ...data,
     });
     const media = result.data.secure_url;
-    console.log(media)
     if (media) {
       return media;
     }
